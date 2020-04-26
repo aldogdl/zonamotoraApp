@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "852352121282",
+    "firebase_url": "https://zonamotora-b3c57.firebaseio.com",
+    "project_id": "zonamotora-b3c57",
+    "storage_bucket": "zonamotora-b3c57.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852352121282:android:7acb0906fb2d472bf5fe5b",
+        "android_client_info": {
+          "package_name": "com.buscomex.zonamotora"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "852352121282-hsn9du75o4egqrpjoa4ja1jjnbs9eebo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.buscomex.zonamotora",
+            "certificate_hash": "097d36141bb065e6d47341e282f293d2de5edde5"
+          }
+        },
+        {
+          "client_id": "852352121282-ov20pmb5o9bck1c4vg35cdkj8lc40gfd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATUc_p6bgI7_PaInScBaiBYwxBCfvUSW4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "852352121282-ov20pmb5o9bck1c4vg35cdkj8lc40gfd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
