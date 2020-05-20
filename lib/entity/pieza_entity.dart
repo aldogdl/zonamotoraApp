@@ -8,20 +8,23 @@ class PiezaEntity {
   int    cant;
   String pieza;
   String lado;
-  String posicion;
+  String detalles;
   FotoAsset foto = FotoAsset();
 
-  PiezaEntity({this.id, this.cant, this.pieza, this.lado, this.posicion});
+  PiezaEntity({this.id, this.cant, this.pieza, this.lado, this.detalles});
 
   ///
   Map<String, dynamic> toJson() {
+
+    Map<String, dynamic> foto = new Map<String, dynamic>();
+    foto = (this.foto == null || this.foto.nombre == null) ? foto : this.foto.toJson();
     return {
       'id'      : id,
       'cant'    : cant,
       'pieza'   : pieza,
       'lado'    : lado,
-      'posicion': posicion,
-      'foto'    : (this.foto == null) ? new Map<String, dynamic>() : this.foto.toJson()
+      'detalles': detalles,
+      'foto'    : foto
     };
   }
 }

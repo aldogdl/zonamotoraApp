@@ -44,6 +44,28 @@ class AutosRepository {
     }
   }
 
+  ///
+  Future<List<Map<String, dynamic>>> getMarcas() async {
+
+    List<Map<String, dynamic>> marcas = new List();
+    final db = await DBApp.db.abrir;
+    if(db.isOpen) {
+      marcas = await db.query('autos', columns: ['mk_id', 'mk_nombre'], groupBy: 'mk_nombre');
+    }
+    return marcas;
+  }
+
+  ///
+  Future<List<Map<String, dynamic>>> getModelos(int idMarca) async {
+
+    List<Map<String, dynamic>> modelos = new List();
+    final db = await DBApp.db.abrir;
+    if(db.isOpen) {
+      modelos = await db.query('autos', columns: ['md_id', 'md_nombre'], where: 'mk_id = ?', whereArgs: [idMarca]);
+    }
+    return modelos;
+  }
+
   /*
   * @see SaveAutoPage::_getAutos
   */

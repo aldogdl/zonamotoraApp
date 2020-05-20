@@ -36,7 +36,6 @@ class SolicitudRepository {
 
     bool res = true;
     final result = await solicitudHttp.enviarFotosSolicitud(data);
-
     if(result.statusCode == 200){
       this.result = json.decode(result.body);
     }else{

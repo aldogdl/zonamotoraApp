@@ -37,8 +37,9 @@ dependencies:
   flutter_swiper:
   shared_preferences:
   firebase_messaging:
-  multi_image_picker: ^4.6.4
+  multi_image_picker:
   google_maps_flutter:
+  cached_network_image:
   flutter_ringtone_player:
   flutter_local_notifications:
 

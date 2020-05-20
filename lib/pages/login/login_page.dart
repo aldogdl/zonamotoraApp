@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         children: <Widget>[
           _cabecera(),
-          regresarPagina.widget(this._context, tituloBack),
+          regresarPagina.widget(this._context, tituloBack, showBtnMenualta: false),
           _form(),
           const SizedBox(height: 10),
           Row(
@@ -131,6 +131,9 @@ class _LoginPageState extends State<LoginPage> {
   /* */
   Widget _cabecera() {
 
+    bool verSubT = (this._screen.height <= 550) ? false : true;
+    String isReg   = (this._dataShared.username != 'Anónimo') ? 'CAMBIAR CUENTA' : 'RECUPERACIÓN DE CUENTA';
+
     return Stack(
       overflow: Overflow.visible,
       children: <Widget>[
@@ -169,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: <Widget>[
                 Text(
-                  'RECUPERACIÓN DE CUENTA',
+                  isReg,
                   textScaleFactor: 1,
                   style: TextStyle(
                     color: Colors.white,
@@ -177,6 +180,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 5),
+                (verSubT)
+                ?
                 Text(
                   'Gracias por tu confianza',
                   textScaleFactor: 1,
@@ -184,6 +189,8 @@ class _LoginPageState extends State<LoginPage> {
                     color: Colors.grey[100],
                   ),
                 )
+                :
+                const SizedBox(height: 0)
               ],
             )
           )

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zonamotora/singletons/buscar_autos_sngt.dart';
 import 'package:zonamotora/singletons/solicitud_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
 
@@ -16,33 +17,30 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
 
   SolicitudSngt solicitudSgtn = SolicitudSngt();
   AlertsVarios alertsVarios   = AlertsVarios();
+  BuscarAutosSngt buscarAutosSngt = BuscarAutosSngt();
 
   BuildContext _context;
-  TextEditingController _ctrAnio = TextEditingController();
-  TextEditingController _ctrVersion = TextEditingController();
-  FocusNode _focusAnio = FocusNode();
   bool _hasAnio = false;
   bool _hasVersion = false;
+  int _indexAuto;
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback(_hidratarCampos);
+    this._indexAuto = widget.indexAuto;
     super.initState();
   }
 
-  @override
-  void dispose() {
-    this._ctrAnio.dispose();
-    this._ctrVersion.dispose();
-    super.dispose();
-  }
-  
   @override
   Widget build(BuildContext context) {
 
     this._context = context;
     context = null;
-
+    if(solicitudSgtn.autos[this._indexAuto]['version'] != '0'){
+      this._hasVersion = true;
+    }
+    if(solicitudSgtn.autos[this._indexAuto]['anio'] != '0'){
+      this._hasAnio = true;
+    }
     return Padding(
       padding: EdgeInsets.all(10),
       child: Container(
@@ -65,12 +63,14 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _autoAndAnio(),
+              _autoAndAnioAndStarts(),
               const SizedBox(height: 7),
-              _inputVersion(),
+              _txtVersion(),
               const SizedBox(height: 5),
-              _piezasAndDelete(),
+              Divider(),
+              _accionesAndPiezas(),
             ],
           ),
         ),
@@ -79,27 +79,11 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
   }
 
   ///
-  void _hidratarCampos(_) {
-
-    if(solicitudSgtn.autos[widget.indexAuto].containsKey('anio')){
-      this._ctrAnio.text = solicitudSgtn.autos[widget.indexAuto]['anio'];
-      if(this._ctrAnio.text.length > 3){
-        this._hasAnio = true;
-      }
-    }
-    if(solicitudSgtn.autos[widget.indexAuto].containsKey('version')){
-      this._ctrVersion.text = solicitudSgtn.autos[widget.indexAuto]['version'];
-      this._hasVersion = true;
-    }
-    setState(() {});
-  }
-
-  ///
-  Widget _autoAndAnio() {
+  Widget _autoAndAnioAndStarts() {
 
     bool showInputAnio = false;
-    if(solicitudSgtn.autos[widget.indexAuto].containsKey('piezas')){
-      if(solicitudSgtn.autos[widget.indexAuto]['piezas'].length > 0){
+    if(solicitudSgtn.autos[this._indexAuto].containsKey('piezas')){
+      if(solicitudSgtn.autos[this._indexAuto]['piezas'].length > 0){
         showInputAnio = true;
       }
     }
@@ -122,7 +106,7 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  solicitudSgtn.autos[widget.indexAuto]['md_nombre'],
+                  solicitudSgtn.autos[this._indexAuto]['md_nombre'],
                   textScaleFactor: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.start,
@@ -131,7 +115,7 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
                   ),
                 ),
                 Text(
-                  solicitudSgtn.autos[widget.indexAuto]['mk_nombre'],
+                  solicitudSgtn.autos[this._indexAuto]['mk_nombre'],
                   textScaleFactor: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.start,
@@ -143,187 +127,198 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
             ),
             onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil(
               'gestion_piezas_page', (Route rutas) => false,
-              arguments: {'indexAuto': widget.indexAuto}
+              arguments: {'indexAuto': this._indexAuto}
             )
           ),
         ),
-        (showInputAnio)
-        ?
-        Expanded(
-          flex: 2,
-          child: _inputAnio(),
+        Column(
+          children: <Widget>[
+            Text(
+              '${ solicitudSgtn.autos[this._indexAuto]['anio']}',
+              textScaleFactor: 1,
+              style: TextStyle(
+                fontSize: 23,
+                color: Colors.blueGrey
+              ),
+            ),
+            _estrellas()
+          ],
         )
-        :
-        const SizedBox(width: 0),
       ],
     );
   }
   
   ///
-  Widget _inputAnio() {
+  Widget _txtVersion() {
 
-    return TextField(
-      controller: this._ctrAnio,
-      focusNode: this._focusAnio,
-      keyboardType: TextInputType.number,
-      textInputAction: TextInputAction.done,
-      maxLength: 4,
-      decoration: InputDecoration(
-        filled: true,
-        counter: const SizedBox(height: 0, width: 0),
-        fillColor: Colors.white,
-        hintText: 'AÑO?',
-        hintStyle: TextStyle(
-          color: Colors.grey[400],
-        )
-      ),
-      onChanged: (String anio){
-        this._hasAnio = (anio.length > 3) ? true : false;
-        solicitudSgtn.setAnio(widget.indexAuto, anio);
-        setState(() {});
-      },
-      onSubmitted: (String val){
-        this._hasAnio = (val.length > 3) ? true : false;
-      },
+    String version = 'Sin versión';
+    if(this._hasVersion){
+      version = solicitudSgtn.autos[this._indexAuto]['version'];
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      child: Text(
+        '$version',
+        textScaleFactor: 1,
+        textAlign: TextAlign.start,
+        style: TextStyle(
+          fontSize: 15,
+          letterSpacing: 0.6,
+          color: Colors.blueGrey
+        ),
+      )
     );
   }
 
   ///
-  Widget _inputVersion() {
+  Widget _accionesAndPiezas() {
 
-    bool showInputAnio = false;
-    if(solicitudSgtn.autos[widget.indexAuto].containsKey('piezas')){
-      if(solicitudSgtn.autos[widget.indexAuto]['piezas'].length > 0){
-        showInputAnio = true;
-      }
+    int cantPiezas = 0;
+    if(solicitudSgtn.autos[this._indexAuto].containsKey('piezas')){
+      cantPiezas = solicitudSgtn.autos[this._indexAuto]['piezas'].length;
     }
-    if(!showInputAnio) {
-      return const SizedBox(height: 0);
-    }
-
-    return Column(
-      children: <Widget>[
-        TextField(
-          controller: this._ctrVersion,
-          onChanged: (String version){
-            this._hasVersion = (version.length > 0) ? true : false;
-            solicitudSgtn.setVersion(widget.indexAuto, version);
-            setState(() {});
-          },
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            hintText: 'Ej. deportivo, z2x, hatchback etc...',
-            hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 15
-            )
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          'Coloca la versión o características del auto',
-          textScaleFactor: 1,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.black38
-          ),
-        ),
-      ],
-    );
-  }
-
-  ///
-  Widget _piezasAndDelete() {
+    String plural = (cantPiezas == 0) ? 's' : (cantPiezas > 1) ? 's' : '';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        InkWell(
-          child: CircleAvatar(
-            child: Icon(Icons.delete),
+        Expanded(
+          flex: 1,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  InkWell(
+                    child: CircleAvatar(
+                      radius: 19,
+                      child: Icon(Icons.delete),
+                    ),
+                    onTap: () async => widget.borrarAuto(this._indexAuto),
+                  ),
+                  InkWell(
+                    child: CircleAvatar(
+                      radius: 19,
+                      backgroundColor: Colors.blue,
+                      child: Icon(Icons.edit, color: Colors.white),
+                    ),
+                    onTap: () async => _editarAuto(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              const Text(
+                'Automóvil',
+                textScaleFactor: 1,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 13
+                ),
+              )  
+            ],
           ),
-          onTap: () async => widget.borrarAuto(widget.indexAuto),
         ),
-        _estrellasFichaDeAuto(),
-        _btnSusPiezas()
-      ],
-    );
-  }
-  
-  ///
-  Widget _estrellasFichaDeAuto() {
-
-    int cantPiezas = 0;
-    if(solicitudSgtn.autos[widget.indexAuto].containsKey('piezas')){
-      cantPiezas = solicitudSgtn.autos[widget.indexAuto]['piezas'].length;
-    }
-
-    return Column(
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            (this._hasAnio)
-            ?
-            Icon(Icons.star, size: 20, color: Colors.amber)
-            :
-            Icon(Icons.star_border, size: 20, color: Colors.amber),
-            (this._hasVersion)
-            ?
-            Icon(Icons.star, size: 20, color: Colors.amber)
-            :
-            Icon(Icons.star_border, size: 20, color: Colors.amber),
-            (cantPiezas == 0)
-            ?
-            Icon(Icons.star_border, size: 20, color: Colors.amber)
-            :
-            Icon(Icons.star, size: 20, color: Colors.amber),
-          ],
-        ),
-        Text(
-          '$cantPiezas Piezas',
-          textScaleFactor: 1,
-          style: TextStyle(
-            fontSize: 14
-          ),
+        const SizedBox(width: 20),
+        Expanded(
+          flex: 1,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget> [
+              _btnPiezas(),
+              Text(
+                'Actualmente $cantPiezas Pieza$plural',
+                textScaleFactor: 1,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 13
+                ),
+              )
+            ]
+          )
         )
       ],
     );
   }
 
   ///
-  Widget _btnSusPiezas() {
+  Widget _btnPiezas() {
 
-    return FlatButton.icon(
+    int cantPiezas = 0;
+    if(solicitudSgtn.autos[this._indexAuto].containsKey('piezas')){
+      cantPiezas = solicitudSgtn.autos[this._indexAuto]['piezas'].length;
+    }
+
+    return FlatButton(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10)
       ),
-      color: Colors.blue,
-      padding: EdgeInsets.symmetric(horizontal: 7),
-      label: Text(
-        'Sus Piezas',
+      color: (cantPiezas > 0) ? Colors.green : Colors.blue,
+      child: Text(
+        (cantPiezas > 0) ? 'Ver sus Piezas' : 'Agregar Pieza',
         textScaleFactor: 1,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           color: Colors.white
         ),
       ),
-      icon: Icon(Icons.add_circle, color: Colors.blue[100]),
       onPressed: () {
 
-        solicitudSgtn.setAutoEnJuegoIndexAuto(widget.indexAuto);
-        solicitudSgtn.addMapParaAddPiezas();
-        if(solicitudSgtn.autos[widget.indexAuto].containsKey('piezas')){
-          if(solicitudSgtn.autos[widget.indexAuto]['piezas'].length > 0) {
-            solicitudSgtn.paginaVista = 1;
+        solicitudSgtn.setAutoEnJuegoIndexAuto(this._indexAuto);
+        if(solicitudSgtn.autos[this._indexAuto].containsKey('piezas')){
+          if(solicitudSgtn.autos[this._indexAuto]['piezas'].length > 0) {
+            Navigator.of(this._context).pushNamed('lst_piezas_page');
+            return;
           }
         }
-        Navigator.of(this._context).pushNamedAndRemoveUntil(
-          'gestion_piezas_page', (Route rutas) => false,
-          arguments: {'indexAuto': widget.indexAuto}
-        );
+        Navigator.of(this._context).pushNamed('alta_piezas_page');
       }
     );
   }
+
+  ///
+  Widget _estrellas() {
+
+    int cantPiezas = 0;
+    if(solicitudSgtn.autos[this._indexAuto].containsKey('piezas')){
+      cantPiezas = solicitudSgtn.autos[this._indexAuto]['piezas'].length;
+    }
+    double tma = 17;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+
+        (cantPiezas == 0)
+        ? Icon(Icons.star_border, size: tma, color: Colors.amber)
+        : Icon(Icons.star, size: tma, color: Colors.amber),
+
+        (this._hasAnio)
+        ? Icon(Icons.star, size: tma, color: Colors.amber)
+        : Icon(Icons.star_border, size: tma, color: Colors.amber),
+
+        (this._hasVersion)
+        ? Icon(Icons.star, size: tma, color: Colors.amber)
+        : Icon(Icons.star_border, size: tma, color: Colors.amber),
+
+      ],
+    );
+  }
+
+  ///
+  void _editarAuto() {
+
+    buscarAutosSngt.setIdMarca(solicitudSgtn.autos[this._indexAuto]['mk_id']);
+    buscarAutosSngt.setIdModelo(solicitudSgtn.autos[this._indexAuto]['md_id']);
+    buscarAutosSngt.setNombreMarca(solicitudSgtn.autos[this._indexAuto]['mk_nombre']);
+    buscarAutosSngt.setNombreModelo(solicitudSgtn.autos[this._indexAuto]['md_nombre']);
+    
+    solicitudSgtn.indexAutoIsEditing = this._indexAuto;
+    solicitudSgtn.editAutoPage = 'lst_modelos_select_page';
+
+    Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false);
+  }
+
 }

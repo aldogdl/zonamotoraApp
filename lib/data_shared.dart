@@ -32,6 +32,7 @@ class DataShared with ChangeNotifier {
 
   /*
    * @see registro_user_page::_sendForm  -> Asignan
+   * @see InitConfigPage::_checkDataUser -> Asignan
    * @see index_page::_body              -> Consumido
    * @see index_page::_tableDeBtns       -> Consumido
    * @see index_page::_autorizadoComo    -> Consumido
@@ -41,6 +42,17 @@ class DataShared with ChangeNotifier {
   get username => _username;
   setUsername(String username) {
     this._username = username;
+    notifyListeners();
+  }
+
+  /*
+   * @see InitConfigPage::_checkDataUser -> Asignan
+   * @see index_page::_body              -> Consumido
+   */
+  String _role;
+  get role => _role;
+  setRole(String role) {
+    this._role = role;
     notifyListeners();
   }
 

@@ -60,14 +60,16 @@ class _GraxPorSolicitudPageState extends State<GraxPorSolicitudPage> {
                 textScaleFactor: 1,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: Colors.red,
                   fontWeight: FontWeight.w200,
                   fontSize: 30
                 ),
               ),
               Divider(),
-              _btnToDos(),
-              Divider(),
+              SizedBox(
+                width: this._screen.width,
+                child: _btnToDos(),
+              ),
               Divider(),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
@@ -143,68 +145,49 @@ class _GraxPorSolicitudPageState extends State<GraxPorSolicitudPage> {
   ///
   Widget _btnToDos() {
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return Column(
       children: <Widget>[
-        Expanded(
-          flex: 1,
-          child: InkWell(
-            onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircleAvatar(
-                  backgroundColor: Colors.grey,
-                  child: Icon(Icons.home),
-                ),
-                Text(
-                  'Regresar\nal Inicio',
-                  textScaleFactor: 1,
-                  textAlign: TextAlign.center,
-                )
-              ],
-            ),
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.blueGrey,
+            child: Icon(Icons.home),
           ),
+          title: Text(
+            'Ir al Inicio'
+          ),
+          subtitle: Text(
+            'Visitar la página principal'
+          ),
+          trailing: Icon(Icons.arrow_forward),
+          onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false),
         ),
-        Expanded(
-          flex: 1,
-          child: InkWell(
-            onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircleAvatar(
-                  backgroundColor: Colors.orange,
-                  child: Icon(Icons.format_list_numbered),
-                ),
-                Text(
-                  'Listar mis Solicitudes',
-                  textScaleFactor: 1,
-                  textAlign: TextAlign.center,
-                )
-              ],
-            ),
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.orange,
+            child: Icon(Icons.format_list_numbered, color: Colors.white),
           ),
+          title: Text(
+            'Buscar más Refacciones'
+          ),
+          subtitle: Text(
+            'Cotizar Piezas para un auto'
+          ),
+          trailing: Icon(Icons.arrow_forward),
+          onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false),
         ),
-        Expanded(
-          flex: 1,
-          child: InkWell(
-            onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('lst_modelos_page', (Route rutas) => false),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircleAvatar(
-                  backgroundColor: Colors.red,
-                  child: Icon(Icons.extension),
-                ),
-                Text(
-                  'Hacer otra Solicitud',
-                  textScaleFactor: 1,
-                  textAlign: TextAlign.center,
-                )
-              ],
-            ),
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.red,
+            child: Icon(Icons.extension),
           ),
+          title: Text(
+            'Ver lista de Solicitudes'
+          ),
+          subtitle: Text(
+            'Revisar cotizaciones actuales'
+          ),
+          trailing: Icon(Icons.arrow_forward),
+          onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false),
         ),
       ],
     );

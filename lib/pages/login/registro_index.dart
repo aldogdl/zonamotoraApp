@@ -29,9 +29,9 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
     this._screen = MediaQuery.of(context).size;
     this._context = context;
     context = null;
-
     if(!this._isInit) {
       this._isInit = true;
+      appBarrMy.setContext(this._context);
       Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('reg_index_page');
     }
 

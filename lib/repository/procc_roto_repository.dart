@@ -9,15 +9,14 @@ class ProccRotoRepository {
 
   String _nomDB = 'proccRoto';
 
+  ///
   Map<String, dynamic> _procesos = {
     'altRef' : {
-      'path'     : 'gestion_piezas_page',
+      'path'     : 'alta_piezas_page',
       'explica'  : 'Alta de Refacciones',
       'metadata' : {
-        'seccion'   : 0,
         'indexAuto' : 0,
-        'indexPieza': 0,
-        'scroll'    : 0
+        'indexPieza': 0
       }
     },
     'altSoc' : {
@@ -27,6 +26,7 @@ class ProccRotoRepository {
     }
   };
 
+  ///
   List<String> _nombresProcesos = [
     'altRef', 'altSoc'
   ];
@@ -80,13 +80,13 @@ class ProccRotoRepository {
             SolicitudSngt solicitudSngt = SolicitudSngt();
             metaData = json.decode(hasProcecc.first['metadata']);
             solicitudSngt.setAutosByRecoverDB(new List<Map<String, dynamic>>.from(json.decode(hasProcecc.first['contents'])));
-            solicitudSngt.paginaVista = metaData['seccion'];
             solicitudSngt.setProcessRecovery(new Map<String, dynamic>.from(metaData));
+            solicitudSngt.setIsRecovery(true);
             break;
           default:
         }
 
-        return {'path': hasProcecc.first['path'], 'indexAuto': metaData['indexAuto']};
+        return {'path': hasProcecc.first['path']};
       }
     }
 

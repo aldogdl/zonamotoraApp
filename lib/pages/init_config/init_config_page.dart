@@ -83,9 +83,9 @@ class _InitConfigPageState extends State<InitConfigPage> {
     this._dataShared = Provider.of<DataShared>(this._context, listen: false);
     this._sess = await SharedPreferences.getInstance();
     this._recibirNotif = this._sess.getBool(spConst.sp_notif);
-
+    
     Map<String, dynamic> procesoRoto = await emProccsRotos.checkProcesosRotos();
-
+    
     Future.delayed(Duration(seconds: 2), () async {
       await _checkDataUser();
       await _checkConfigPush();
@@ -124,6 +124,7 @@ class _InitConfigPageState extends State<InitConfigPage> {
     Map<String, dynamic> dataUser = await emUser.getDataUser();
     if(dataUser.isNotEmpty) {
       this._dataShared.setUsername(dataUser['u_usname']);
+      this._dataShared.setRole(dataUser['u_roles']);
       this._tokenDB = dataUser['u_tokenDevice'];
 
       bool updateTokenServer = false;

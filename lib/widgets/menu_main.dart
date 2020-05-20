@@ -28,13 +28,14 @@ class MenuMain extends StatelessWidget {
         'titulo': 'Vincular Dispositivo',
         'ico'   : Icons.phone_android,
         'path'  : 'inxed_page'
-      },
+      },      
       'registro': {
         'titulo': 'Registro de Usuario',
         'ico'   : Icons.security,
         'path'  : 'reg_index_page'
       }
     };
+
     return SafeArea(
       child: Container(
         color: Colors.white,

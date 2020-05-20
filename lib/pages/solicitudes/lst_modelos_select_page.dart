@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/pages/solicitudes/widgets/ficha_auto_widget.dart';
 import 'package:zonamotora/repository/autos_repository.dart';
 import 'package:zonamotora/singletons/solicitud_sngt.dart';
+import 'package:zonamotora/singletons/buscar_autos_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
@@ -22,14 +21,13 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
   MenuInferior menuInferior = MenuInferior();
   AutosRepository emAutos = AutosRepository();
   SolicitudSngt solicitudSgtn = SolicitudSngt();
+  BuscarAutosSngt buscarAutosSngt = BuscarAutosSngt();
   AlertsVarios alertsVarios = AlertsVarios();
 
   Size _screen;
   BuildContext _context;
   List<Widget> _widgetLstAutos = new List();
   bool _isInit = false;
-  
-  GlobalKey<ScaffoldState> _skfKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +40,9 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
       this._screen = MediaQuery.of(this._context).size;
       _createFichaDeAutos();
       appBarrMy.setContext(this._context);
-      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('lst_modelos_page');
     }
 
     return Scaffold(
-      key: this._skfKey,
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: WillPopScope(
@@ -81,13 +77,14 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
   void _createFichaDeAutos() {
 
     this._widgetLstAutos = new List();
-    this._widgetLstAutos.add(_btnAtrasAndSave());
+    this._widgetLstAutos.add(_btnSave());
 
     if(solicitudSgtn.autos.length == 0) {
       this._widgetLstAutos.add(
         Center(
           child: Column(
             children: <Widget>[
+              const SizedBox(height: 30),
               SizedBox(
                 height: 120,
                 width: 200,
@@ -115,21 +112,21 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
       if((i+1) >= solicitudSgtn.autos.length){
         newW = Padding(
           padding: EdgeInsets.only(bottom: 20),
-          child: new FichaDelAutoWidget(i, _borrarAuto),
+          child: FichaDelAutoWidget(i, _borrarAuto)
         );
       }else{
-        newW = new FichaDelAutoWidget(i, _borrarAuto);
+        newW = FichaDelAutoWidget(i, _borrarAuto);
       }
       this._widgetLstAutos.add(newW);
     }
 
     if(this._screen.height <= 550){
       if(solicitudSgtn.autos.length > 2) {
-        this._widgetLstAutos.add(_btnAtrasAndSave());
+        this._widgetLstAutos.add(_btnSave());
       }
     }else{
       if(solicitudSgtn.autos.length > 3) {
-        this._widgetLstAutos.add(_btnAtrasAndSave());
+        this._widgetLstAutos.add(_btnSave());
       }
     }
     this._widgetLstAutos.add(const SizedBox(height: 20));
@@ -137,69 +134,69 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
   }
 
   ///
-  Widget _btnAtrasAndSave() {
+  Widget _btnSave() {
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
-        FlatButton.icon(
-          onPressed: () => Navigator.of(this._context).pushNamedAndRemoveUntil('lst_modelos_page', (Route rutas) => false),
-          icon: Icon(Icons.arrow_back),
+        RaisedButton.icon(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)
+          ),
+          onPressed: () {
+            buscarAutosSngt.setIdMarca(null);
+            buscarAutosSngt.setIdModelo(null);
+            buscarAutosSngt.setNombreMarca(null);
+            buscarAutosSngt.setNombreModelo(null);
+            solicitudSgtn.addOtroAuto = true;
+            Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false);
+          },
+          icon: Icon(Icons.directions_car, color: Colors.blue),
+          color: Colors.white,
+          textColor: Colors.black54,
           label: Text(
-            'Atras'
+            'Agregar Auto',
+            textScaleFactor: 1,
           )
         ),
-        InkWell(
-          child: Container(
-            margin: EdgeInsets.only(right: 15),
-            padding: EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 3,
-                  offset: Offset(1, 1),
-                  color: Colors.black
-                )
-              ]
-            ),
-            child: Text(
-              'Terminar mi Pedido',
-              textScaleFactor: 1,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                shadows: [
-                  BoxShadow(
-                    blurRadius: 0,
-                    offset: Offset(1, 1),
-                    color: Colors.black,
-                  )
-                ]
-              ),
-            ),
+        RaisedButton.icon(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)
           ),
-          onTap: () => _terminarSolicitud(),
-        )
+          onPressed: () => _enviarSolicitud(),
+          icon: Icon(Icons.check_circle, color: Colors.blue),
+          color: Colors.black,
+          textColor: Colors.white,
+          label: Text(
+            'ENVIAR Solicitud',
+            textScaleFactor: 1,
+          )
+        ),
       ],
     );
   }
-  
+
   ///
   Future<void> _borrarAuto(int indexAuto) async {
 
     String body = '¿Estás segur@ de querer eliminar el Vehículo de ésta lista de solicitud?';
+    if(solicitudSgtn.autos[indexAuto]['piezas'].length > 0) {
+      body = 'ESTE AUTO CUENTA CON PIEZAS REGISTRADAS\n\n ¿Estás segur@ de querer eliminar el Vehículo de ésta lista de solicitud?';
+    }
+    
     bool acc = await alertsVarios.aceptarCancelar(this._context, titulo: 'ELIMINAR AUTOMÓVIL', body: body);
     if(acc){
-      solicitudSgtn.removeAuto(solicitudSgtn.autos[indexAuto]['md_id']);
-      _createFichaDeAutos();
+      solicitudSgtn.removeAutoByIndex(indexAuto);
+      if(solicitudSgtn.autos.length == 0){
+        Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false);
+      }else{
+        _createFichaDeAutos();
+      }
     }
   }
 
   ///
-  Future<void> _terminarSolicitud() async {
+  Future<void> _enviarSolicitud() async {
 
     if(solicitudSgtn.autos.isEmpty) {
       String body = 'Es necesario para una SOLICITUD DE PIEZAS.\n\nQue selecciones al menos un MODELO de AUTO.';

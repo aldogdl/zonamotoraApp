@@ -48,7 +48,7 @@ class _BuscarIndexPageState extends State<BuscarIndexPage> {
     );
   }
 
-  /* */
+  ///
   Widget _body() {
 
     return Stack(
@@ -71,57 +71,77 @@ class _BuscarIndexPageState extends State<BuscarIndexPage> {
     );
   }
 
-  /* */
+  ///
   Widget _queBuscar() {
+
+    double alto = (this._screen.height <= 550) ? 0.33 : 0.40;
+    List<Map<String, dynamic>> menu = [
+      {
+        'titulo' :'REFACCIONES',
+        'stitulo':'Cotizador de Refacciones gratuito',
+        'icono'  : Icons.extension,
+        'color'  : Colors.red,
+        'path'   : 'add_autos_page'
+      },
+      {
+        'titulo' :'AUTOMÓVILES',
+        'stitulo':'Compra, Vende y/o Cambia un auto',
+        'icono'  : Icons.directions_car,
+        'color'  : Colors.orange,
+        'path'   : 'lst_modelos_page'
+      },
+      {
+        'titulo' :'SERVICIOS AUTOMOTRICES',
+        'stitulo':'Los servicios que tu auto necesita',
+        'icono'  : Icons.build,
+        'color'  : Colors.blue,
+        'path'   : 'lst_modelos_page'
+      },
+    ];
+    List<Widget> menuDraw = new List();
+    menu.forEach((mn){
+      menuDraw.add(titleMenu(mn));
+    });
 
     return SingleChildScrollView(
       child: Container(
-        height: this._screen.height * 0.40,
+        height: this._screen.height * alto,
         child: ListView(
-          children: <Widget>[
-            ListTile(
-              title: Text(
-                'TODO PARA MI AUTO'
-              ),
-              subtitle: Text(
-                'Filtra automaticamente para tu auto'
-              ),
-            ),
-            ListTile(
-              title: Text(
-                'REFACCIONES'
-              ),
-              subtitle: Text(
-                'Genericas y Seminuevas'
-              ),
-            ),
-            ListTile(
-              title: Text(
-                'ACCESORIOS'
-              ),
-              subtitle: Text(
-                'Filtra automaticamente para tu auto'
-              ),
-            ),
-            ListTile(
-              title: Text(
-                'AUTOMÓVILES'
-              ),
-              subtitle: Text(
-                'Filtra automaticamente para tu auto'
-              ),
-            ),
-            ListTile(
-              title: Text(
-                'SERVICIOS'
-              ),
-              subtitle: Text(
-                'Filtra automaticamente para tu auto'
-              ),
-            ),
-          ],
+          children: menuDraw,
         ),
       )
+    );
+  }
+
+  ///
+  Widget titleMenu(Map<String, dynamic> mnu) {
+
+    return ListTile(
+      title: Row(
+        children: <Widget>[
+          CircleAvatar(
+            backgroundColor: mnu['color'],
+            maxRadius: 13,
+            child: Icon(mnu['icono'], size: 15, color: Colors.white),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '${ mnu['titulo'] }',
+            textScaleFactor: 1,
+            style: TextStyle(
+              fontWeight: FontWeight.bold
+            ),
+          )
+        ],
+      ),
+      subtitle: Padding(
+        padding: EdgeInsets.symmetric(vertical: 7),
+          child: Text(
+          '${ mnu['stitulo'] }',
+        ),
+      ),
+      trailing: Icon(Icons.arrow_forward_ios, size: 13),
+      onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('${ mnu['path'] }', (Route rutas) => false),
     );
   }
 }

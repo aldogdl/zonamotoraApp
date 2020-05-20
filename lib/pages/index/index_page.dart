@@ -49,7 +49,13 @@ class _IndexPageState extends State<IndexPage> {
           if(this._verPageWelcome) {
             return _welcome();
           }
-          return SingleChildScrollView(child: _body());
+          return SingleChildScrollView(
+            child: Container(
+              width: this._screen.width,
+              height: this._screen.height,
+              child: _body(),
+            )
+          );
         },
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0)
@@ -95,6 +101,7 @@ class _IndexPageState extends State<IndexPage> {
     return Container(
       margin: EdgeInsets.all(5),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
             Colors.black,
@@ -200,6 +207,7 @@ class _IndexPageState extends State<IndexPage> {
     return Container(
       margin: EdgeInsets.all(5),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
             Colors.black,
@@ -437,10 +445,9 @@ class _IndexPageState extends State<IndexPage> {
     setState(() {});
   }
 
-  /* */
+  ///
   Widget _body() {
 
-    String username = (this._dataShared.username == null) ? 'Anónimo' : this._dataShared.username;
     return Stack(
       children: <Widget>[
         _background(),
@@ -462,44 +469,27 @@ class _IndexPageState extends State<IndexPage> {
 
         // Botones
         Positioned(
-          top: this._screen.height * 0.38,
-          child:  SizedBox(
-            width: this._screen.width,
-            child: Container(
-              padding: EdgeInsets.all(10),
-              height: this._screen.height * 0.455,
-              child: SingleChildScrollView(
-                child: _tableDeBtns(),
-              ),
-            )
+          top: this._screen.height * 0.40,
+          width: this._screen.width,
+          height: this._screen.height,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5),
+            child: _tableDeBtns(),
           ),
         ),
-        // Buscas una Refaccion...
-        (username == 'Anónimo')
-        ?
-        const SizedBox(height: 0)
-        :
-        Positioned(
-            top: this._screen.height * 0.596,
-            child: InkWell(
-              child: _btnSolicitarRefacs(),
-              onTap: (){
-                Navigator.of(this._context).pushNamedAndRemoveUntil('lst_modelos_page', (Route rutas) => false);
-              }
-          )
-        )
       ],
     );
   }
 
-  /* */
+  ///
   Widget _background() {
 
     return Stack(
       children: <Widget>[
+        //El fondo completo
         Container(
           width: this._screen.width,
-          height: this._screen.height * 0.8,
+          height: this._screen.height,
           decoration: BoxDecoration(
             color: Colors.red[400]
           ),
@@ -507,6 +497,7 @@ class _IndexPageState extends State<IndexPage> {
             painter: Dibujo(),
           ),
         ),
+        //una bola
         Positioned(
           top: -this._screen.width * 0.90,
           left: -50,
@@ -519,6 +510,7 @@ class _IndexPageState extends State<IndexPage> {
             ),
           ),
         ),
+        //una bola
         Positioned(
           top: this._screen.width * 0.9,
           left: 100,
@@ -538,11 +530,13 @@ class _IndexPageState extends State<IndexPage> {
             ),
           ),
         ),
+
+        // La parte mas tinta
         Positioned(
           top: 0,
           child: Container(
             width: this._screen.width,
-            height: this._screen.height * 0.30,
+            height: this._screen.height * 0.45,
             decoration: BoxDecoration(
               color: Color(0xff7C0000)
             ),
@@ -555,7 +549,7 @@ class _IndexPageState extends State<IndexPage> {
     );
   }
 
-  /* */
+  ///
   Widget _autorizadoComo() {
 
     String username = (this._dataShared.username == null) ? 'Anónimo' : this._dataShared.username;
@@ -642,95 +636,7 @@ class _IndexPageState extends State<IndexPage> {
     );
   }
 
-  /* */
-  Widget _btnSolicitarRefacs() {
-
-    double alto = (this._screen.height <= 550) ? 0.21 : 0.19;
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      height: this._screen.height * alto,
-      width: this._screen.width,
-      color: Colors.red[100],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Align(
-            alignment: Alignment.center,
-            child: Text(
-              '¡SOLICITA HOY MISMO!...',
-              textScaleFactor: 1,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.brown,
-                letterSpacing: 1,
-                fontSize: (this._screen.height <= 550) ? 15 : 19
-              ),
-            ),
-          ),
-          Divider(height: 10, color: Colors.white),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                flex: 1,
-                child: Container(
-                  height:60,
-                  width: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(7),
-                    border: Border.all(color: Colors.white),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.red[100],
-                        Colors.red[800]
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    )
-                  ),
-                  child: Image(
-                    image: AssetImage('assets/images/google-web-search.png'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 15),
-              Flexible(
-                flex: 4,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Text(
-                      'Refacciones Seminuevas y Genericas. Todas las marcas y modelos',
-                      textScaleFactor: 1,
-                      style: TextStyle(
-                        color: Colors.deepOrange,
-                        fontSize: (this._screen.height <= 550) ? 13 : 16
-                      ),
-                      overflow: TextOverflow.clip,
-                    ),
-                    Text(
-                      'SOLICITAR COTIZACIÓN >>',
-                      textScaleFactor: 1,
-                      style: TextStyle(
-                        color: Colors.blue[800]
-                      ),
-                      textAlign: TextAlign.end,
-                      overflow: TextOverflow.clip,
-                    ),
-                  ],
-                ),
-              )
-            ],
-          )
-        ],
-      )
-    );
-  }
-
-  /* */
+  ///
   Widget _tableDeBtns() {
 
     List<Widget> tablaRowsReg;
@@ -744,9 +650,9 @@ class _IndexPageState extends State<IndexPage> {
       ];
     }else{
       tablaRowsReg = [
-        SizedBox(height: 0),
-        SizedBox(height: 0),
-        SizedBox(height: 0),
+        _buildBtnMenuGenerico(icono: Icons.monetization_on, titulo: 'Cotizaciones', numIndice: 1),
+        _buildBtnMenuGenerico(icono: Icons.pan_tool, titulo: 'Solicitudes', numIndice: 2),
+        _buildBtnMenuGenerico(icono: Icons.drive_eta, titulo: 'Vehículos', numIndice: 3),
       ];
     }
 
@@ -758,16 +664,23 @@ class _IndexPageState extends State<IndexPage> {
         ),
         TableRow(
           children: [
-            _buildBtnMenuGenerico(icono: Icons.account_balance, titulo: 'ZonaMotora', numIndice: 4),
+            _buildBtnMenuGenerico(icono: Icons.business, titulo: 'ZonaMotora', numIndice: 4),
             _buildBtnMenuGenerico(icono: Icons.search, titulo: 'Buscador', numIndice: 5),
             _buildBtnMenuGenerico(icono: Icons.add_shopping_cart, titulo: 'Publicar', numIndice: 6),
           ]
-        )
+        ),
+        TableRow(
+          children: [
+            _buildBtnMenuGenerico(icono: Icons.extension, titulo: 'Refacciones', numIndice: 4),
+            _buildBtnMenuGenerico(icono: Icons.build, titulo: 'Servicios', numIndice: 5),
+            _buildBtnMenuGenerico(icono: Icons.toys, titulo: 'Patrocinador', numIndice: 6),
+          ]
+        ),
       ],
     );
   }
 
-  /* */
+  ///
   Widget _buildBtnMenuGenerico({IconData icono, String titulo, int numIndice}) {
 
     return FittedBox(
@@ -827,13 +740,15 @@ class _IndexPageState extends State<IndexPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Icon(icono, size: 20),
+              Icon(icono, size: 20, color: (titulo == 'Buscador') ? Colors.white : Colors.black),
               const SizedBox(height: 4),
               Text(
                 '$titulo',
                 textScaleFactor: 1,
                 style: TextStyle(
-                  fontSize: 7
+                  fontSize: 7,
+                  color: (titulo == 'Buscador') ? Colors.white : Colors.black,
+                  fontWeight: (titulo == 'Buscador') ? FontWeight.bold : FontWeight.normal
                 ),
                 textAlign: TextAlign.center,
               )

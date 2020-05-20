@@ -48,6 +48,8 @@ class _ConfigPageState extends State<ConfigPage> {
       this._isInitConfig = true;
       this._format = DateFormat('d-MM-yyyy');
       msgConfigSngt.setContext(this._context);
+      appBarrMy.setContext(this._context);
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('reg_index_page');
       _setSesion();
     }
 
@@ -120,7 +122,7 @@ class _ConfigPageState extends State<ConfigPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          this._dataUser['u_usname'].toString().toUpperCase(),
+                          (this._dataUser != null) ? this._dataUser['u_usname'].toString().toUpperCase() : 'Cargando...',
                           textScaleFactor: 1,
                           style: TextStyle(
                             fontSize: 19,
@@ -232,13 +234,15 @@ class _ConfigPageState extends State<ConfigPage> {
     String subt = 'Usuario ID: ${this._dataUser['u_id']}  || Tipo: ${this._dataUser['u_roles']}';
     setState(() {
       this._userApp = _getListTitle(
-        icono: Icons.settings_system_daydream, titulo: 'Datos Constantes:', subtitulo: subt
+        icono: Icons.settings_system_daydream, titulo: 'Datos Constantes:',
+        subtitulo: subt,
+        accion: ()=>Navigator.of(this._context).pushNamedAndRemoveUntil('login_page', (Route ruta) => false)
       );
     });
   }
 
   /* */
-  Widget _getListTitle({IconData icono, String titulo, String subtitulo}) {
+  Widget _getListTitle({IconData icono, String titulo, String subtitulo, Function accion}) {
 
     return ListTile(
       leading: Icon(icono),
@@ -250,6 +254,7 @@ class _ConfigPageState extends State<ConfigPage> {
         subtitulo,
         textScaleFactor: 1,
       ),
+      onTap: accion,
     );
   }
 }

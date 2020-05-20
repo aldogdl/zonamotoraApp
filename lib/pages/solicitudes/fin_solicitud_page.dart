@@ -6,6 +6,7 @@ import 'package:zonamotora/entity/pieza_entity.dart';
 import 'package:zonamotora/repository/autos_repository.dart';
 import 'package:zonamotora/repository/solicitud_repository.dart';
 import 'package:zonamotora/repository/user_repository.dart';
+import 'package:zonamotora/singletons/buscar_autos_sngt.dart';
 import 'package:zonamotora/singletons/solicitud_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
@@ -24,6 +25,7 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
   MenuInferior menuInferior = MenuInferior();
   AutosRepository emAutos = AutosRepository();
   SolicitudSngt solicitudSgtn = SolicitudSngt();
+  BuscarAutosSngt buscarAutosSngt = BuscarAutosSngt();
   AlertsVarios alertsVarios = AlertsVarios();
   UserRepository emUser = UserRepository();
   SolicitudRepository emSolicitud = SolicitudRepository();
@@ -32,28 +34,27 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
   BuildContext _context;
   bool _showAppBarr = true;
   bool _showError = false;
-  bool _showProceso = true;
   int _errorPaso;
   String _username = '';
   String _procesoActual;
   Widget _pasosToDo;
   List<Map<String, dynamic>> _pasos = new List();
+  List<Map<String, dynamic>> _data = new List();
+  List<Map<String, dynamic>> _fotos = new List();
 
   @override
   void initState() {
     
-    this._pasos.add({'proceso' : 'Recuperar tus Credenciales', 'accion': () => _getDataUser(), 'echo' : false});
-    this._pasos.add({'proceso' : 'Enviando Datos de Solicitud', 'accion': () => _enviarDataDeSolicitud(), 'echo' : false});
+    this._pasos.add({'proceso' : 'Recuperando tus Credenciales', 'accion': () => _getDataUser(), 'echo' : false});
+    this._pasos.add({'proceso' : 'Organizando Información', 'accion': () => _organizandoInfo(), 'echo' : false});
+    this._pasos.add({'proceso' : 'Enviando Datos de Solicitud', 'accion': () => _sendDataSolicitud(), 'echo' : false});
     this._pasos.add({'proceso' : 'Procesando Imagenes', 'accion': () => _enviarImagenes(), 'echo' : false});
-    this._pasos.add({'proceso' : 'Limpiando Memoria Cache', 'accion': () => _limpiarCache(), 'echo' : false});
+    this._pasos.add({'proceso' : 'Limpiando Cache', 'accion': () => _terminarProcesos(), 'echo' : false});
 
     this._procesoActual = this._pasos[0]['proceso'];
-
-    Future.delayed(Duration(seconds: 2), (){
-      _initProceso();
-    });
-
     super.initState();
+
+    _initProceso();
   }
 
   @override
@@ -86,7 +87,7 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
           height: this._screen.height * 0.20,
           child: _cabecera(),
         ),
-        (this._showProceso) ?  _proceso() : _procesoTerminado()
+        _proceso()
       ],
     );
   }
@@ -159,12 +160,12 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
       width: this._screen.width * 0.98,
       child: Column(
         children: <Widget>[
-          // InkWell(
-          //   child: Text('REGRESAR'),
-          //   onTap: (){
-          //     Navigator.of(this._context).pushNamedAndRemoveUntil('lst_modelos_select_page', (Route rutas) => false);
-          //   }
-          // ),
+          InkWell(
+            child: Text('REGRESAR'),
+            onTap: (){
+              Navigator.of(this._context).pushNamedAndRemoveUntil('lst_modelos_select_page', (Route rutas) => false);
+            }
+          ),
           Center(
             child: Padding(
               padding: EdgeInsets.all(10),
@@ -386,140 +387,6 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
   }
 
   ///
-  Widget _procesoTerminado() {
-
-    return Container(
-      width: this._screen.width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          const SizedBox(height: 20),
-          Text(
-            'Proceso Finalizado con Éxito',
-            textScaleFactor: 1,
-            style: TextStyle(
-              fontSize: 19,
-              letterSpacing: 1.1
-            ),
-          ),
-          Divider(
-            endIndent: 20,
-            indent: 20,
-          ),
-          Text(
-            '¿QUÉ DESEAS HACER?',
-            textScaleFactor: 1,
-            style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w300
-            ),
-          ),
-          const SizedBox(height: 25),
-          SizedBox(
-            width: this._screen.width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: _createBtnQueHacer(),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  ///
-  List<Widget> _createBtnQueHacer() {
-
-    List<Map<String, dynamic>> queHaceres = [
-      {
-        'titulo' : 'Realizar otra Solicitud',
-        'path'   : 'lst_modelos_page',
-        'icono'  : Icons.extension
-      },
-      {
-        'titulo' : 'Revisar mis Solicitudes',
-        'path'   : 'lst_mis_solicitudes',
-        'icono'  : Icons.clear_all
-      },
-      {
-        'titulo' : 'Terminar. Ir al Inicio',
-        'path'   : 'index_page',
-        'icono'  : Icons.home
-      },
-    ];
-    List<Widget> lstQueHacer = new List();
-
-    queHaceres.forEach((queHacer){
-
-      lstQueHacer.add(
-        InkWell(
-          child: _machoteBtnQueHacer(
-            titulo: queHacer['titulo'],
-            icono: queHacer['icono']
-          ),
-          onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil(queHacer['path'], (Route rutas) => false),
-        )
-      );
-
-      lstQueHacer.add(const SizedBox(height: 20));
-    });
-
-    return lstQueHacer;
-  }
-
-  ///
-  Widget _machoteBtnQueHacer({String titulo, IconData icono}) {
-
-    return Container(
-        padding: EdgeInsets.only(
-          left: 4, right: 10, top: 4, bottom: 4
-        ),
-        width: this._screen.width * 0.8,
-        height: this._screen.height * 0.1,
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(100),
-            bottomLeft: Radius.circular(100),
-          ),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 5,
-              offset: Offset(-1, 4),
-              color: Colors.black
-            )
-          ]
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              flex: 1,
-              child: CircleAvatar(
-                backgroundColor: Colors.red[200],
-                minRadius: this._screen.height * 0.1,
-                child: Icon(icono, size: 30),
-              ),
-            ),
-            Expanded(
-              flex: 4,
-              child: Text(
-                titulo,
-                textScaleFactor: 1,
-                textAlign: TextAlign.end,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white
-                ),
-              ),
-            )
-          ],
-        ),
-      );
-  }
-
-  ///
   Future<bool> _getDataUser() async {
 
     if(this._username.isEmpty) {
@@ -533,18 +400,49 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
   }
 
   ///
-  Future<bool> _enviarDataDeSolicitud() async {
+  Future<bool> _organizandoInfo() async {
 
-    Map<String, dynamic> data = solicitudSgtn.getDataDeSolicitud();
-    if(solicitudSgtn.fileNameSaved != '0') {
-      data['fileNameSaved'] = solicitudSgtn.fileNameSaved;
-    }
+    List<Map<String, dynamic>> autos = new List<Map<String, dynamic>>.from(solicitudSgtn.autos);
+
+    int idAuto = 0;
+    autos.forEach((auto){
+      idAuto++;
+      if(auto['piezas'].length > 0) {
+        for (var i = 0; i < auto['piezas'].length; i++) {
+          if(auto['piezas'][i].containsKey('fotos')) {
+            if(auto['piezas'][i]['fotos'].length > 0){
+              Map<String, dynamic> fts = {
+                'idAuto' : idAuto,
+                'idPieza': auto['piezas'][i]['id'],
+                'fotos'  : auto['piezas'][i]['fotos']
+              };
+              this._fotos.add(fts);
+            }
+            auto['piezas'][i].remove('fotos');
+          }
+        }
+      }
+
+      auto['id'] = idAuto;
+      this._data.add(auto);
+    });
+
+    return true;
+  }
+
+  ///
+  Future<bool> _sendDataSolicitud() async {
+
+    Map<String, dynamic> data = {
+      'user' : solicitudSgtn.getIdUser(),
+      'solicitud' : this._data
+    };
+    this._data = null;
     bool res = await emSolicitud.enviarDataSolicitud(data);
     if(res){
-      solicitudSgtn.fileNameSaved = emSolicitud.result['body'];
+      solicitudSgtn.filenameInServer = emSolicitud.result['body'];
     }
     return res;
-
   }
 
   ///
@@ -553,24 +451,31 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
     PiezaEntity piezaEntity = PiezaEntity();
 
     ByteData bytes;
-    bool res;
-    List<Map<String, dynamic>> images = solicitudSgtn.imagesDeSolicitud;
+    bool res = false;
+    
     List<Map<String, dynamic>> dataSend = new List();
     
-    if(images.length > 0) {
-      for (var i = 0; i < images.length; i++) {
-        List<String> nombreFile = images[i]['foto']['nombre'].split('.');
-        if(images[i]['foto'].isNotEmpty){
-          Map<String, dynamic> imagen = images[i];
-          Asset foto = piezaEntity.foto.toAsset(imagen['foto']);
-          bytes = await foto.getThumbByteData(imagen['foto']['width'], imagen['foto']['height']);
-          dataSend.add({'idPieza': imagen['idPieza'], 'ext': '${nombreFile[1]}', 'foto': bytes.buffer.asUint8List()});
+    if(this._fotos.length > 0) {
+      for (var i = 0; i < this._fotos.length; i++) {
+        if(this._fotos[i]['fotos'].isNotEmpty){
+          for (var f = 0; f < this._fotos[i]['fotos'].length; f++) {
+            List<String> nombreFile = this._fotos[i]['fotos'][f]['nombre'].split('.');
+            Map<String, dynamic> imagen = this._fotos[i]['fotos'][f];
+            Asset foto = piezaEntity.foto.toAsset(imagen);
+            bytes = await foto.getThumbByteData(imagen['width'], imagen['height']);
+            dataSend.add({
+              'idAuto' : this._fotos[i]['idAuto'],
+              'idPieza': this._fotos[i]['idPieza'],
+              'ext': '${nombreFile[1]}',
+              'foto': bytes.buffer.asUint8List()
+            });
+          }
         }
       }
 
       Map<String, dynamic> bolsa = {
-        'fileNameSaved': solicitudSgtn.fileNameSaved,
-        'user': solicitudSgtn.getIdUser(),
+        'user' : solicitudSgtn.getIdUser(),
+        'file' : solicitudSgtn.filenameInServer,
         'fotos': dataSend
       };
 
@@ -582,14 +487,16 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
   }
 
   ///
-  Future<bool> _limpiarCache() async {
+  Future<bool> _terminarProcesos() async {
 
-    bool res = await solicitudSgtn.limpiarSolicitudSgtn();
-    if(res){
-      Navigator.of(this._context).pushNamedAndRemoveUntil('grax_por_solicitud', (Route rutas) => false);
-    }
-    return res;
+    solicitudSgtn.limpiarSingleton();
+
+    buscarAutosSngt.setIdMarca(null);
+    buscarAutosSngt.setIdModelo(null);
+    buscarAutosSngt.setNombreMarca(null);
+    buscarAutosSngt.setNombreModelo(null);
+    Navigator.of(this._context).pushNamedAndRemoveUntil('grax_por_solicitud_page', (Route rutas) => false);
+    return true;
   }
-
 
 }
