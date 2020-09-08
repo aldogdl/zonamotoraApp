@@ -1,0 +1,413 @@
+[1mdiff --git a/android/app/.settings/org.eclipse.buildship.core.prefs b/android/app/.settings/org.eclipse.buildship.core.prefs[m
+[1mindex b1886ad..4c7e61b 100644[m
+[1m--- a/android/app/.settings/org.eclipse.buildship.core.prefs[m
+[1m+++ b/android/app/.settings/org.eclipse.buildship.core.prefs[m
+[36m@@ -1,2 +1,13 @@[m
+[32m+[m[32marguments=[m
+[32m+[m[32mauto.sync=false[m
+[32m+[m[32mbuild.scans.enabled=false[m
+[32m+[m[32mconnection.gradle.distribution=GRADLE_DISTRIBUTION(VERSION(6.3))[m
+ connection.project.dir=..[m
+ eclipse.preferences.version=1[m
+[32m+[m[32mgradle.user.home=[m
+[32m+[m[32mjava.home=C\:/Program Files/Java/jdk1.8.0_201[m
+[32m+[m[32mjvm.arguments=[m
+[32m+[m[32moffline.mode=false[m
+[32m+[m[32moverride.workspace.settings=true[m
+[32m+[m[32mshow.console.view=true[m
+[32m+[m[32mshow.executions.view=true[m
+[1mdiff --git a/android/app/build.gradle b/android/app/build.gradle[m
+[1mindex ca2ba58..cf6fc32 100644[m
+[1m--- a/android/app/build.gradle[m
+[1m+++ b/android/app/build.gradle[m
+[36m@@ -61,8 +61,12 @@[m [mflutter {[m
+ }[m
+ [m
+ dependencies {[m
+[32m+[m[32m    def multidex_version = "2.0.1"[m
+[32m+[m[32m    implementation "androidx.multidex:multidex:$multidex_version"[m
+     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"[m
+[31m-    implementation 'com.google.firebase:firebase-messaging:20.1.2'[m
+[32m+[m[32m    //implementation 'com.google.firebase:firebase-messaging:20.1.2'[m
+[32m+[m[32m    implementation 'com.google.firebase:firebase-analytics:17.2.2'[m
+[32m+[m[32m    implementation 'com.google.firebase:firebase-messaging:20.1.7'[m
+     testImplementation 'junit:junit:4.12'[m
+     androidTestImplementation 'androidx.test:runner:1.1.1'[m
+     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'[m
+[1mdiff --git a/android/app/src/main/AndroidManifest.xml b/android/app/src/main/AndroidManifest.xml[m
+[1mindex a66e8d6..8ed0ee8 100644[m
+[1m--- a/android/app/src/main/AndroidManifest.xml[m
+[1m+++ b/android/app/src/main/AndroidManifest.xml[m
+[36m@@ -32,12 +32,14 @@[m
+                 <category android:name="android.intent.category.DEFAULT" />[m
+             </intent-filter>[m
+         </activity>[m
+[32m+[m[32m        <!-- android:largeHeap="true" -->[m
+         <!-- Don't delete the meta-data below.[m
+              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->[m
+         <meta-data[m
+             android:name="flutterEmbedding"[m
+             android:value="2" />[m
+         <meta-data android:name="com.google.android.geo.API_KEY"[m
+[31m-            android:value="AIzaSyATUc_p6bgI7_PaInScBaiBYwxBCfvUSW4"/>[m
+[32m+[m[32m            android:value="AIzaSyBFQoeNqkyFHJAgIWPykHN41CRBzVmUjY8"/>[m
+     </application>[m
+[32m+[m
+ </manifest>[m
+[1mdiff --git a/android/app/src/main/java/Application.java b/android/app/src/main/java/Application.java[m
+[1mindex 700676d..05d879b 100644[m
+[1m--- a/android/app/src/main/java/Application.java[m
+[1m+++ b/android/app/src/main/java/Application.java[m
+[36m@@ -6,6 +6,7 @@[m [mimport io.flutter.plugins.GeneratedPluginRegistrant;[m
+ import io.flutter.plugin.common.PluginRegistry.PluginRegistrantCallback;[m
+ import io.flutter.plugins.firebasemessaging.FlutterFirebaseMessagingService;[m
+ [m
+[32m+[m[32mimport io.flutter.plugins.firebasemessaging.FirebaseMessagingPlugin;[m
+ [m
+ public class Application extends FlutterApplication implements PluginRegistrantCallback {[m
+ [m
+[36m@@ -17,7 +18,14 @@[m [mpublic class Application extends FlutterApplication implements PluginRegistrantC[m
+ [m
+   @Override[m
+   public void registerWith(final PluginRegistry registry) {[m
+[32m+[m[41m    [m
+     FirebaseCloudMessagingPluginRegistrant.registerWith(registry);[m
+[32m+[m[41m    [m
+[32m+[m[32m    //FirebaseMessagingPlugin.registerWith(registry.registrarFor("io.flutter.plugins.firebasemessaging.FirebaseMessagingPlugin"));[m
+[32m+[m
+[32m+[m[32m    // Da el siguiente error:[m
+[32m+[m[32m    // error: incompatible types: PluginRegistry cannot be converted to FlutterEngine[m
+     //GeneratedPluginRegistrant.registerWith(registry);[m
+   }[m
+ }[m
+[41m+[m
+[1mdiff --git a/android/app/src/main/java/FirebaseCloudMessagingPluginRegistrant.java b/android/app/src/main/java/FirebaseCloudMessagingPluginRegistrant.java[m
+[1mindex 741b921..b6ac345 100644[m
+[1m--- a/android/app/src/main/java/FirebaseCloudMessagingPluginRegistrant.java[m
+[1m+++ b/android/app/src/main/java/FirebaseCloudMessagingPluginRegistrant.java[m
+[36m@@ -11,6 +11,7 @@[m [mpublic final class FirebaseCloudMessagingPluginRegistrant {[m
+     if (alreadyRegisteredWith(registry)) {[m
+       return;[m
+     }[m
+[32m+[m
+     FirebaseMessagingPlugin[m
+         .registerWith(registry.registrarFor("io.flutter.plugins.firebasemessaging.FirebaseMessagingPlugin"));[m
+     FlutterLocalNotificationsPlugin[m
+[1mdiff --git a/android/app/src/main/res/drawable/ico_notif.png b/android/app/src/main/res/drawable/ico_notif.png[m
+[1mindex 4fbbccd..8f8ffee 100644[m
+Binary files a/android/app/src/main/res/drawable/ico_notif.png and b/android/app/src/main/res/drawable/ico_notif.png differ
+[1mdiff --git a/assets/images/anio_icon.png b/assets/images/anio_icon.png[m
+[1mindex a819177..fc685db 100644[m
+Binary files a/assets/images/anio_icon.png and b/assets/images/anio_icon.png differ
+[1mdiff --git a/assets/images/asesor.png b/assets/images/asesor.png[m
+[1mindex 5843bef..57473e1 100644[m
+Binary files a/assets/images/asesor.png and b/assets/images/asesor.png differ
+[1mdiff --git a/assets/images/auto.png b/assets/images/auto.png[m
+[1mindex 7788147..49d8e08 100644[m
+Binary files a/assets/images/auto.png and b/assets/images/auto.png differ
+[1mdiff --git a/assets/images/call_center.jpg b/assets/images/call_center.jpg[m
+[1mindex 962dd96..0b565ff 100644[m
+Binary files a/assets/images/call_center.jpg and b/assets/images/call_center.jpg differ
+[1mdiff --git a/assets/images/data_colection.jpg b/assets/images/data_colection.jpg[m
+[1mindex e7a1f1a..51f49e6 100644[m
+Binary files a/assets/images/data_colection.jpg and b/assets/images/data_colection.jpg differ
+[1mdiff --git a/assets/images/donde_ir.png b/assets/images/donde_ir.png[m
+[1mindex 6808dc2..214f4eb 100644[m
+Binary files a/assets/images/donde_ir.png and b/assets/images/donde_ir.png differ
+[1mdiff --git a/assets/images/garage_autos.jpg b/assets/images/garage_autos.jpg[m
+[1mindex e619c85..2c3c10b 100644[m
+Binary files a/assets/images/garage_autos.jpg and b/assets/images/garage_autos.jpg differ
+[1mdiff --git a/assets/images/google-maps.png b/assets/images/google-maps.png[m
+[1mindex 8896418..6099122 100644[m
+Binary files a/assets/images/google-maps.png and b/assets/images/google-maps.png differ
+[1mdiff --git a/assets/images/img_fin_alta.png b/assets/images/img_fin_alta.png[m
+[1mindex 1bb0686..2728011 100644[m
+Binary files a/assets/images/img_fin_alta.png and b/assets/images/img_fin_alta.png differ
+[1mdiff --git a/assets/images/important-event.png b/assets/images/important-event.png[m
+[1mindex 9e0f29e..0eee8d1 100644[m
+Binary files a/assets/images/important-event.png and b/assets/images/important-event.png differ
+[1mdiff --git a/assets/images/login.png b/assets/images/login.png[m
+[1mindex f01b873..7a7f3d7 100644[m
+Binary files a/assets/images/login.png and b/assets/images/login.png differ
+[1mdiff --git a/assets/images/mapa-google.png b/assets/images/mapa-google.png[m
+[1mindex 659e3f6..c7c36e9 100644[m
+Binary files a/assets/images/mapa-google.png and b/assets/images/mapa-google.png differ
+[1mdiff --git a/assets/images/no-image.png b/assets/images/no-image.png[m
+[1mindex 7514775..865adc6 100644[m
+Binary files a/assets/images/no-image.png and b/assets/images/no-image.png differ
+[1mdiff --git a/assets/images/recovery_user.png b/assets/images/recovery_user.png[m
+[1mindex 1cc39d0..e59fc21 100644[m
+Binary files a/assets/images/recovery_user.png and b/assets/images/recovery_user.png differ
+[1mdiff --git a/assets/images/register.png b/assets/images/register.png[m
+[1mindex a31cf4b..e1a2ef0 100644[m
+Binary files a/assets/images/register.png and b/assets/images/register.png differ
+[1mdiff --git a/assets/images/server-error.png b/assets/images/server-error.png[m
+[1mindex 0fae799..98e15a6 100644[m
+Binary files a/assets/images/server-error.png and b/assets/images/server-error.png differ
+[1mdiff --git a/assets/images/whatsapp_ico.png b/assets/images/whatsapp_ico.png[m
+[1mindex 8ee4580..18d2bfc 100644[m
+Binary files a/assets/images/whatsapp_ico.png and b/assets/images/whatsapp_ico.png differ
+[1mdiff --git a/assets/images/zona_motora.png b/assets/images/zona_motora.png[m
+[1mindex d34ceaa..9b51f8c 100644[m
+Binary files a/assets/images/zona_motora.png and b/assets/images/zona_motora.png differ
+[1mdiff --git a/lib/bds/data_base.dart b/lib/bds/data_base.dart[m
+[1mindex 2915439..34628e2 100644[m
+[1m--- a/lib/bds/data_base.dart[m
+[1m+++ b/lib/bds/data_base.dart[m
+[36m@@ -74,6 +74,19 @@[m [mclass DBApp {[m
+           ' mdNombre TEXT,'[m
+           ' mkNombre TEXT,'[m
+           ' anio INTEGER,'[m
+[32m+[m[32m          ' version TEXT,'[m
+[32m+[m[32m          ' createdAt TEXT'[m
+[32m+[m[32m          ');'[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        await db.execute([m
+[32m+[m[32m          'CREATE TABLE notifics ('[m
+[32m+[m[32m          ' id INTEGER,'[m
+[32m+[m[32m          ' idServer INTEGER,'[m
+[32m+[m[32m          ' cant INTEGER,'[m
+[32m+[m[32m          ' tema TEXT,'[m
+[32m+[m[32m          ' titulo TEXT,'[m
+[32m+[m[32m          ' page TEXT,'[m
+           ' createdAt TEXT'[m
+           ');'[m
+         );[m
+[36m@@ -86,6 +99,20 @@[m [mclass DBApp {[m
+           ' contents TEXT'[m
+           ');'[m
+         );[m
+[32m+[m
+[32m+[m[32m        await db.execute([m
+[32m+[m[32m          'CREATE TABLE cotizaciones ('[m
+[32m+[m[32m          ' filename TEXT,'[m
+[32m+[m[32m          ' createdAt TEXT'[m
+[32m+[m[32m          ');'[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        await db.execute([m
+[32m+[m[32m          'CREATE TABLE carshop ('[m
+[32m+[m[32m          ' idInv INTEGER,'[m
+[32m+[m[32m          ' createdAt TEXT'[m
+[32m+[m[32m          ');'[m
+[32m+[m[32m        );[m
+       },[m
+       singleInstance: true,[m
+       readOnly: false,[m
+[1mdiff --git a/lib/data_shared.dart b/lib/data_shared.dart[m
+[1mindex af645cd..82225f5 100644[m
+[1m--- a/lib/data_shared.dart[m
+[1m+++ b/lib/data_shared.dart[m
+[36m@@ -78,4 +78,176 @@[m [mclass DataShared with ChangeNotifier {[m
+     this._lastPageVisit = lastPageVisit;[m
+   }[m
+ [m
+[32m+[m[32m  /*[m[41m  [m
+[32m+[m[32m   * Utilizado para la prueba de cominucacion vilateral[m
+[32m+[m[32m   *[m[41m [m
+[32m+[m[32m   * @see ConfigGMSSngt::initConfigGMS  --> Asigno[m
+[32m+[m[32m   * @see PrbaPush::_msgDeRespuesta     --> Consumido[m
+[32m+[m[32m   */[m
+[32m+[m[32m  Map<String, dynamic> _prbaPush = new Map();[m
+[32m+[m[32m  Map<String, dynamic> get prbaPush => _prbaPush;[m
+[32m+[m[32m  setPrbaPush(Map<String, dynamic> prbaPush) {[m
+[32m+[m[32m    this._prbaPush = prbaPush;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  /*[m[41m  [m
+[32m+[m[32m  * Utilizado para mostrar el Icono de notificaciones[m
+[32m+[m[32m  *[m[41m [m
+[32m+[m[32m  * @see ConfigGMSSngt::initConfigGMS  --> Asigno[m
+[32m+[m[32m  * @see IcoNotifWidget::build     --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  bool _showNotif = false;[m
+[32m+[m[32m  bool get showNotif => _showNotif;[m
+[32m+[m[32m  setShowNotif(bool showNotif) {[m
+[32m+[m[32m    this._showNotif = showNotif;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  /*[m[41m  [m
+[32m+[m[32m  * Utilizado para mostrar la cantidad de notificaciones[m
+[32m+[m[32m  *[m[41m [m
+[32m+[m[32m  * @see ConfigGMSSngt::initConfigGMS  --> Asigno[m
+[32m+[m[32m  * @see IcoNotifWidget::build     --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  int _cantNotif = 0;[m
+[32m+[m[32m  int get cantNotif => _cantNotif;[m
+[32m+[m[32m  setCantNotif(int cantNotif) {[m
+[32m+[m[32m    this._cantNotif = cantNotif;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  /*[m
+[32m+[m[32m  * Utilizado para mostrar la cantidad de solicitudes a Cotizar[m
+[32m+[m[32m  *[m
+[32m+[m[32m  * @see ACotizarWidget::_getPedidoParaCotizar  --> Asigno[m
+[32m+[m[32m  * @see OportunidadesPage::build     --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  int _opVtasAcotizar = 0;[m
+[32m+[m[32m  int get opVtasAcotizar => this._opVtasAcotizar;[m
+[32m+[m[32m  setOpVtasAcotizar(int aCotizar) {[m
+[32m+[m[32m    this._opVtasAcotizar = aCotizar;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  /*[m
+[32m+[m[32m  * Utilizado para mostrar la cantidad de solicitudes Apartadas[m
+[32m+[m[32m  *[m
+[32m+[m[32m  * @see ACotizarWidget::_getPedidoParaCotizar  --> Asigno[m
+[32m+[m[32m  * @see OportunidadesPage::build     --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  int _opVtasApartadas = 0;[m
+[32m+[m[32m  int get opVtasApartadas => this._opVtasApartadas;[m
+[32m+[m[32m  setOpVtasApartadas(int apartadas) {[m
+[32m+[m[32m    this._opVtasApartadas = apartadas;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  /*[m
+[32m+[m[32m  * Utilizado para mostrar la cantidad de solicitudes a Cotizar[m
+[32m+[m[32m  *[m
+[32m+[m[32m  * @see ACotizarWidget::_getPedidoParaCotizar  --> Asigno[m
+[32m+[m[32m  * @see OportunidadesPage::build     --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  int _opVtasInventario = 0;[m
+[32m+[m[32m  int get opVtasInventario => this._opVtasInventario;[m
+[32m+[m[32m  setIpVtasInventario(int inventario) {[m
+[32m+[m[32m    this._opVtasInventario = inventario;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  /*[m
+[32m+[m[32m  * Utilizado para saber que pagina mostrar en la seccion de oportunidades de venta.[m
+[32m+[m[32m  * Cotizar | Apartadas | Inventario[m
+[32m+[m[32m  *[m
+[32m+[m[32m  * @see OportunidadesPage::build     --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  int _opsVtasPageView = 0;[m
+[32m+[m[32m  int get opsVtasPageView => this._opsVtasPageView;[m
+[32m+[m[32m  setOpsVtasPageView(int pageView) => this._opsVtasPageView = pageView;[m
+[32m+[m
+[32m+[m[32m  /*[m
+[32m+[m[32m  * Utilizado para saber que pagina mostrar en la seccion de Revisar Solicitudes -> cotizaciones.[m
+[32m+[m[32m  * Pedientes | Cotizadas | Carrito[m
+[32m+[m[32m  *[m
+[32m+[m[32m  * @see IndexCotizaPage::_verCotizacione  --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  int _cotizacPageView = 0;[m
+[32m+[m[32m  int get cotizacPageView => this._cotizacPageView;[m
+[32m+[m[32m  setCotizacPageView(int pageView) => this._cotizacPageView = pageView;[m
+[32m+[m
+[32m+[m[32m  /*[m[41m  [m
+[32m+[m[32m  * Utilizado para mostrar el Icono de notificaciones[m
+[32m+[m[32m  *[m[41m [m
+[32m+[m[32m  * @see ConfigGMSSngt::initConfigGMS  --> Asigno[m
+[32m+[m[32m  * @see IcoNotifWidget::build     --> Consumido[m
+[32m+[m[32m  */[m
+[32m+[m[32m  List<Map<String, dynamic>> _notifics = new List();[m
+[32m+[m[32m  List<Map<String, dynamic>> get notifics => _notifics;[m
+[32m+[m[32m  setNotifics(Map<String, dynamic> notific) => this._notifics.add(notific);[m
+[32m+[m[32m  setAllNotifics(List<Map<String, dynamic>> notifics) {[m
+[32m+[m[32m    if(this._notifics.length > 0) {[m
+[32m+[m[32m      for (var i = 0; i < this._notifics.length; i++) {[m
+[32m+[m[32m        this._notifics.add(notifics[i]);[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }else{[m
+[32m+[m[32m      this._notifics = notifics;[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m[32m  void get cleanNotifics => _notifics = new List();[m
+[32m+[m
+[32m+[m[32m  /// :: Usada en la seccion de cotizaciones(pestañas) y menu inferior.[m
+[32m+[m[32m  int _cantInCarrito = 0;[m
+[32m+[m[32m  IconData icoCarShopBtn = Icons.close;[m
+[32m+[m[32m  Color colorCarShopBtn = Colors.red;[m
+[32m+[m[32m  String txtCarShopBtn = 'CERRAR';[m
+[32m+[m[32m  get cantInCarrito => this._cantInCarrito;[m
+[32m+[m[32m  void setCantInCarrito() {[m
+[32m+[m[32m    this._cantInCarrito = this._cantInCarrito + 1;[m
+[32m+[m[32m    txtCarShopBtn = 'CONTINUAR';[m
+[32m+[m[32m    colorCarShopBtn = Colors.blue;[m
+[32m+[m[32m    icoCarShopBtn = Icons.shopping_cart;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m[32m  void delCantInCarrito() {[m
+[32m+[m[32m    this._cantInCarrito = this._cantInCarrito - 1;[m
+[32m+[m[32m    if(this._cantInCarrito < 0) {[m
+[32m+[m[32m      this._cantInCarrito = 0;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    if(this._cantInCarrito == 0){[m
+[32m+[m[32m      icoCarShopBtn = Icons.close;[m
+[32m+[m[32m      colorCarShopBtn = Colors.red;[m
+[32m+[m[32m      txtCarShopBtn = 'CERRAR';[m
+[32m+[m[32m    }[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m[32m  void setCantTotalInCarrito(int cant) {[m
+[32m+[m[32m    this._cantInCarrito = cant;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  /// Cantidad de Solicitudes :: Usada en la seccion de cotizaciones(pestañas).[m
+[32m+[m[32m  int _cantSolicitudesPendientes = 0;[m
+[32m+[m[32m  get cantSolicitudesPendientes => this._cantSolicitudesPendientes;[m
+[32m+[m[32m  void setCantSolicitudesPendientes(int newCant) {[m
+[32m+[m[32m    this._cantSolicitudesPendientes = newCant;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m[32m  /// Cantidad de Cotizaciones :: Usada en la seccion de cotizaciones(pestañas).[m
+[32m+[m[32m  int _cantCotiz = 0;[m
+[32m+[m[32m  get cantCotiz => this._cantCotiz;[m
+[32m+[m[32m  void setCantCotiz(int newCant) {[m
+[32m+[m[32m    this._cantCotiz = newCant;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  //Plugin propio para tomar una imganen desde el dispositivo[m
+[32m+[m[32m  int _refreshWidget = -1;[m
+[32m+[m[32m  get refreshWidget => this._refreshWidget;[m
+[32m+[m[32m  void setRefreshWidget(int refresh){[m
+[32m+[m[32m    this._refreshWidget = refresh;[m
+[32m+[m[32m    notifyListeners();[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[41m  [m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/lib/entity/perfil_entity.dart b/lib/entity/perfil_entity.dart[m
+[1mindex ebc4878..eeeb30c 100644[m
+[1m--- a/lib/entity/perfil_entity.dart[m
+[1m+++ b/lib/entity/perfil_entity.dart[m
+[36m@@ -96,7 +96,6 @@[m [mclass PerfilEntity {[m
+       'colonia'       : this._colonia,[m
+       'latLng'        : this._latLng,[m
+       'telsContac'    : this._telsContac,[m
+[31m-      'colonia'       : this._colonia,[m
+       'email'         : this._email,[m
+       'roles'         : this._roles,[m
+       'redsocs'       : this._redsocs,[m
+[1mdiff --git a/lib/globals.dart b/lib/globals.dart[m
+[1mindex d2c2f07..6230470 100644[m
+[1m--- a/lib/globals.dart[m
+[1m+++ b/lib/globals.dart[m
+[36m@@ -1,14 +1,22 @@[m
+ library zonamotora.globals;[m
+ [m
+[31m-const String env     = 'dev';[m
+[31m-const int devClvTmp  = 0;[m
+[32m+[m[32mconst String env = 'dev';[m
+[32m+[m[32mconst int devClvTmp = 1;[m
+ const String version = '1.0.0';[m
+ [m
+[31m-//const String dominio = 'https://buscomex.com';[m
+[31m-//const String uriBase            = '$dominio';[m
+[31m-//const String uriImageResps      = '$dominio/images_solicitudes';[m
+[31m-const String dominio = 'http://192.168.0.11';[m
+[31m-const String uriBase = '$dominio/zmdb/public_html/index.php';[m
+[32m+[m[32mconst String protocolo         = 'http://';[m
+[32m+[m[32mconst String ip                = '192.168.0.11';[m
+[32m+[m[32mconst String dominio           = '$protocolo$ip';[m
+[32m+[m[32mconst Strin
