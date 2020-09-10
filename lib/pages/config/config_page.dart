@@ -30,12 +30,14 @@ class _ConfigPageState extends State<ConfigPage> {
   SharedPreferences _sess;
   bool _isInitConfig = false;
   Map<String, dynamic> _dataUser;
+  int _vecesClick = 0;
 
   Widget _nextUpdateTokenServer = Text('Calculando Fecha', textScaleFactor: 1);
   Widget _tokenServer = Text('Calculando Token Server', textScaleFactor: 1);
   Widget _tokenDevice = Text('Calculando Token Device', textScaleFactor: 1);
   Widget _appAutori   = Text('Aplicación Autorizada', textScaleFactor: 1);
   Widget _userApp     = Text('Datos Constantes', textScaleFactor: 1);
+
 
   @override
   Widget build(BuildContext context) {
@@ -213,9 +215,66 @@ class _ConfigPageState extends State<ConfigPage> {
 
     setState(() {
       this._tokenDevice = _getListTitle(
-        icono: Icons.notification_important, titulo: 'Token Notificaciones:', subtitulo: '${this._dataUser['u_tokenDevices']}'
+        icono: Icons.notification_important, titulo: 'Token Notificaciones:', subtitulo: '${this._dataUser['u_tokenDevices']}',
+        accion: _enviarPruebaDeComunicacion
       );
     });
+  }
+
+  ///
+  Future<void> _enviarPruebaDeComunicacion() async {
+
+    if(this._vecesClick < 3){
+      this._vecesClick++;
+      return false;
+    }
+
+    String intro = 'Se realizará una prueba de comunicación vilateral para comprobar que las Llaves de contacto estén actualizadas';
+
+    await showDialog(
+      context: this._context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Image(
+                image: AssetImage('assets/images/donde_ir.png'),
+                fit: BoxFit.cover,
+              ),
+              Text(
+                intro,
+                textScaleFactor: 1,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey
+                ),
+              ),
+              SizedBox(height: 20),
+              RaisedButton(
+                onPressed: () async {
+                  Navigator.of(this._context).pop(true);
+                  Navigator.of(this._context).popAndPushNamed('prba_push');
+                },
+                child: Text(
+                  'ENTENDIDO',
+                  style: TextStyle(
+                    color: Colors.white
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                color: Colors.green,
+              )
+            ],
+          ),
+        );
+      }
+    );
   }
 
   /* */

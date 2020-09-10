@@ -1,8 +1,9 @@
-import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 class TomarImagenesSngt {
@@ -13,6 +14,7 @@ class TomarImagenesSngt {
     return tomarImagenesSngt;
   }
 
+  bool isRecovery = false;
   Map<String, dynamic> proccRoto = {
     'nombre': '', 'metadata': '', 'contents': ''
   };
@@ -20,18 +22,27 @@ class TomarImagenesSngt {
   String error;
   Widget childImg;
   Asset imagenAsset;
-  PickedFile imagenFile;
+  bool changeImage = false;
   int _thubFachadaX = 533;
   int _thubFachadaY = 300;
+  String restringirPosition = 'all';
+
+  ///
+  void dispose() {
+
+    source = null;
+    error = null;
+    childImg = null;
+    imagenAsset = null;
+    isRecovery = false;
+    proccRoto = {'nombre': '', 'metadata': '', 'contents': ''};
+    restringirPosition = 'all';
+  }
 
   ///
   Widget previewImage() {
-
-    if(this.source == 'camara'){
-      return Image.file(File(this.imagenFile.path));
-    }else{
-      return AssetThumb(asset: this.imagenAsset, width: this._thubFachadaX, height: this._thubFachadaY);
-    }
+    this.changeImage = true;
+    return AssetThumb(asset: this.imagenAsset, width: this._thubFachadaX, height: this._thubFachadaY);
   }
 
   //
@@ -50,12 +61,24 @@ class TomarImagenesSngt {
       return response;
     }
 
-    if(imagenFile != null) {
-       response['img'] = File(imagenFile.path).readAsBytesSync();
-      return response;
-    }
-
     return response;
+  }
+
+  ///
+  Future<void> hidratarImagenFromServer(String imagen) async {
+    
+    this.changeImage = false;
+    childImg = CachedNetworkImage(
+      imageUrl: imagen,
+      placeholder: (_, url) {
+        return Center(
+          child: SizedBox(
+            height: 35, width: 35,
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
   }
 
 }

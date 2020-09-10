@@ -11,6 +11,7 @@ public final class FirebaseCloudMessagingPluginRegistrant {
     if (alreadyRegisteredWith(registry)) {
       return;
     }
+
     FirebaseMessagingPlugin
         .registerWith(registry.registrarFor("io.flutter.plugins.firebasemessaging.FirebaseMessagingPlugin"));
     FlutterLocalNotificationsPlugin

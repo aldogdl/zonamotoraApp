@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zonamotora/repository/user_repository.dart';
+import 'package:zonamotora/singletons/config_gms_sngt.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
@@ -13,12 +14,14 @@ class GraxPorSolicitudPage extends StatefulWidget {
 class _GraxPorSolicitudPageState extends State<GraxPorSolicitudPage> {
 
   AppBarrMy appBarrMy = AppBarrMy();
+  ConfigGMSSngt configGMSSngt = ConfigGMSSngt();
   MenuInferior menuInferior = MenuInferior();
   UserRepository emUser = UserRepository();
 
   Size _screen;
   BuildContext _context;
   bool _showAppBarr = true;
+  bool _isInit = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +30,11 @@ class _GraxPorSolicitudPageState extends State<GraxPorSolicitudPage> {
     context = null;
     this._screen = MediaQuery.of(this._context).size;
     double altoImg = (this._screen.height <= 550) ? 0.545 : 0.43;
+
+    if(!this._isInit){
+      this._isInit = true;
+      configGMSSngt.setContext(this._context);
+    }
 
     return Scaffold(
       appBar: (this._showAppBarr) ? appBarrMy.getAppBarr(titulo: '¡ Buscando para ti !') : null,
@@ -187,7 +195,7 @@ class _GraxPorSolicitudPageState extends State<GraxPorSolicitudPage> {
             'Revisar cotizaciones actuales'
           ),
           trailing: Icon(Icons.arrow_forward),
-          onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false),
+          onTap: () => Navigator.of(this._context).pushNamedAndRemoveUntil('index_cotizacion_page', (Route rutas) => false),
         ),
       ],
     );

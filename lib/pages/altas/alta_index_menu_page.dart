@@ -24,7 +24,7 @@ class _AltaIndexMenuPageState extends State<AltaIndexMenuPage> {
   Size _screen;
   String _username;
   BuildContext _context;
-  GeolocationStatus _geolocationStatus;
+  LocationPermission _geolocationStatus;
 
   @override
   void initState() {
@@ -62,18 +62,19 @@ class _AltaIndexMenuPageState extends State<AltaIndexMenuPage> {
 
     if(!this._isInit) {
       this._isInit = true;
-      Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
-      this._geolocationStatus = await geolocator.checkGeolocationPermissionStatus();
-      _checkGPS();
+      this._geolocationStatus = await checkPermission();
+      await _checkGPS();
       Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_index_menu_page');
     }
     await _setCoordenadas();
   }
 
   ///
-  bool _checkGPS() {
-    if(this._geolocationStatus != GeolocationStatus.granted){
-      alertsVarios.entendido(this._context, titulo: 'SERVICIO DE UBICACIÓN', body: 'Habilita el servicio de GPS del dispositivo para captura las coordenas de ubucación');
+  Future<bool> _checkGPS() async {
+
+    LocationPermission permission = await requestPermission();
+    if(this._geolocationStatus != permission) {
+      await alertsVarios.entendido(this._context, titulo: 'SERVICIO DE UBICACIÓN', body: 'Habilita el servicio de GPS del dispositivo para captura las coordenas de ubucación');
       return false;
     }else{
       return true;
@@ -82,9 +83,15 @@ class _AltaIndexMenuPageState extends State<AltaIndexMenuPage> {
 
   ///
   Future<void> _setCoordenadas() async {
-    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    if(position.latitude.toString().isNotEmpty){
-      this._hasCoord = true;
+
+    try {
+      Position position = await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      if(position.latitude.toString().isNotEmpty){
+        this._hasCoord = true;
+      }
+    } catch (e) {
+      await alertsVarios.entendido(this._context, titulo: 'OPTENIENDO COORDENADAS', body: 'Se abrirá la configuración de ubicación para que habilites la geolocalización.');
+      await openLocationSettings();
     }
   }
 
@@ -206,7 +213,7 @@ class _AltaIndexMenuPageState extends State<AltaIndexMenuPage> {
           if(this._hasCoord){
             Navigator.of(this._context).pushReplacementNamed('alta_lst_users_page');
           }else{
-            this._geolocationStatus = GeolocationStatus.denied;
+            this._geolocationStatus = null;
             _checkGPS();
             await _setCoordenadas();
           }
@@ -221,10 +228,10 @@ class _AltaIndexMenuPageState extends State<AltaIndexMenuPage> {
         'icoColor'   : Colors.purple[200]
       },
       {
-        'titulo'    : 'Crear Página Web',
+        'titulo'    : 'Gestión de Sitios Web',
         'subTitulo' : 'Publicidad Digital Comercial',
         'icono'     : Icons.public,
-        'onClick'   : () => Navigator.of(this._context).pushReplacementNamed('alta_lst_users_page'),
+        'onClick'   : () => Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_bsk_page'),
         'icoColor'   : Colors.green[200]
       },
       {

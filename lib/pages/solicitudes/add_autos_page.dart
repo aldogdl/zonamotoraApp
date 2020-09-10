@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'package:zonamotora/repository/autos_repository.dart';
+import 'package:zonamotora/repository/mis_autos_repository.dart';
 import 'package:zonamotora/singletons/buscar_autos_sngt.dart';
+import 'package:zonamotora/singletons/config_gms_sngt.dart';
+import 'package:zonamotora/singletons/frm_mk_md_anios_sngt.dart';
 import 'package:zonamotora/singletons/solicitud_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
-import 'package:zonamotora/widgets/buscar_autos_by.dart';
+import 'package:zonamotora/widgets/frm_mk_md_anio_widget.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 
@@ -21,23 +24,19 @@ class AddAutosPageState extends State<AddAutosPage> {
   AutosRepository emAutos = AutosRepository();
   SolicitudSngt solicitudSgtn = SolicitudSngt();
   BuscarAutosSngt buscarAutosSngt = BuscarAutosSngt();
+  ConfigGMSSngt configGMSSngt = ConfigGMSSngt();
+  FrmMkMdAniosSngt frmSng = FrmMkMdAniosSngt();
   AlertsVarios alertsVarios = AlertsVarios();
+  MisAutosRepository emMisAutos = MisAutosRepository();
 
   String _titleMain = '¿PARA QUÉ CARRO?';
   String _titlePage = 'Cotizador de Refacciones';
-  String _txtMarca = 'Click AQUÍ';
-  Color _colorMarca = Colors.grey;
-  String _txtModelo= 'Click AQUÍ';
-  Color _colorModelo = Colors.grey;
-  
-  TextEditingController _ctrAnio = TextEditingController();
-  TextEditingController _ctrVersion = TextEditingController();
-  FocusNode _focusAnio = FocusNode();
 
   Size _screen;
   BuildContext _context;
   bool _isEditing = false;
   int _cantAutosSeleccionados = 0;
+
   ScrollController _scrollCtr = ScrollController();
   GlobalKey<ScaffoldState> _skfKey = GlobalKey<ScaffoldState>();
 
@@ -61,15 +60,48 @@ class AddAutosPageState extends State<AddAutosPage> {
         }
       }
     });
+    
     WidgetsBinding.instance.addPostFrameCallback(_init);
     super.initState();
+  }
+
+  ///
+  Future<void> _init(_) async {
+
+    configGMSSngt.setContext(this._context);
+    frmSng.setContext(this._context);
+
+    int indexAuto = -1;
+
+    if(solicitudSgtn.indexAutoIsEditing > -1) {
+      indexAuto = solicitudSgtn.indexAutoIsEditing;
+      this._isEditing = true;
+    }else{
+      if(!solicitudSgtn.addOtroAuto) {
+        if(solicitudSgtn.autos.length == 1) {
+          solicitudSgtn.indexAutoIsEditing = -1;
+          this._isEditing = false;
+        }
+      }
+    }
+
+    if(indexAuto > -1) {
+
+      buscarAutosSngt.setIdMarca(solicitudSgtn.autos[indexAuto]['mk_id']);
+      buscarAutosSngt.setIdModelo(solicitudSgtn.autos[indexAuto]['md_id']);
+      buscarAutosSngt.setNombreMarca(solicitudSgtn.autos[indexAuto]['mk_nombre']);
+      buscarAutosSngt.setNombreModelo(solicitudSgtn.autos[indexAuto]['md_nombre']);
+      frmSng.setCtrAnio(int.parse(solicitudSgtn.autos[indexAuto]['anio']));
+      frmSng.setCtrVersion((solicitudSgtn.autos[indexAuto]['version'] == '0') ? '' : solicitudSgtn.autos[0]['version']);
+
+      setState(() { });
+    }
+
   }
 
   @override
   void dispose() {
     this._scrollCtr?.dispose();
-    this._ctrAnio?.dispose();
-    this._ctrVersion?.dispose();
     super.dispose();
   }
 
@@ -79,22 +111,6 @@ class AddAutosPageState extends State<AddAutosPage> {
     this._context = context;
     context = null;
     this._screen = MediaQuery.of(this._context).size;
-
-    if(buscarAutosSngt.idMarca != null) {
-      this._txtMarca = buscarAutosSngt.nombreMarca;
-      this._colorMarca = Colors.blue;
-    }else{
-      this._txtMarca = 'Click AQUÍ';
-      this._colorMarca = Colors.grey;
-    }
-
-    if(buscarAutosSngt.idModelo != null) {
-      this._txtModelo = buscarAutosSngt.nombreModelo;
-      this._colorModelo = Colors.blue;
-    }else{
-      this._txtModelo = 'Click AQUÍ';
-      this._colorModelo = Colors.grey;
-    }
 
     this._cantAutosSeleccionados = solicitudSgtn.autos.length;
 
@@ -108,8 +124,7 @@ class AddAutosPageState extends State<AddAutosPage> {
         child: Stack(
           children: <Widget>[
             Positioned(
-              top: 0,
-              left: 0,
+              top: 0, left: 0,
               child: Container(
                 width: this._screen.width,
                 height: this._screen.height * 0.20,
@@ -120,8 +135,7 @@ class AddAutosPageState extends State<AddAutosPage> {
               ),
             ),
             Positioned(
-              top: 0,
-              left: 0,
+              top: 0, left: 0,
               child: _body()
             ),
             Positioned(
@@ -146,19 +160,19 @@ class AddAutosPageState extends State<AddAutosPage> {
                         )
                       ]
                     ),
-                    child: CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Colors.green,
-                      child: InkWell(
-                        onTap: () {
-                          _resetScreen();
-                          if(solicitudSgtn.autos.length == 0) {
-                            solicitudSgtn.addOtroAuto = false;
-                          }
-                          Navigator.of(this._context).pushNamedAndRemoveUntil('buscar_index_page', (Route rutas) => false);
-                        },
-                        child: Icon(Icons.arrow_back_ios, color: Colors.black)
+                    child: InkWell(
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.green,
+                        child: Icon(Icons.arrow_back_ios, color: Colors.black),
                       ),
+                      onTap: () {
+                        frmSng.resetScreen();
+                        if(solicitudSgtn.autos.length == 0) {
+                          solicitudSgtn.addOtroAuto = false;
+                        }
+                        Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false);
+                      }
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -184,173 +198,48 @@ class AddAutosPageState extends State<AddAutosPage> {
   }
 
   ///
-  Future<void> _init(_) async {
-
-    int indexAuto = -1;
-
-    if(solicitudSgtn.indexAutoIsEditing > -1) {
-      indexAuto = solicitudSgtn.indexAutoIsEditing;
-      this._isEditing = true;
-    }else{
-      if(!solicitudSgtn.addOtroAuto) {
-        if(solicitudSgtn.autos.length == 1) {
-          solicitudSgtn.indexAutoIsEditing = -1;
-          this._isEditing = false;
-        }
-      }
-    }
-
-    if(indexAuto > -1){
-      buscarAutosSngt.setIdMarca(solicitudSgtn.autos[indexAuto]['mk_id']);
-      buscarAutosSngt.setIdModelo(solicitudSgtn.autos[indexAuto]['md_id']);
-      buscarAutosSngt.setNombreMarca(solicitudSgtn.autos[indexAuto]['mk_nombre']);
-      buscarAutosSngt.setNombreModelo(solicitudSgtn.autos[indexAuto]['md_nombre']);
-      this._ctrAnio.text = solicitudSgtn.autos[indexAuto]['anio'];
-      this._ctrVersion.text = (solicitudSgtn.autos[indexAuto]['version'] == '0') ? '' : solicitudSgtn.autos[0]['version'];
-      setState(() { });
-    }
-  }
-
-  ///
   Widget _body() {
-
-    double alto;
-    if(this._isEditing){
-      alto = (this._screen.height <= 550) ? 1.07 : 0.85;
-    }else{
-      alto = (this._screen.height <= 550) ? 1 : 0.75;
-    }
 
     return Container(
       width: this._screen.width,
       height: this._screen.height,
-      child: ListView(
+      child: SingleChildScrollView(
         controller: this._scrollCtr,
-        children: <Widget>[
-          const SizedBox(height: 60),
-          Center(
-            widthFactor: this._screen.width,
-            child: Container(
-              padding: EdgeInsets.all(10),
-              width: this._screen.width * 0.92,
-              height: this._screen.height * alto,
-              decoration: BoxDecoration(
-                color: Colors.white
-              ),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.red[100],
-                  border: Border.all(
-                    color: Colors.grey[400]
-                  )
+        child: Column(
+          children: [
+            SizedBox(height: this._screen.height * 0.09),
+            Align(
+              alignment: Alignment.center,
+              child: RaisedButton.icon(
+                icon: Icon(Icons.directions_car),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)
                 ),
-                child: _frm(),
-              ),
-            ),
-          ),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
-  }
-
-  ///
-  Widget _frm() {
-
-    return Column(
-      children: <Widget>[
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '   MARCA DEL AUTO:',
-            textScaleFactor: 1,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontWeight: FontWeight.bold
-            ),
-          ),
-        ),
-        const SizedBox(height: 5),
-        _inputMarca(),
-        const SizedBox(height: 20),
-        Row(
-          children: <Widget>[
-            Expanded(
-              flex: 2,
-              child: Text(
-                '   MODELO:',
-                textScaleFactor: 1,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold
+                color: Colors.yellow,
+                label: Text(
+                  'Agregar AQUÍ desde Mis Autos',
+                  textScaleFactor: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                onPressed: () => _verListaDeMisAutos()
               ),
             ),
-            Expanded(
-              flex: 1,
-              child: Text(
-                'AÑO:',
-                textScaleFactor: 1,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold
-                ),
-              ),
+            const SizedBox(height: 20),
+            FrmMkMdAnioWidget(),
+            const SizedBox(height: 20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: _btnAccion(),
             ),
+            SizedBox(height: this._screen.height * 0.26),
           ],
         ),
-        const SizedBox(height: 5),
-        SizedBox(
-          width: this._screen.width,
-          height: 60,
-          child: Stack(
-            children: <Widget>[
-              Positioned(
-                top: 0,
-                left: 0,
-                child: _inputModelo(),
-              ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: _inputAnio(),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Versión o Características del Modelo:',
-            textScaleFactor: 1,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontWeight: FontWeight.bold
-            ),
-          ),
-        ),
-        const SizedBox(height: 5),
-        _inputVersion(),
-        const SizedBox(height: 5),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '   Detalles que diferencien el vehículo',
-            textScaleFactor: 1,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.red
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        _btnAccion(),
-      ],
+      ),
     );
-
   }
 
   ///
@@ -373,17 +262,17 @@ class AddAutosPageState extends State<AddAutosPage> {
           SizedBox(
             width: this._screen.width * 0.9,
             child: RaisedButton.icon(
-              icon: Icon(Icons.edit),
+              icon: Icon(Icons.edit, color: Colors.blue),
               textColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)
               ),
-              color: Colors.blue,
+              color: Colors.black,
               label: Text(
                 'CAMBIAR AUTOMÓVIL'
               ),
               onPressed: () async {
-                bool isValid = await _isValid();
+                bool isValid = await frmSng.isValid();
                 if(isValid){
                   await _addAutoToList();
                   if(solicitudSgtn.editAutoPage == 'alta_piezas_page') {
@@ -417,7 +306,6 @@ class AddAutosPageState extends State<AddAutosPage> {
                   }else{
                     _irListaDeModelos();
                   }
-                  
                 }else{
                   if(solicitudSgtn.editAutoPage == 'alta_piezas_page') {
                     Navigator.of(this._context).pushReplacementNamed('alta_piezas_page');
@@ -425,7 +313,6 @@ class AddAutosPageState extends State<AddAutosPage> {
                     _irListaDeModelos();
                   }
                 }
-                
               },
             ),
           ),
@@ -437,7 +324,7 @@ class AddAutosPageState extends State<AddAutosPage> {
       return Column(
         children: <Widget>[
           _machoteBtnAccion(
-            titulo: 'AGREGAR NUEVO AUTO',
+            titulo: 'AGREGAR OTRO AUTO',
             color: Colors.grey,
             icono: Icons.plus_one,
             accion: () {
@@ -453,14 +340,19 @@ class AddAutosPageState extends State<AddAutosPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)
               ),
-              color: Colors.red,
+              color: Colors.black,
               textColor: Colors.white,
               child: Text(
                 'IR A LA LISTA DE AUTOS',
                 textScaleFactor: 1,
               ),
-              onPressed: () {
+              onPressed: () async {
+                bool revisar = await _hasDataInScreen();
+               if(revisar){
+                  _cotizarRefaccion();
+               }else{
                 _irListaDeModelos();
+               }
               },
             ),
           ),
@@ -480,9 +372,10 @@ class AddAutosPageState extends State<AddAutosPage> {
         ),
         const SizedBox(height: 20),
         _machoteBtnAccion(
-          titulo: 'Cotizar REFACCIONES ',
-          color: Colors.red,
-          icono: Icons.arrow_forward,
+          titulo: 'ir a Solicitar PIEZAS ',
+          color: Colors.black,
+          icono: Icons.play_circle_filled,
+          icoColor: Colors.blue,
           accion: _cotizarRefaccion,
           indicador: false,
         ),
@@ -495,10 +388,10 @@ class AddAutosPageState extends State<AddAutosPage> {
     {String titulo,
     Color color,
     IconData icono,
+    Color icoColor = Colors.white,
     Function accion,
     indicador = true}
   ) {
-
     return InkWell(
       child: Container(
         padding: EdgeInsets.all(10),
@@ -516,7 +409,7 @@ class AddAutosPageState extends State<AddAutosPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Icon(icono, color: Colors.white),
+            Icon(icono, color: icoColor),
             const SizedBox(width: 10),
             Text(
               titulo,
@@ -555,244 +448,11 @@ class AddAutosPageState extends State<AddAutosPage> {
       onTap: () async => accion(),
     );
   }
-  
-  ///
-  Widget _inputMarca() {
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
-      ),
-      child: InkWell(
-        onTap: () async { 
-          await showDialog(
-            context: this._context,
-            builder: (BuildContext context) {
-              return BuscarAutosBy(
-                titulo: 'Busca la Marca:',
-                subTitulo: 'Selecciona la marca del Auto',
-                autosBy: 'marca',
-              );
-            }
-          );
-          setState(() { });
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Flexible(
-              flex: 1,
-              child: SizedBox(
-                height: this._screen.height * 0.15,
-                child: Image(
-                  image: AssetImage('assets/images/auto_ico.png'),
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            Flexible(
-              flex: 4,
-              child: SizedBox(
-                width: this._screen.width * 0.7,
-                child: Text(
-                  '${ this._txtMarca }',
-                  textScaleFactor: 1,
-                  style: TextStyle(
-                    color: this._colorMarca,
-                    fontWeight: (this._colorMarca == Colors.grey) ? FontWeight.normal : FontWeight.bold
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: Icon(Icons.search, color: Colors.grey),
-            ),
-            const SizedBox(width: 5)
-          ],
-        ),
-      )
-    );
-  }
-  
-  ///
-  Widget _inputModelo() {
-
-    return Container(
-      width: this._screen.width * 0.48,
-      height: 60,
-      padding: EdgeInsets.only(left: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(10),
-          bottomLeft: Radius.circular(10)
-        ),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
-      ),
-      child: InkWell(
-        onTap: () async {
-          if(buscarAutosSngt.idMarca != null){
-            await showDialog(
-              context: this._context,
-              builder: (BuildContext context) {
-                return BuscarAutosBy(
-                  titulo: 'Busca Modelo:',
-                  subTitulo: 'Selecciona el Modelo del Auto',
-                  autosBy: 'modelos',
-                );
-              }
-            );
-            if(buscarAutosSngt.idModelo != null) {
-              FocusScope.of(this._context).requestFocus(this._focusAnio);
-            }
-            setState(() { });
-          }else{
-            await alertsVarios.entendido(
-              this._context,
-              titulo: 'SIN MARCA',
-              body: 'No se ha detectado que hallas seleccionado LA MARCA DEL AUTO para filtrar sus respectivos MODELOS.'
-            );
-          }
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>
-          [
-            Text(
-              '${ this._txtModelo }',
-              textScaleFactor: 1,
-              style: TextStyle(
-                color: this._colorModelo,
-                fontWeight: (this._colorMarca == Colors.grey) ? FontWeight.normal : FontWeight.bold
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: Icon(Icons.search, color: Colors.grey),
-            ),
-          ] ,
-        ),
-      )
-    );
-  }
-
-  ///
-  Widget _inputAnio() {
-
-    return Container(
-      width: this._screen.width * 0.30,
-      height: 60,
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(10),
-          bottomRight: Radius.circular(10)
-        ),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
-      ),
-      child: TextField(
-        controller: this._ctrAnio,
-        focusNode: this._focusAnio,
-        keyboardType: TextInputType.number,
-        maxLength: 4,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 21,
-          color: Colors.blue,
-          fontWeight: FontWeight.bold
-        ),
-        buildCounter: null,
-        decoration: InputDecoration(
-          hintText: '0000',
-          counterText: '',
-          hintStyle: TextStyle(
-            color: Colors.grey[300]
-          ),
-        ),
-      )
-    );
-  }
-
-  ///
-  Widget _inputVersion() {
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Flexible(
-            flex: 4,
-            child: SizedBox(
-              width: this._screen.width * 0.7,
-              child: TextField(
-                controller: this._ctrVersion,
-                textInputAction: TextInputAction.done,
-                maxLines: 2,
-                maxLength: 66,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Dato Opcional',
-                  counterText: '',
-                  hintStyle: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13
-                  ),
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.help, color: Colors.blue, size: 30),
-            onPressed: () => _showHelpVersion(),
-          ),
-        ],
-      )
-    );
-  }
 
   ///
   void _agregarOtroAuto({bool forceAdd = false}) async {
 
-    bool isValid = await _isValid();
+    bool isValid = await frmSng.isValid();
 
     if(isValid){
       await _addAutoToList(forceAdd: forceAdd);
@@ -823,16 +483,162 @@ class AddAutosPageState extends State<AddAutosPage> {
       );
       this._skfKey.currentState.showSnackBar(snackbar);
 
-      _resetScreen();
+      frmSng.resetScreen();
       this._scrollCtr.animateTo(0, duration: Duration(seconds: 1), curve: Curves.ease);
       setState(() {});
     }
   }
 
   ///
+  Future<void> _verListaDeMisAutos() async {
+
+    await showDialog(
+      context: this._context,
+      useSafeArea: true,
+      builder: (BuildContext context) {
+
+        return AlertDialog(
+          title: Container(
+            padding: EdgeInsets.all(5),
+            color: Color(0xffF36D62),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                  const Icon(Icons.directions_car, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Tu Lista de Autos',
+                    textScaleFactor: 1,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.yellow[300],
+                      fontSize: 16
+                    ),
+                  )
+              ],
+            ),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)
+          ),
+          titlePadding: EdgeInsets.all(0),
+          contentPadding: EdgeInsets.all(0),
+          content: FutureBuilder(
+            future: _listMisAutos(),
+            builder: (BuildContext context, AsyncSnapshot snapshot){
+
+              if(snapshot.hasData){
+                if(snapshot.data.length == 0) {
+                  return _verMsgSinAutos();
+                }else{
+                  return SingleChildScrollView(
+                    child: _verLstAutos(snapshot.data),
+                  );
+                }
+              }
+
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          ),
+        );
+      }
+    );
+  }
+
+  ///
+  Widget _verMsgSinAutos() {
+
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(10),
+            margin: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.yellow[200]
+            ),
+            child: Text(
+              'No se encontraron Autos dados de ALTA',
+              textScaleFactor: 1,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                color: Colors.red
+              ),
+            ),
+          ),
+          RaisedButton.icon(
+            label: Text(
+              'Agregar Autos a Mi Lista'
+            ),
+            icon: Icon(Icons.add),
+            color: Colors.black,
+            textColor: Colors.blue,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)
+            ),
+            onPressed: (){
+              Navigator.of(this._context).pop(false);
+              Navigator.of(this._context).pushNamed('mis_autos_page', arguments: {'popBack':true});
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  ///
+  Widget _verLstAutos(List<Map<String, dynamic>> autos) {
+
+    return Container(
+      width: MediaQuery.of(this._context).size.width * 0.5,
+      child: ListView.builder(
+        shrinkWrap: true,
+        padding: EdgeInsets.all(1),
+        itemCount: autos.length,
+        itemBuilder: (BuildContext context, int index){
+          return ListTile(
+            title: Text(
+              '${autos[index]['mdNombre']} ${autos[index]['anio']}'
+            ),
+            subtitle: Text(
+              autos[index]['mkNombre']
+            ),
+            trailing: Icon(Icons.arrow_forward_ios),
+            onTap: (){
+
+              frmSng.setCtrAnio(autos[index]['anio']);
+              frmSng.setCtrVersion(autos[index]['version']);
+              buscarAutosSngt.setIdMarca(autos[index]['mkid']);
+              buscarAutosSngt.setNombreMarca(autos[index]['mkNombre']);
+              buscarAutosSngt.setIdModelo(autos[index]['mdid']);
+              buscarAutosSngt.setNombreModelo(autos[index]['mdNombre']);
+              Navigator.of(context).pop(false);
+              setState(() {});
+
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  ///
+  Future<List<Map<String, dynamic>>> _listMisAutos() async {
+
+    List<Map<String, dynamic>> misAutos = await emMisAutos.getMisAutos();
+    return misAutos;
+  }
+
+  ///
   void _cotizarRefaccion() async {
 
     bool save = false;
+
     if(solicitudSgtn.autos.length > 1) {
       if(buscarAutosSngt.idMarca != null && buscarAutosSngt.idModelo != null) {
         save = true;
@@ -847,14 +653,29 @@ class AddAutosPageState extends State<AddAutosPage> {
 
     bool isValid = false;
     if(save) {
-      isValid = await _isValid();
-      if(isValid){
-        await _addAutoToList();
+    
+      bool revisar = true;
+      if(solicitudSgtn.autos.length >= 1) {
+        isValid = await _hidratarScreenConElAutoUnico();
+        if(isValid){
+          // Revisar si hay datos en el screen;
+          revisar = await _hasDataInScreen();
+        }else{
+          revisar = false;
+        }
+      }
+
+      if(revisar){
+        isValid =  await frmSng.isValid();
+        if(isValid){
+          await _addAutoToList();
+        }
       }
     }
 
     if(save && isValid) {
-      _resetScreen();
+
+      frmSng.resetScreen();
       if(solicitudSgtn.autos.length > 1) {
         _irListaDeModelos();
       }else{
@@ -863,6 +684,31 @@ class AddAutosPageState extends State<AddAutosPage> {
       }
     }
 
+  }
+
+  ///
+  Future<bool> _hasDataInScreen() async {
+
+    if(buscarAutosSngt.idMarca != null) {
+      return true;
+    }
+    if(buscarAutosSngt.idModelo != null) {
+      return true;
+    }
+    if(frmSng.ctrAnio.text != '') {
+      return true;
+    }
+    return false;
+  }
+
+  ///
+  Future<bool> _hidratarScreenConElAutoUnico() async {
+
+    List<Map<String, dynamic>> isValid = await  solicitudSgtn.isValidContentOfAutos();
+    if(isValid.length > 0){
+      await alertsVarios.entendido(this._context, titulo: isValid[0]['titulo'], body: isValid[0]['stitulo']);
+    }
+    return (isValid.length > 0) ? false : true;
   }
 
   ///
@@ -878,21 +724,6 @@ class AddAutosPageState extends State<AddAutosPage> {
   }
 
   ///
-  void _resetScreen() {
-    
-    buscarAutosSngt.setIdMarca(null);
-    buscarAutosSngt.setNombreMarca(null);
-    buscarAutosSngt.setIdModelo(null);
-    buscarAutosSngt.setNombreModelo(null);
-    this._txtMarca    = 'Click AQUÍ';
-    this._txtModelo   = 'Click AQUÍ';
-    this._colorMarca  = Colors.grey;
-    this._colorModelo = Colors.grey;
-    this._ctrAnio.text= '';
-    this._ctrVersion.text = '';
-  }
-
-  ///
   Future<void> _addAutoToList({bool forceAdd = false}) async {
 
     Map<String, dynamic> auto = {
@@ -900,8 +731,8 @@ class AddAutosPageState extends State<AddAutosPage> {
       'mk_nombre' : buscarAutosSngt.nombreMarca,
       'md_id'     : buscarAutosSngt.idModelo,
       'md_nombre' : buscarAutosSngt.nombreModelo,
-      'anio'      : this._ctrAnio.text,
-      'version'   : (this._ctrVersion.text.isEmpty) ? '0' : this._ctrVersion.text,
+      'anio'      : frmSng.ctrAnio.text,
+      'version'   : (frmSng.ctrVersion.text.isEmpty) ? '0' : frmSng.ctrVersion.text,
       'piezas'    : new List<Map<String, dynamic>>(),
     };
 
@@ -918,136 +749,4 @@ class AddAutosPageState extends State<AddAutosPage> {
     solicitudSgtn.indexAutoIsEditing = -1;
   }
 
-  ///
-  Future<bool> _isValid() async {
-
-    bool res = true;
-    String errorBody;
-    String errorTitle;
-
-    if(buscarAutosSngt.idMarca == null) {
-      errorTitle = '¡LA MARCA!';
-      errorBody  = 'No haz seleccionado una MARCA';
-      res = false;
-    }
-    if(res) {
-      if(buscarAutosSngt.idModelo == null) {
-        errorTitle = '¡EL MODELO!';
-        errorBody  = 'Selecciona un modelos para ${ buscarAutosSngt.nombreMarca }';
-        res = false;
-      }
-    }
-    if(res) {
-      if(this._ctrAnio.text.length == 0) {
-        errorTitle = '¡EL AÑO!';
-        errorBody  = 'Inidca el Año para ${ buscarAutosSngt.nombreModelo }';
-        FocusScope.of(this._context).requestFocus(this._focusAnio);
-        res = false;
-      }
-    }
-    if(res) {
-      if(this._ctrAnio.text.length > 1 && this._ctrAnio.text.length < 4) {
-        errorTitle = '¡EL AÑO!';
-        errorBody  = 'El año debe ser de 4 dígitos';
-        FocusScope.of(this._context).requestFocus(this._focusAnio);
-        res = false;
-      }
-    }
-    if(!res){
-      await alertsVarios.entendido(this._context, titulo: errorTitle, body: errorBody);
-    }
-    return res;
-  }
-
-  ///
-  Future<void> _showHelpVersion() async {
-
-    String body = 'En ocaciones, los Modelos cuentan con varias versiones que hacen que su diseño y funcionamiento cambien.';
-    String body2 = 'Por ejemplo:\n\nSi el auto es 2 o 5 puertas, si es Automático, o si es tipo Sedan, Vagoneta, Hashback.\n\nEn la mayoria de las ocaciones, con el nombre específico de la versión vasta para conocer las características necesarias.';
-    String body3 = 'Agregar detalles adicionales, nos ayudan a otorgarte un mejor servicio.';
-
-    await showDialog(
-      context: this._context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10)
-          ),
-          titleTextStyle: TextStyle(
-            color: Colors.green,
-            fontWeight: FontWeight.bold,
-            fontSize: 23
-          ),
-          title: Text(
-            'AYUDA RÁPIDA',
-            textScaleFactor: 1,
-            textAlign: TextAlign.center,
-          ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 7),
-          content: Container(
-            width: this._screen.width,
-            height: this._screen.height * 0.55,
-            child: ListView(
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  padding: EdgeInsets.all(7),
-                  width: this._screen.width,
-                  decoration: BoxDecoration(
-                    color: Colors.red[100],
-                    borderRadius: BorderRadius.circular(10)
-                  ),
-                  child: Text(
-                    body,
-                    textScaleFactor: 1,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-                Divider(),
-                Text(
-                  body2,
-                  textScaleFactor: 1,
-                  textAlign: TextAlign.left,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 15
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  body3,
-                  textScaleFactor: 1,
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.bold
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton.icon(
-              color: Colors.blue,
-              textColor: Colors.white,
-              icon: Icon(Icons.check),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)
-              ),
-              label: Text(
-                'OK',
-                textScaleFactor: 1,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold
-                ),
-              ),
-              onPressed: () => Navigator.of(this._context).pop(true)
-            )
-          ],
-        );
-      }
-    );
-  }
 }

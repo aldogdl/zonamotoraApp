@@ -20,15 +20,22 @@ Widget printCard({
     DateTime now = DateTime.now();
     fecha = 'Hoy es: ${f.format(now)}';
   }else{
-    fecha = 'Registro: ${f.format(fechReg)}';
+    fecha = 'Desde: ${f.format(fechReg)}';
   }
 
   return Container(
-    margin: EdgeInsets.symmetric(horizontal: 25, vertical: 7),
-    padding: EdgeInsets.all(7),
+    margin: EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+    padding: EdgeInsets.symmetric(horizontal: 3, vertical: 10),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(10)
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          blurRadius: 2,
+          offset: Offset(1, 2),
+          color: Colors.grey
+        )
+      ]
     ),
     child: Column(
       children: <Widget>[
@@ -73,7 +80,7 @@ Widget printCard({
         ),
         (showAcc)
         ?
-        _acciones(idAuto, eliminar: fncEliminar)
+        _acciones(idAuto, eliminar: fncEliminar, editar: fncEditar)
         :
         const SizedBox(height: 0)
       ],
@@ -82,7 +89,7 @@ Widget printCard({
 }
 
 /* */
-Widget _acciones(int idAuto, {Function eliminar}) {
+Widget _acciones(int idAuto, {Function eliminar, Function editar}) {
 
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -109,7 +116,7 @@ Widget _acciones(int idAuto, {Function eliminar}) {
             color: Colors.blue
           ),
         ),
-        onPressed: (){},
+        onPressed: () async => await editar(idAuto),
       ),
       FlatButton.icon(
         icon: Icon(Icons.shopping_basket, size: 14, color: Colors.green),

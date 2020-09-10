@@ -118,8 +118,8 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
   }
 
   ///
-  Widget _inputBuskAuto(BuildContext context) {
-
+  Widget _inputBuskAuto(BuildContext context)
+  {
     return TextField(
       maxLines: 1,
       autofocus: true,
@@ -169,12 +169,13 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
         border: InputBorder.none,
         hintText: 'Buscar AQUÍ...'
       ),
-      onChanged: (String txt) => _hacerBuscquedaDeAutos(txt),
+      onChanged: (String txt) => _hacerBusquedaDeAutos(txt),
     );
   }
 
   ///
-  Future<Widget> _getAutos() async {
+  Future<Widget> _getAutos() async
+  {
 
     if(this._autosAll.length == 0) {
       this._autosAll = (widget.autosBy == 'modelos') ? await autos.getModelos(buscarAutosSngt.idMarca) : await autos.getMarcas();
@@ -215,7 +216,8 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
   }
 
   ///
-  void _hacerBuscquedaDeAutos(String txt) {
+  void _hacerBusquedaDeAutos(String txt)
+  {
 
     this._autosFilter = new List();
     this._autosAll.forEach((autos){

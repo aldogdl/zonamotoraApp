@@ -15,15 +15,17 @@ class ContainerInput {
       itemBuilder: (BuildContext context, int inputIndex) {
 
         String label = _determinarLabel(tipoFrm, inputIndex);
+
         if(listInputs[inputIndex].toStringShort() == 'SizedBox') {
           return listInputs[inputIndex];
         }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
+          children: <Widget> [
             (inputIndex == 0)
             ? const SizedBox(height: 5)
-            : (inputIndex < 5)
+            : (inputIndex < listInputs.length -1)
               ? const SizedBox(height: 20)
               : const SizedBox(height: 0),
             (label.isEmpty)
@@ -44,7 +46,7 @@ class ContainerInput {
               padding: EdgeInsets.all(4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: (inputIndex < 5) ? bgInput : Colors.red[100]
+                color: (inputIndex < listInputs.length -1) ? bgInput : Colors.red[100]
               ),
               child: listInputs[inputIndex],
             )
@@ -88,20 +90,20 @@ class ContainerInput {
       lst.add(const SizedBox(height: 10));
 
        if(listInputs[inputIndex].toStringShort() != '_RaisedButtonWithIcon'){
-         if(listInputs[inputIndex].toStringShort() != 'SizedBox'){
-            lst.add(
-              Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: (inputIndex < 5) ? Colors.white : Colors.black
-                ),
-                child: listInputs[inputIndex],
-              )
-            );
-         }else{
-           lst.add( listInputs[inputIndex] );
-         }
+        if(listInputs[inputIndex].toStringShort() != 'SizedBox'){
+          lst.add(
+            Container(
+              padding: EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: (inputIndex < 5) ? Colors.white : Colors.black
+              ),
+              child: listInputs[inputIndex],
+            )
+          );
+        }else{
+          lst.add( listInputs[inputIndex] );
+        }
       }else{
         lst.add(
           Center(
@@ -145,6 +147,9 @@ class ContainerInput {
         break;
       case 'colonias':
         return _getColoniasLabels(inputIndex);
+        break;
+      case 'caracts':
+        return _getCaracteristicasLabels(inputIndex);
         break;
       default:
         return '';
@@ -253,20 +258,41 @@ class ContainerInput {
 
     String label;
     switch (inputIndex) {
-      case 0:
+      case 1:
         label = '  *Nombre del Contacto:';
         break;
-      case 1:
+      case 2:
         label = '  *Nombre del Negocio:';
         break;
-      case 2:
+      case 3:
         label = '  *Ciudad perteneciente:';
         break;
-      case 3:
+      case 4:
         label = '  *Domicilio:';
         break;
-      case 4:
+      case 5:
         label = '  Teléfono Fijo del Local:';
+        break;
+
+      default:
+        label = '';
+    }
+
+    return label;
+  }
+
+  /* 
+   * Utilizada en la pagina de registro de un PARTICULAR
+  */
+  String _getCaracteristicasLabels(int inputIndex) {
+
+    String label;
+    switch (inputIndex) {
+      case 0:
+        label = '  *¿Qué Año es el Auto?';
+        break;
+      case 1:
+        label = '  Indica la Versión del Vehículo';
         break;
       default:
         label = '';

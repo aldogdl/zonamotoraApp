@@ -221,6 +221,7 @@ class _RecoveryCuentaPageState extends State<RecoveryCuentaPage> {
     });
 
     emUser.getTokenFromServer(dataUser: this._params).then((Map<String, dynamic> res) async {
+
       if(res.containsKey('abort')) {
         _showError(res);
       }else{
@@ -247,11 +248,12 @@ class _RecoveryCuentaPageState extends State<RecoveryCuentaPage> {
 
   /* PASO 1 */
   Future<void> _getCredentialsFromServer() async {
-
+    
     setState(() {
       this._currentStep = 1;
       this._listPasos[this._currentStep]['active'] = true;
     });
+
     userEntiy.setUsername(this._params['u_usname']);
     userEntiy.setPassword(this._params['u_uspass']);
 

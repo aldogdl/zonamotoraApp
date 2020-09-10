@@ -2,15 +2,36 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:zonamotora/globals.dart' as globals;
+import 'package:zonamotora/utils/cambiando_la_ip_dev.dart';
 
 class AppVariosHttp {
+
+  /// Bloque Utilizado solo en modo developer para cambios de IP repentinos
+    CambiandoLaIpDev gestionDeIp = CambiandoLaIpDev();
+    String _uriBase = globals.uriBase;
+    Future<String> _getIpDev() async {
+      String ip = await gestionDeIp.getIp();
+      return this._uriBase.replaceFirst('${globals.ip}', ip);
+    }
+    Future<void> _printAndRefreshIp(String metodo) async {
+      this._uriBase = (globals.env == 'dev') ? await _getIpDev() : globals.uriBase;
+      assert((){
+        print(this._uriBase);
+        print('Gastando datos -> AppVariosHttp::$metodo');
+        return true;
+      }());
+    }
+  /// End Bloque
 
   String _uriApi = 'zm/generales';
 
   ///
   Future<http.Response> getColonias(int idCiudad) async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/${this._uriApi}/$idCiudad/get-colonias/');
+    await this._printAndRefreshIp('getColonias');
+
+    Uri uri = Uri.parse('${this._uriBase}/${this._uriApi}/$idCiudad/get-colonias/');
+
     final req = http.MultipartRequest('GET', uri);
     return await http.Response.fromStream(await req.send());
   }
@@ -18,7 +39,10 @@ class AppVariosHttp {
   ///
   Future<http.Response> setColonia(Map<String, dynamic> colonia) async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/${this._uriApi}/set-colonia/');
+    await this._printAndRefreshIp('setColonia');
+
+    Uri uri = Uri.parse('${this._uriBase}/${this._uriApi}/set-colonia/');
+
     final req = http.MultipartRequest('POST', uri);
     req.fields['colonia'] = json.encode(colonia);
     return await http.Response.fromStream(await req.send());
@@ -29,7 +53,9 @@ class AppVariosHttp {
   */
   Future<http.Response> getSistemas() async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/$_uriApi/get-sistemas-del-auto/');
+    await this._printAndRefreshIp('getSistemas');
+
+    Uri uri = Uri.parse('${this._uriBase}/$_uriApi/get-sistemas-del-auto/');
     final req = http.MultipartRequest('GET', uri);
     return  await http.Response.fromStream(await req.send());
   }
@@ -39,18 +65,37 @@ class AppVariosHttp {
   */
   Future<http.Response> getCiudades() async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/$_uriApi/get-ciudades/');
+    await this._printAndRefreshIp('getCiudades');
+
+    Uri uri = Uri.parse('${this._uriBase}/$_uriApi/get-ciudades/');
     final req = http.MultipartRequest('GET', uri);
     return  await http.Response.fromStream(await req.send());
   }
 
   /*
-  * @see AutosRepository::updateTokenDevice
+  * @see AutosRepository::getSetMarcasAndModelos
   */
   Future<http.Response> getMarcasAndModelos() async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/registros/users/zm/get-marcas-y-modelos/');
+    await this._printAndRefreshIp('getMarcasAndModelos');
+
+    Uri uri = Uri.parse('${this._uriBase}/registros/users/zm/get-marcas-y-modelos/');
     final req = http.MultipartRequest('GET', uri);
+    return await http.Response.fromStream(await req.send());
+  }
+
+  /*
+  * @see NotificsRepository::getConstraints
+  */
+  Future<http.Response> getConstraints(Map<String, dynamic> dataUser) async {
+
+    await this._printAndRefreshIp('getConstraints');
+
+    Uri uri = Uri.parse('${this._uriBase}/apis/socios/${dataUser['u_id']}/get-restricciones/');
+
+    final req = http.MultipartRequest('GET', uri);
+    req.headers['Authorization'] = 'Bearer ${dataUser['u_tokenServer']}';
+    dataUser = null;
     return await http.Response.fromStream(await req.send());
   }
 

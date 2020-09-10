@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/user_repository.dart';
 import 'package:zonamotora/singletons/alta_user_sngt.dart';
@@ -51,6 +52,7 @@ class _ListaUsersPageState extends State<ListaUsersPage> {
       Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_index_menu_page');
       _getUltimosUserRegistrados();
       this._idUsrAct = altaUserSngt.userId;
+      
       this._lstSocios = Column(
         children: <Widget>[
           _regresoLink(),

@@ -252,7 +252,7 @@ class AlertsVarios {
     );
   }
 
-  /* */
+  ///
   Widget cargandoStyleWidget(BuildContext context, {titulo = 'Procesando su solicitud', body: 'original'}) {
 
     if(body == 'original') {

@@ -102,6 +102,7 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
         mini: true,
         child: Icon(Icons.save, size: 25),
         onPressed: () async {
+          
           bool isValid = false;
           if(altaUserSngt.colonia != null){
             if(altaUserSngt.colonia != 0){
@@ -322,8 +323,9 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
         ),
       ),
       onChanged: (bool val) async {
-        GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
-        if(geolocationStatus == GeolocationStatus.granted) {
+
+        LocationPermission permisos = await checkPermission();
+        if(LocationPermission.always == permisos){
           if(!val){
             this._latLng = null;  
           }else{
@@ -370,6 +372,7 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
       barrierDismissible: false,
       builder: (_) {
         return AlertDialog(
+          insetPadding: EdgeInsets.all(7),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20)
           ),
@@ -396,9 +399,9 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
                 top: 5,
                 right: 5,
                 child: CircleAvatar(
-                  backgroundColor: Colors.white.withAlpha(220),
+                  backgroundColor: Colors.red,
                   child: IconButton(
-                    icon: Icon(Icons.close, color: Colors.red),
+                    icon: Icon(Icons.close, color: Colors.white),
                     onPressed: () => Navigator.of(this._context).pop(false),
                   ),
                 ),
@@ -413,17 +416,17 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
   ///
   Future<void> _permisosDeLocalizacion() async {
 
-    GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
-     if(geolocationStatus == GeolocationStatus.granted) {
+    LocationPermission permisos = await checkPermission();
+    
+    if(LocationPermission.always == permisos){
       this._geoPermitida = true;
     }
-    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    
+    Position position = await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     if(altaUserSngt.direccionForMap != null){
       setState(() {
         this._latLng = '${position.latitude}, ${position.longitude}';
       });
-    }
+    }    
     _crearMarcadorMap();
   }
 

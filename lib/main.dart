@@ -6,7 +6,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/rutas.dart';
 
-void main() => runApp(MyApp());
+void main() {
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   
@@ -19,6 +22,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown
     ]);
+    
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DataShared())

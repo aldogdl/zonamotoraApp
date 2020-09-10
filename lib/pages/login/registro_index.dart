@@ -36,7 +36,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
     }
 
     return Scaffold(
-      appBar: appBarrMy.getAppBarr(titulo: 'Registro de usuarios'),
+      appBar: appBarrMy.getAppBarr(titulo: 'Crea tu CUENTA!'),
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: Container(
@@ -51,8 +51,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
   Widget _body() {
 
     String txt = '';
-    txt += '¡Registrarte te otorga oportunidades increibles!';
-    double altoAspectRadio = (this._screen.height < 550) ? 0.58 : 0.63;
+    txt += 'Registrarte en ZonaMotora te otorga ¡oportunidades increíbles!';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -61,7 +60,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
         // Icono y text de la cabecera
         Container(
           width: this._screen.width,
-          height: this._screen.height * 0.14,
+          height: this._screen.height * 0.15,
           padding: EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
             color: Color(0xff7C0000)
@@ -107,16 +106,16 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
         const SizedBox(height: 10),
 
         // Cards de Opciones
-        Container(
-          height: this._screen.height * altoAspectRadio,
-          width: this._screen.width,
+        Expanded(
           child: SingleChildScrollView(
+            padding: EdgeInsets.all(5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
+                const SizedBox(height: 10),
                 Text(
-                  'Selecciona tu PERFIL',
+                  'Selecciona un PERFIL',
                   textScaleFactor: 1,
                   style: TextStyle(
                     fontSize: 27,
@@ -127,7 +126,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
                 const SizedBox(height: 20),
                 InkWell(
                   child: _createCard(
-                    titulo: 'PARTICULAR',
+                    titulo: 'SOY PARTICULAR',
                     cuerpo: 'Si eres dueño de un auto y no te dedicas a la comercialización del mundo automotriz',
                     foto: 'duenio_auto.jpg',
                     icono: Icons.vpn_key
@@ -142,7 +141,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
                 const SizedBox(height: 20),
                 InkWell(
                   child: _createCard(
-                    titulo: 'PROFESIONAL AUTOMOTRIZ',
+                    titulo: 'SOY PROFESIONAL AUTOMOTRIZ',
                     cuerpo: '¿VENDES Refacciones, Autos o realizasas cualquier tipo de Servicio Automotriz?',
                     foto: 'prof_automotriz.jpg',
                     icono: Icons.shopping_cart
@@ -185,7 +184,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
 
     return Container(
       padding: EdgeInsets.all(10),
-      width: this._screen.width * 0.8,
+      width: this._screen.width * 0.82,
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(10),

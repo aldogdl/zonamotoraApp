@@ -204,7 +204,6 @@ class _LoginAsesorPageState extends State<LoginAsesorPage> {
         filled: true,
         prefixIcon: Icon(Icons.supervised_user_circle),
         border: InputBorder.none,
-        contentPadding: EdgeInsets.all(0)
       ),
       validator: (val){
         if(val == null){
@@ -219,6 +218,25 @@ class _LoginAsesorPageState extends State<LoginAsesorPage> {
         FocusScope.of(this._context).requestFocus(this._focusPass);
       },
     );
+  }
+
+  /* */
+  List<DropdownMenuItem> _crearItemsUsers() {
+
+    List<DropdownMenuItem> usersItems = new List();
+    this._asesores.forEach((user){
+      usersItems.add(
+        DropdownMenuItem(
+          value: user['a_username'],
+          child: Text(
+            '${user['a_username']}',
+            textScaleFactor: 1,
+          ),
+        )
+      );
+    });
+
+    return usersItems;
   }
 
   /* */
@@ -318,24 +336,6 @@ class _LoginAsesorPageState extends State<LoginAsesorPage> {
     if(this._asesores.length == 0){
       this._asesores = await httpAsesores.getAsesores();
     }
-  }
-
-  /* */
-  List<DropdownMenuItem> _crearItemsUsers() {
-
-    List<DropdownMenuItem> usersItems = new List();
-    this._asesores.forEach((user){
-      usersItems.add(
-        DropdownMenuItem(
-          value: user['a_username'],
-          child: Text(
-            '${user['a_username']}'
-          ),
-        )
-      );
-    });
-
-    return usersItems;
   }
 
 }

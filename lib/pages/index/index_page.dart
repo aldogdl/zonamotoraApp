@@ -1,9 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:zonamotora/data_shared.dart';
+import 'package:zonamotora/repository/user_repository.dart';
+import 'package:zonamotora/singletons/config_gms_sngt.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
 import 'package:zonamotora/widgets/banners_top.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
@@ -18,29 +21,40 @@ class IndexPage extends StatefulWidget {
 class _IndexPageState extends State<IndexPage> {
 
   AppBarrMy appBarrMy = AppBarrMy();
+  ConfigGMSSngt configGMSSngt = ConfigGMSSngt();
   MenuInferior menuInferior = MenuInferior();
-
+  UserRepository emUser = UserRepository();
+  
   Size _screen;
   BuildContext _context;
+  GlobalKey<ScaffoldState> _keySk = GlobalKey<ScaffoldState>();
   DataShared _dataShared;
   bool _isInit = false;
   bool _verPageWelcome = false;
+  List<Widget> tablaRowsReg = new List();
+  String _username = '';
+  bool _isSocio = false;
   SwiperController _ctrlPages = SwiperController();
+  List<Map<String, dynamic>> _menuMainBy = new List();
 
   @override
   Widget build(BuildContext context) {
 
     this._screen = MediaQuery.of(context).size;
     this._context = context;
+
     context = null;
     if(!this._isInit){
       this._isInit = true;
       this._dataShared = Provider.of<DataShared>(this._context);
+      this._username = (this._dataShared.username == null) ? 'Anónimo' : this._dataShared.username;
+      configGMSSngt.setContext(this._context);
       _checkPageWelcome();
     }
 
     return Scaffold(
-      appBar: appBarrMy.getAppBarr(),
+      key: this._keySk,
+      appBar: appBarrMy.getAppBarr( titulo: (this._verPageWelcome) ? 'Bienvenid@' : 'Página Principal'),
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: FutureBuilder(
@@ -50,10 +64,18 @@ class _IndexPageState extends State<IndexPage> {
             return _welcome();
           }
           return SingleChildScrollView(
-            child: Container(
-              width: this._screen.width,
-              height: this._screen.height,
-              child: _body(),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  width: this._screen.width,
+                  height: this._screen.height * 0.795,
+                  child: _body(),
+                ),
+                Container(
+                  height: 5,
+                  color: Colors.black,
+                )
+              ],
             )
           );
         },
@@ -75,7 +97,6 @@ class _IndexPageState extends State<IndexPage> {
 
   ///
   Widget _welcome() {
-
     List<Widget> vistas = [
       _pageInitWelcome(),
       _pageQueSigue()
@@ -117,14 +138,14 @@ class _IndexPageState extends State<IndexPage> {
           _getBolaInfIzqWelcome(),
           Positioned(
             width: this._screen.width,
-            top: 20,
+            top: 10,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 SizedBox(
-                  width: (this._screen.height <= 550) ? 100 : 150,
-                  height: (this._screen.height <= 550) ? 100 : 150,
+                  width: (this._screen.height <= 550) ? 100 : 100,
+                  height: (this._screen.height <= 550) ? 100 : 100,
                   child: Image(
                     image: AssetImage('assets/images/zona_motora.png'),
                   ),
@@ -184,7 +205,7 @@ class _IndexPageState extends State<IndexPage> {
                   ),
                   color: Colors.white,
                   child: Text(
-                    '¿Quieres saber qué Sigue?',
+                    '¡Conoce los Beneficios!',
                     textScaleFactor: 1,
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -201,7 +222,7 @@ class _IndexPageState extends State<IndexPage> {
     );
   }
 
-  ///
+  /// pii001
   Widget _pageQueSigue() {
 
     return Container(
@@ -234,20 +255,55 @@ class _IndexPageState extends State<IndexPage> {
                 :
                 SizedBox(
                   width: this._screen.width * 0.9,
-                  child: Text(
-                    'Para una mejor experiencia te recomendamos que te Registres',
-                    textScaleFactor: 1,
+                  child: RichText(
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: (this._screen.height <= 550) ? 16 : 18,
-                      letterSpacing: 1.2
-                    ),
+                    textScaleFactor: 1,
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Para una mejor experiencia te recomendamos ',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: (this._screen.height <= 550) ? 16 : 16,
+                            letterSpacing: 1.2
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Crear tu Cuenta',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.yellow,
+                            fontSize: (this._screen.height <= 550) ? 16 : 16,
+                            letterSpacing: 1.2,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 0,
+                                offset: Offset(1,1),
+                                color: Colors.black
+                              )
+                            ]
+                          ),
+                          recognizer: new TapGestureRecognizer()..onTap = () {
+                            _accionEntendidoHelpPages();
+                            Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (Route rutas) => false);
+                          }
+                        ),
+                        TextSpan(
+                          text: '. Es fácil y ¡completamente GRATIS!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: (this._screen.height <= 550) ? 16 : 18,
+                            letterSpacing: 1.2,
+                            height: 1.2
+                          )
+                        ),
+                      ]
+                    )
                   ),
                 ),
-                SizedBox(height: (this._screen.height <= 550) ? 0 : 20),
+                SizedBox(height: (this._screen.height <= 550) ? 0 : 15),
                 const Text(
-                  '¿ QUÉ SIGUE ?',
+                  '¿ QUÉ DESEAS HACER ?',
                   textScaleFactor: 1,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -264,54 +320,50 @@ class _IndexPageState extends State<IndexPage> {
                     ]
                   ),
                 ),
-                SizedBox(height: (this._screen.height <= 550) ? 10 : 20),
-                InkWell(
-                  onTap: (){
-                    _accionEntendidoHelpPages();
-                    Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (Route rutas) => false);
-                  },
-                  child: _machoteDeOpcionesQueSigue(
-                    icono: Icons.extension,
-                    titulo: 'Solicitar Cotización de Refacción',
-                    subTitulo: 'Ésta opción requiere que te registres',
-                  ),
-                ),
-                SizedBox(height: (this._screen.height <= 550) ? 10 : 20),
-                InkWell(
-                  onTap: (){
-                    _accionEntendidoHelpPages();
-                    //Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (Route rutas) => false);
-                  },
-                  child: _machoteDeOpcionesQueSigue(
-                    icono: Icons.directions_car,
-                    titulo: 'Buscar Automóviles',
-                    subTitulo: 'También podrás vender fácilmente',
-                  ),
-                ),
-                SizedBox(height: (this._screen.height <= 550) ? 10 : 20),
-                InkWell(
-                  onTap: (){
-                    _accionEntendidoHelpPages();
-                    //Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (Route rutas) => false);
-                  },
-                  child: _machoteDeOpcionesQueSigue(
-                    icono: Icons.add_to_home_screen,
-                    titulo: 'Encontrar Servicios',
-                    subTitulo: '¿Qué necesita tu auto?',
-                  ),
-                ),
-                SizedBox(height: (this._screen.height <= 550) ? 10 : 20),
-                InkWell(
-                  onTap: (){
-                    _accionEntendidoHelpPages();
-                    Navigator.of(this._context).pushNamedAndRemoveUntil('reg_prof_index_page', (Route rutas) => false);
-                  },
-                  child: _machoteDeOpcionesQueSigue(
-                    icono: Icons.add_to_home_screen,
-                    titulo: 'Anunciarte con Nosotros',
-                    subTitulo: 'Sin compromiso te visitamos',
-                  )
-                ),
+                
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    SizedBox(height: (this._screen.height <= 550) ? 10 : 20),
+                    InkWell(
+                      onTap: (){
+                        _accionEntendidoHelpPages();
+                        Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (Route rutas) => false);
+                      },
+                      child: _machoteDeOpcionesQueSigue(
+                        icono: Icons.extension,
+                        titulo: 'Solicitar Cotización de Refacción',
+                        subTitulo: 'Esta opción requiere tener tu cuenta.',
+                      ),
+                    ),
+                    SizedBox(height: (this._screen.height <= 550) ? 10 : 20),
+                    InkWell(
+                      onTap: (){
+                        _accionEntendidoHelpPages();
+                        //Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (Route rutas) => false);
+                      },
+                      child: _machoteDeOpcionesQueSigue(
+                        icono: Icons.directions_car,
+                        titulo: 'Comprar o Vender un Auto',
+                        subTitulo: 'Busca y vende fácilmente.',
+                      ),
+                    ),
+                    SizedBox(height: (this._screen.height <= 550) ? 10 : 20),
+                    InkWell(
+                      onTap: (){
+                        _accionEntendidoHelpPages();
+                        //Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (Route rutas) => false);
+                      },
+                      child: _machoteDeOpcionesQueSigue(
+                        icono: Icons.add_to_home_screen,
+                        titulo: 'Encontrar Servicios Automotrices',
+                        subTitulo: '¿Qué necesita tu auto?.',
+                      ),
+                    ),
+                  ],
+                )
+                
               ],
             ),
           ),
@@ -334,7 +386,10 @@ class _IndexPageState extends State<IndexPage> {
                       color: Colors.red
                     ),
                   ),
-                  onPressed: () => _accionEntendidoHelpPages(),
+                  onPressed: (){
+                    _accionEntendidoHelpPages();
+                    Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (route) => false);
+                  },
                 ),
               ),
             ),
@@ -382,7 +437,7 @@ class _IndexPageState extends State<IndexPage> {
   Widget _machoteDeOpcionesQueSigue({@required IconData icono, @required String titulo, @required String subTitulo}) {
 
     return Container(
-      width: this._screen.width * 0.86,
+      width: this._screen.width * 0.87,
       padding: EdgeInsets.all(7),
       decoration: BoxDecoration(
         color: Colors.red[50],
@@ -417,7 +472,7 @@ class _IndexPageState extends State<IndexPage> {
                 textAlign: TextAlign.start,
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: (this._screen.height <= 550) ? 14 : 16
+                  fontSize: (this._screen.height <= 550) ? 14 : 14
                 ),
               ),
               Text(
@@ -426,7 +481,7 @@ class _IndexPageState extends State<IndexPage> {
                 textAlign: TextAlign.start,
                 style: TextStyle(
                 color: Colors.grey[600],
-                fontSize: (this._screen.height <= 550) ? 13 : 15
+                fontSize: (this._screen.height <= 550) ? 13 : 13
               ),
               )
             ],
@@ -474,7 +529,15 @@ class _IndexPageState extends State<IndexPage> {
           height: this._screen.height,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 5),
-            child: _tableDeBtns(),
+            child: FutureBuilder(
+              future: _deternimarBotonesSegunRole(),
+              builder: (BuildContext context, AsyncSnapshot snapshot){
+                if(snapshot.hasData){
+                  return getTablaFinalDeBotones();
+                }
+                return CircularProgressIndicator();
+              },
+            ),
           ),
         ),
       ],
@@ -552,7 +615,6 @@ class _IndexPageState extends State<IndexPage> {
   ///
   Widget _autorizadoComo() {
 
-    String username = (this._dataShared.username == null) ? 'Anónimo' : this._dataShared.username;
     double radiusIcon = (this._screen.height <= 550) ? 40 : 50;
     return Center(
       child: Container(
@@ -582,7 +644,7 @@ class _IndexPageState extends State<IndexPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      '$username',
+                      '${this._username}',
                       textScaleFactor: 1,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -590,7 +652,7 @@ class _IndexPageState extends State<IndexPage> {
                       ),
                     ),
                     Text(
-                      (username != 'Anónimo') ? 'Usuario Autorizado' : 'Identifícate por favor',
+                      (this._username != 'Anónimo') ? 'Usuario Autorizado' : 'Identifícate por favor',
                       textScaleFactor: 1,
                       style: TextStyle(
                         color: Colors.green,
@@ -621,7 +683,7 @@ class _IndexPageState extends State<IndexPage> {
                         )
                       ]
                     ),
-                    child: (username == 'Anónimo')
+                    child: (this._username == 'Anónimo')
                     ?
                     Icon(Icons.lock_open, color: Colors.blue)
                     :
@@ -637,47 +699,310 @@ class _IndexPageState extends State<IndexPage> {
   }
 
   ///
-  Widget _tableDeBtns() {
+  List<Widget> _getBtnsSame() {
 
-    List<Widget> tablaRowsReg;
-    
-    String username = (this._dataShared.username == null) ? 'Anónimo' : this._dataShared.username;
-    if(username == 'Anónimo'){
-      tablaRowsReg = [
-        _buildBtnMenuGenerico(icono: Icons.verified_user, titulo: 'Registrarme', numIndice: 1),
-        _buildBtnMenuGenerico(icono: Icons.account_circle, titulo: 'Hacer Lógin', numIndice: 2),
-        _buildBtnMenuGenerico(icono: Icons.drive_eta, titulo: 'Mis AUTOS', numIndice: 3),
-      ];
-    }else{
-      tablaRowsReg = [
-        _buildBtnMenuGenerico(icono: Icons.monetization_on, titulo: 'Cotizaciones', numIndice: 1),
-        _buildBtnMenuGenerico(icono: Icons.pan_tool, titulo: 'Solicitudes', numIndice: 2),
-        _buildBtnMenuGenerico(icono: Icons.drive_eta, titulo: 'Vehículos', numIndice: 3),
+    List<Widget> lst = new List();
+    lst.add(_buildBtnMenuGenerico(icono: Icons.extension, titulo: 'Refacciones', numIndice: 4));
+    lst.add(_buildBtnMenuGenerico(icono: Icons.build, titulo: 'Servicios', numIndice: 5));
+    lst.add(_buildBtnMenuGenerico(icono: Icons.directions_car, titulo: 'Vehículos', numIndice: 3));
+    return lst;
+  }
+
+  ///
+  List<Widget> _getBtnsAnonimo() {
+
+    List<Widget> lst = new List();
+    lst.add(_buildBtnMenuGenerico(icono: Icons.verified_user, titulo: 'Crear Cuenta', numIndice: 1));
+    lst.add(_buildBtnMenuGenerico(icono: Icons.account_circle, titulo: 'Hacer Lógin', numIndice: 2));
+    lst.add(_buildBtnMenuGenerico(icono: Icons.drive_eta, titulo: 'Mis AUTOS', numIndice: 3));
+    return lst;
+  }
+
+  ///
+  Widget getTablaFinalDeBotones() {
+
+    return Column(
+      children: [
+        (this._username == 'Anónimo') ? SizedBox(height: 0) : _btnMnuMainBy(),
+        Text(
+          '¿Qué deseas Buscar?',
+          textAlign: TextAlign.center,
+          textScaleFactor: 1,
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+            color: Colors.red[100],
+            letterSpacing: 1
+          ),
+        ),
+        Table(
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          children: [
+            (!this._isSocio && this._username == 'Anónimo')
+            ?
+            TableRow(
+              children: _getBtnsAnonimo()
+            )
+            :
+            TableRow(
+              children: [
+                const SizedBox(height: 0),
+                const SizedBox(height: 0),
+                const SizedBox(height: 0),
+              ]
+            ),
+            TableRow(
+              children: _getBtnsSame()
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  ///
+  Widget _btnMnuMainBy() {
+
+    String titulo = 'TU MENÚ PRINCIPAL';
+    String submenu = 'Pedidos, Cotizaciones y Publicaciones';
+
+    if(this._isSocio) {
+      submenu = 'Pedidos, Cotizaciones y Publicaciones';
+      this._menuMainBy = [
+        {
+          'titulo': 'OPORTUNIDAD DE VENTA',
+          'subTit': 'Responde a Solicitudes de Piezas',
+          'icono' : Icons.monetization_on,
+          'accion': () => Navigator.of(this._context).pushNamedAndRemoveUntil('oportunidades_page', (route) => false),
+        },
+        {
+          'titulo': 'PUBLICAR REFACCIONES',
+          'subTit': 'Vende tus piezas en Internet',
+          'icono' : Icons.add_shopping_cart,
+          'accion': () => Navigator.of(this._context).pushNamedAndRemoveUntil('oportunidades_page', (route) => false),
+        },
       ];
     }
 
-    return Table(
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      children: [
-        TableRow(
-          children: tablaRowsReg
-        ),
-        TableRow(
-          children: [
-            _buildBtnMenuGenerico(icono: Icons.business, titulo: 'ZonaMotora', numIndice: 4),
-            _buildBtnMenuGenerico(icono: Icons.search, titulo: 'Buscador', numIndice: 5),
-            _buildBtnMenuGenerico(icono: Icons.add_shopping_cart, titulo: 'Publicar', numIndice: 6),
+    if(!this._isSocio) {
+      submenu = 'Solicitar Piezas, Revisar Cotizaciones ...';
+       this._menuMainBy = [
+        {
+          'titulo': 'SOLICITAR REFACCIONES',
+          'subTit': 'Solicita Cotizaciones de Piezas',
+          'icono' : Icons.extension,
+          'accion': () => Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (route) => false),
+        },
+        {
+          'titulo': 'REVISAR SOLICITUDES',
+          'subTit': 'Selecciona tu mejor opción',
+          'icono' : Icons.description,
+          'accion': (){
+            Provider.of<DataShared>(context, listen: false).setCotizacPageView(0);
+            Navigator.of(this._context).pushNamedAndRemoveUntil('index_cotizacion_page', (route) => false);
+          },
+        },
+      ];
+    }
+
+    return InkWell(
+      onTap: (){
+        this._keySk.currentState.showBottomSheet(
+          (_) => _menuPrincipal(titulo),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          )
+        );
+      },
+      child: Container(
+        width: this._screen.width,
+        padding: EdgeInsets.all(2),
+        margin: EdgeInsets.symmetric(horizontal: 7, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromRGBO(255, 255, 255, 0.8),
+              Color.fromRGBO(255, 255, 255, 0.6)
+            ],
+            begin: Alignment.topRight
+          ),
+          border: Border.all(
+            color: Colors.red[100]
+          ),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 1,
+              color: Color(0xffAF270A),
+              offset: Offset(2,2)
+            )
           ]
         ),
-        TableRow(
-          children: [
-            _buildBtnMenuGenerico(icono: Icons.extension, titulo: 'Refacciones', numIndice: 4),
-            _buildBtnMenuGenerico(icono: Icons.build, titulo: 'Servicios', numIndice: 5),
-            _buildBtnMenuGenerico(icono: Icons.toys, titulo: 'Patrocinador', numIndice: 6),
-          ]
-        ),
-      ],
+        child: Container(
+          padding: EdgeInsets.all(5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(Icons.clear_all, size: 40, color: Colors.orange[800]),
+                  Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: Text(
+                      '$titulo...',
+                      textScaleFactor: 1,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 5),
+                child: Text(
+                  submenu,
+                  textScaleFactor: 1,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    color: Colors.red[800],
+                    fontSize: 15
+                  ),
+                ),
+              )
+            ],
+          ),
+        )
+      ),
     );
+  }
+
+  ///
+  Widget _menuPrincipal(String titulo) {
+
+    return Container(
+      width: this._screen.width,
+      decoration: BoxDecoration(
+        color: Colors.blueGrey[50],
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        )
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: this._screen.width,
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 30),
+            decoration: BoxDecoration(
+              color: Colors.blueGrey,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              )
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 10
+                  ),
+                  child: Text(
+                    titulo,
+                    textScaleFactor: 1,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 18,
+                      letterSpacing: 2
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () => Navigator.of(this._context).pop(),
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    margin: EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.red,
+                      border: Border.all(
+                        color: Colors.blueGrey[100],
+                        width: 1
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 1,
+                          color: Colors.black,
+                          offset: Offset(1,1)
+                        )
+                      ]
+                    ),
+                    child: Icon(Icons.close, color: Colors.white, size: 22),
+                  ),
+                )
+              ],
+            ),
+          ),
+          Container(
+            child: Column(
+              children: _crearSubMenuPrincipal()
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  ///
+  List<Widget> _crearSubMenuPrincipal() {
+
+    List<Widget> lstWids = new List();
+    for (var i = 0; i < this._menuMainBy.length; i++) {
+      lstWids.add(_itemMenuPrincipal(this._menuMainBy[i]));
+    }
+    return lstWids;
+  }
+
+  ///
+  Widget _itemMenuPrincipal(Map<String, dynamic> data) {
+
+    return ListTile(
+      contentPadding: EdgeInsets.all(10),
+      leading: Icon(data['icono'], size: 30, color: Colors.orange),
+      title: Text(
+        data['titulo'],
+        textScaleFactor: 1,
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.bold
+        ),
+      ),
+      subtitle: Text(
+        data['subTit'],
+        textScaleFactor: 1,
+        style: TextStyle(
+          fontSize: 15
+        ),
+      ),
+      dense: true,
+      trailing: Icon(Icons.arrow_forward_ios, size: 20),
+      onTap: data['accion'],
+    );
+  }
+
+  ///
+  Future<bool> _deternimarBotonesSegunRole() async {
+    this._isSocio =  await emUser.isSocio();
+    return true;
   }
 
   ///
@@ -699,10 +1024,17 @@ class _IndexPageState extends State<IndexPage> {
               Navigator.of(this._context).pushNamedAndRemoveUntil('mis_autos_page', (Route rutas) => false);
               break;
             case 4:
-              // Navigator.of(this._context).pushNamedAndRemoveUntil('recovery_cuenta_page', (Route rutas) => false);
+              Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false);
               break;
             case 5:
               Navigator.of(this._context).pushNamedAndRemoveUntil('buscar_index_page', (Route rutas) => false);
+              break;
+            case 6:
+              Provider.of<DataShared>(context, listen: false).setCotizacPageView(0);
+              Navigator.of(this._context).pushNamedAndRemoveUntil('index_cotizacion_page', (Route rutas) => false);
+              break;
+            case 7:
+              Navigator.of(this._context).pushNamedAndRemoveUntil('oportunidades_page', (Route rutas) => false);
               break;
             default:
               Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false);

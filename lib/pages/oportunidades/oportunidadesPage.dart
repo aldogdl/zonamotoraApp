@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:zonamotora/pages/oportunidades/widgets/cotizaciones_widget.dart';
-import 'package:zonamotora/pages/oportunidades/widgets/ventas_widget.dart';
-import 'package:zonamotora/pages/oportunidades/widgets/solicitudes_widget.dart';
-import 'package:zonamotora/widgets/app_barr_my.dart';
+import 'package:provider/provider.dart';
+
+import 'package:zonamotora/data_shared.dart';
+import 'package:zonamotora/pages/oportunidades/widgets/apartados_widget.dart';
+import 'package:zonamotora/pages/oportunidades/widgets/acotizar_widget.dart';
+import 'package:zonamotora/pages/oportunidades/widgets/inventario_widget.dart';
+import 'package:zonamotora/singletons/config_gms_sngt.dart';
+import 'package:zonamotora/singletons/cotizacion_sngt.dart';
+import 'package:zonamotora/widgets/ico_notif_widget.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 
@@ -13,13 +18,13 @@ class OportunidadesPage extends StatefulWidget {
 
 class _OportunidadesPageState extends State<OportunidadesPage> {
 
-  AppBarrMy appBarrMy = AppBarrMy();
   MenuInferior menuInferior = MenuInferior();
+  CotizacionSngt sngtCot = CotizacionSngt();
+  ConfigGMSSngt configGMSSngt = ConfigGMSSngt();
+  
   BuildContext _context;
   List<Tab> _tabsBar;
-  int _cantOps = 0;
-  int _cantMisCots = 0;
-  int _cantPedidos = 0;
+  bool _isInit = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,18 +33,38 @@ class _OportunidadesPageState extends State<OportunidadesPage> {
     context = null;
     this._tabsBar = _getTabs();
 
+    if(!this._isInit){
+      this._isInit = true;
+      sngtCot.hasDataPedidos = false;
+      sngtCot.hasDataPieza = true;
+      configGMSSngt.setContext(this._context);
+    }
+
     return DefaultTabController(
       length: this._tabsBar.length,
-      initialIndex: 0,
+      initialIndex: Provider.of<DataShared>(this._context).opsVtasPageView,
       child: Scaffold(
         appBar: AppBar(
+          elevation: 3,
+          backgroundColor: Color(0xff7C0000),
           title: Text(
-            'Oportunidades',
+            'Oportunidades de Venta',
             textScaleFactor: 1,
             style: TextStyle(
               fontSize: 16
             ),
           ),
+          actions: <Widget>[
+            Consumer<DataShared>(
+              builder: (BuildContext _context, dataShared, _){
+                if(dataShared.showNotif){
+                  return IcoNotifWidget();
+                }else{
+                  return SizedBox(height: 30);
+                }
+              },
+            )
+          ],
           bottom: TabBar(tabs: this._tabsBar),
         ),
         backgroundColor: Colors.red[100],
@@ -58,65 +83,82 @@ class _OportunidadesPageState extends State<OportunidadesPage> {
 
     return TabBarView(
       children: <Widget>[
-        SolicitudesWidget(),
-        CotizacionesWidget(),
-        VentasWidget(),
+        ACotizarWidget(),
+        ApartadosWidget(),
+        InventarioWidget(),
       ],
     );
   }
 
   ///
   List<Tab> _getTabs() {
-    
-    double tamFontOp  = (this._cantOps >= 10) ? 11 : 13;
-    double tamFontCot = (this._cantMisCots >= 10) ? 11 : 13;
-    double tamFontPed = (this._cantPedidos >= 10) ? 11 : 13;
 
     return [
       Tab(
         icon: CircleAvatar(
           backgroundColor: Colors.red[100],
           maxRadius: 11,
-          child: Text(
-            '${this._cantMisCots}',
-            textScaleFactor: 1,
-            style: TextStyle(
-              fontSize: tamFontOp,
-              fontWeight: FontWeight.bold
-            ),
+          child: Consumer<DataShared>(
+            builder: (BuildContext _context, dataShared, __){
+              return Text(
+                '${dataShared.opVtasAcotizar}',
+                textScaleFactor: 1,
+                style: TextStyle(
+                  fontSize: (dataShared.opVtasAcotizar > 10 ? 11 : 13),
+                  fontWeight: FontWeight.bold
+                ),
+              );
+            },
           ),
         ),
-        text: 'Solicitudes',
+        child: Text(
+          'A Cotizar',
+          textScaleFactor: 1,
+        ),
       ),
       Tab(
         icon: CircleAvatar(
           backgroundColor: Colors.red[100],
           maxRadius: 11,
-          child: Text(
-            '${this._cantMisCots}',
-            textScaleFactor: 1,
-            style: TextStyle(
-              fontSize: tamFontCot,
-              fontWeight: FontWeight.bold
-            ),
+          child: Consumer<DataShared>(
+            builder: (BuildContext _context, dataShared, __){
+              return Text(
+                '${dataShared.opVtasApartadas}',
+                textScaleFactor: 1,
+                style: TextStyle(
+                  fontSize: (dataShared.opVtasApartadas > 10 ? 11 : 13),
+                  fontWeight: FontWeight.bold
+                ),
+              );
+            },
           ),
         ),
-        text: 'Cotizaciones',
+        child: Text(
+          'Apartadas',
+          textScaleFactor: 1,
+        ),
       ),
       Tab(
         icon: CircleAvatar(
           backgroundColor: Colors.red[100],
           maxRadius: 11,
-          child: Text(
-            '${this._cantPedidos}',
-            textScaleFactor: 1,
-            style: TextStyle(
-              fontSize: tamFontPed,
-              fontWeight: FontWeight.bold
-            ),
+          child: Consumer<DataShared>(
+            builder: (BuildContext _context, dataShared, __){
+              return Text(
+                '${dataShared.opVtasInventario}',
+                textScaleFactor: 1,
+                style: TextStyle(
+                  fontSize: (dataShared.opVtasInventario > 10 ? 11 : 13),
+                  fontWeight: FontWeight.bold
+                ),
+              );
+            },
           ),
         ),
-        text: 'Mis Ventas',
+        child: Text(
+          'Inventario',
+          textScaleFactor: 1,
+        )
       ),
     ];
   }

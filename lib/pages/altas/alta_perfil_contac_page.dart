@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:zonamotora/data_shared.dart';
@@ -18,6 +19,7 @@ class AltaPerfilContacPage extends StatefulWidget {
   @override
   _AltaPerfilContacPageState createState() => _AltaPerfilContacPageState();
 }
+
 
 class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
 
@@ -87,22 +89,30 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
       drawer: MenuMain(),
       body: WillPopScope(
         onWillPop: () => Future.value(false),
-        child: SingleChildScrollView(
-          child: Container(
-            width: MediaQuery.of(this._context).size.width,
-
-            decoration: BoxDecoration(
+        child: Container(
+          width: MediaQuery.of(this._context).size.width,
+          height: MediaQuery.of(this._context).size.height,
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Colors.black,
-                Colors.red,
+                Colors.red
               ],
               begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              )
-            ),
-            child: _body(),
+              end: Alignment.bottomCenter
+            )
           ),
+          child: Column(
+            children: [
+              regresarPagina.widget(this._context, 'REGRESAR', lstMenu: altaUserSngt.crearMenuSegunRole()),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _crearLstInputs(),
+                ),
+              )
+            ]
+          )
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -128,6 +138,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
 
   ///
   Future<void> _afterFirstLayout(_) async {
+
     if(!this._isInit) {
       this._isInit = true;
       String ruta = 'alta_mksmds_page';
@@ -142,11 +153,10 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
   ///
   Future<void> _getPosicionGPS() async {
 
-    Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
-    final permisos = await geolocator.checkGeolocationPermissionStatus();
-    if(permisos == GeolocationStatus.granted){
-      Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      List<Placemark> placemark = await Geolocator().placemarkFromCoordinates(position.latitude, position.longitude);
+    LocationPermission permisos = await checkPermission();
+    if(LocationPermission.always == permisos){
+      Position position = await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      List<Placemark> placemark = await placemarkFromCoordinates(position.latitude, position.longitude);
       if(placemark.length > 0){
         if(this._ctrlDomicilio.text == null && altaUserSngt.direccionForMap == null) {
           this._ctrlDomicilio.text = '${placemark.first.thoroughfare} ${placemark.first.subThoroughfare}';
@@ -183,6 +193,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
         domicilio: this._ctrlDomicilio.text,
         telsContac: this._ctrlTelContac.text,
       );
+      
       return true;
     }else{
 
@@ -204,43 +215,39 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
   }
 
   ///
-  Widget _body() {
-
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-        regresarPagina.widget(this._context, 'REGRESAR', lstMenu: altaUserSngt.crearMenuSegunRole()),
-        const SizedBox(height: 10),
-        Text(
-          '[1/3] Perfil del Usuario',
-          textScaleFactor: 1,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20
-          ),
-        ),
-        Text(
-          'DATOS DE CONTACTO',
-          textScaleFactor: 1,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 15
-          ),
-        ),
-        const SizedBox(height: 10),
-        _crearLstInputs(),
-      ],
-    );
-  }
-
-  ///
   Widget _crearLstInputs() {
 
-    double altoSizedBox = (MediaQuery.of(this._context).size.height < 550) ? 100 : 50;
+    double altoSizedBox = (MediaQuery.of(this._context).size.height < 550) ? 100 : 80;
 
     List<Widget> listInputs = [
+      
+      SizedBox(
+        width: MediaQuery.of(this._context).size.width,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Center(
+            child: Column(
+              children: [
+                Text(
+                  '[1/3] Perfil de Usuario',
+                  textScaleFactor: 1,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17
+                  ),
+                ),
+                Text(
+                  'DATOS DE CONTACTO',
+                  textScaleFactor: 1,
+                  style: TextStyle(
+                    color: Colors.red[100]
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
       _inputNombreContacto(),
       _inputRasonSocial(),
       _selectCiudades(),
@@ -249,14 +256,9 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
       SizedBox(height: altoSizedBox),
     ];
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      height: MediaQuery.of(this._context).size.height * 0.635,
-      width: MediaQuery.of(this._context).size.width,
-      child: Form(
-        key: this._frmKey,
-        child: containerInputs.container(listInputs, 'perfil_contact', labelColor: Colors.grey[200]),
-      ),
+    return Form(
+      key: this._frmKey,
+      child: containerInputs.container(listInputs, 'perfil_contact', labelColor: Colors.grey[200]),
     );
   }
 

@@ -74,6 +74,19 @@ class DBApp {
           ' mdNombre TEXT,'
           ' mkNombre TEXT,'
           ' anio INTEGER,'
+          ' version TEXT,'
+          ' createdAt TEXT'
+          ');'
+        );
+
+        await db.execute(
+          'CREATE TABLE notifics ('
+          ' id INTEGER,'
+          ' idServer INTEGER,'
+          ' cant INTEGER,'
+          ' tema TEXT,'
+          ' titulo TEXT,'
+          ' page TEXT,'
           ' createdAt TEXT'
           ');'
         );
@@ -84,6 +97,20 @@ class DBApp {
           ' path TEXT,'
           ' metadata TEXT,'
           ' contents TEXT'
+          ');'
+        );
+
+        await db.execute(
+          'CREATE TABLE cotizaciones ('
+          ' filename TEXT,'
+          ' createdAt TEXT'
+          ');'
+        );
+
+        await db.execute(
+          'CREATE TABLE carshop ('
+          ' idInv INTEGER,'
+          ' createdAt TEXT'
           ');'
         );
       },

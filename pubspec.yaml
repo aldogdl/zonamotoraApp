@@ -31,6 +31,7 @@ dependencies:
   sqflite:
   provider:
   photo_view:
+  geocoding:
   geolocator:
   url_launcher:
   path_provider:

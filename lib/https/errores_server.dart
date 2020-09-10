@@ -25,6 +25,10 @@ class ErroresServer {
             _result['msg'] = 'ERROR EN CREDENCIALES';
             _result['body'] = 'Tus credenciales no son correctas, inténtalo nuevamente';
           }
+          if(res['message'].contains('Expired')){
+            _result['msg'] = 'TOKEN EXPIRADO';
+            _result['body'] = 'La llave para el servidor ha caducado';
+          }
           if(res['message'].contains('not found')){
             _result['msg'] = 'LLAVE DEL SERVIDOR';
             _result['body'] = 'El token para la comunicación hacia el servidor, no fué enviado';
@@ -60,5 +64,6 @@ class ErroresServer {
     }
       return true;
     }());
+
   }
 }

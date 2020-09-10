@@ -1,12 +1,88 @@
+import 'dart:convert';
 
 import 'package:zonamotora/bds/data_base.dart';
 import 'package:zonamotora/entity/usuario_entity.dart';
+import 'package:zonamotora/https/errores_server.dart';
 import 'package:zonamotora/https/usuarios_http.dart';
 
 class UserRepository {
 
   UsuariosHttp userHttp = UsuariosHttp();
   UsuarioEntity userEntity = UsuarioEntity();
+  ErroresServer erroresServer = ErroresServer();
+
+  Map<String, dynamic> result = {'abort': false, 'msg':'ok', 'body':[]};
+
+  ///
+  Future<List<Map<String, dynamic>>> buscarUserBy(String criterio, String tokentmpAsesor) async {
+
+    List<Map<String, dynamic>> lstResult = new List();
+    final reServer = await userHttp.buscarUserBy(criterio, tokentmpAsesor);
+    if(reServer.statusCode == 200) {
+      lstResult = new List<Map<String, dynamic>>.from(json.decode(reServer.body));
+    }else{
+      this.result = erroresServer.determinarError(reServer);
+    }
+
+    return lstResult;
+  }
+
+  ///@see AltaPaginaWebDesPeqPage::build
+  Future<bool> checkSlugParaSitioWeb(String slug, int idPag, String tokentmpAsesor) async {
+
+    return  await userHttp.checkSlugParaSitioWeb(slug, idPag, tokentmpAsesor);
+  }
+
+  ///@see AltaPaginaWebDesPeqPage::_hasSitioWeb
+  Future<Map<String, dynamic>> hasSitioWebByIdPerfil(int idPerfil, String tokentmpAsesor) async {
+
+    Map<String, dynamic> sitioWeb = new Map();
+    final reServer = await userHttp.hasSitioWebByIdPerfil(idPerfil, tokentmpAsesor);
+    if(reServer.statusCode == 200) {
+      final r = json.decode(reServer.body);
+      if(r.length > 0){
+        sitioWeb = new Map<String, dynamic>.from(r);
+      }else{
+        sitioWeb = new Map();
+      }
+    }else{
+      this.result = erroresServer.determinarError(reServer);
+    }
+
+    return sitioWeb;
+  }
+
+  ///@see AltaPaginaWebBuildPage::_saveDataSitioWeb
+  Future<bool> saveDataSitioWeb(Map<String, dynamic> data, String tokentmpAsesor) async {
+
+    bool sitioWeb;
+    final reServer = await userHttp.saveDataSitioWeb(data, tokentmpAsesor);
+    if(reServer.statusCode == 200) {
+      this.result = new Map<String, dynamic>.from(json.decode(reServer.body));
+      sitioWeb = (this.result['abort']) ? false : true;
+    }else{
+      this.result = erroresServer.determinarError(reServer);
+      sitioWeb = false;
+    }
+
+    return sitioWeb;
+  }
+
+  ///@see AltaPaginaWebLogoPage::_sendDataAndLogo
+  Future<bool> sendDataAndLogo(Map<String, dynamic> data, Map<String, dynamic> logo, String tokentmpAsesor) async {
+
+    bool respuesta = false;
+    final reServer = await userHttp.sendDataAndLogo(data, logo, tokentmpAsesor);
+    data = null; logo = null; tokentmpAsesor = null;
+    if(reServer.statusCode == 200){
+      Map<String, dynamic> resp = new Map<String, dynamic>.from(json.decode(reServer.body));
+      respuesta = (!resp['abort']) ? true : false;
+      this.result = resp;
+    }else{
+      this.result = erroresServer.determinarError(reServer);
+    }
+    return respuesta;
+  }
 
   /* */
   Future<Map<String, dynamic>> getDataUser() async {
@@ -81,9 +157,23 @@ class UserRepository {
         user['u_usname']      = data.first['u_usname'];
         user['u_uspass']      = data.first['u_uspass'];
         user['u_tokenServer'] = data.first['u_tokenServer'];
+        user['u_tokenDevices'] = data.first['u_tokenDevices'];
       }
     }
     return user;
+  }
+
+    /* */
+  Future<bool> isSocio() async {
+
+    final db = await DBApp.db.abrir;
+    if(db.isOpen) {
+      List<Map<String, dynamic>> data = await db.query('user', columns: ['u_roles']);
+      if(data.isNotEmpty){
+        return (data[0]['u_roles'] == 'ROLE_SOCIO') ? true : false;
+      }
+    }
+    return false;
   }
 
   /* */
@@ -144,11 +234,21 @@ class UserRepository {
     }
   }
 
+  /* */
+  Future<void> setTokenDevicesInBD(String token) async {
+
+    final db = await DBApp.db.abrir;
+    if(db.isOpen) {
+      await db.update('user', {'u_tokenDevices' : token});
+    }
+  }
+
   /*
    * @see RecoveryCuentaPage::_getTokens
    * @see InitConfigPage::_checkDataUser
   */
   Future<Map<String, dynamic>> getTokenFromServer({Map<String, dynamic> dataUser}) async {
+    
     if(dataUser == null) {
       dataUser = await getCredentials();
     }
@@ -161,7 +261,7 @@ class UserRepository {
 
   /* */
   Future<Map<String, dynamic>> getDataUserFromServer(UsuarioEntity userEntiy) async {
-    
+
     Map<String, dynamic> res = await userHttp.getDataUserFromServer(userEntiy.getJsonForRecoveryData());
     if(res.containsKey('error')){
       return userHttp.result;
@@ -190,7 +290,28 @@ class UserRepository {
   /* */
   Future<void> updateTokenDevice(String tokenDeviceNuevo) async {
 
-    print('::Actualizar token device :: Sin realizar');
+    Map<String, dynamic> dataUser = await getCredentials();
+    if(dataUser['u_tokenDevices'] != tokenDeviceNuevo){
+      await setTokenDevicesInBD(tokenDeviceNuevo);
+      dataUser['u_tokenDevices'] = tokenDeviceNuevo;
+    }
+    await userHttp.updateTokenDevice(dataUser);
+  }
+
+  /* */
+  Future<Map<String, dynamic>> autenticacionLocal(String pass) async {
+
+    Map<String, dynamic> dataUser = await getCredentials();    
+    if(dataUser['u_uspass'] == pass){
+      return {'autorizado':true, 'dataUser': dataUser};
+    }
+    return {'autorizado':false};
+  }
+
+  /* */
+  Future<Map<String, dynamic>> hacerPruebaDeComunicacionPush(Map<String, dynamic> dataUser) async {
+
+    return await userHttp.hacerPruebaDeComunicacionPush(dataUser);
   }
 
 }

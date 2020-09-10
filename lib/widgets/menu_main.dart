@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/globals.dart' as globals;
+import 'package:zonamotora/widgets/frm_change_ip.dart';
 
 
 class MenuMain extends StatelessWidget {
   const MenuMain({Key key}) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
 
@@ -14,6 +15,11 @@ class MenuMain extends StatelessWidget {
     double h = MediaQuery.of(context).size.height * 0.25;
 
     final btns = {
+      'index': {
+        'titulo': 'Página Principal',
+        'ico' : Icons.home,
+        'path': 'index_page'
+      },
       'config': {
         'titulo' : 'Ver Configuraciones',
         'ico' : Icons.settings,
@@ -28,10 +34,20 @@ class MenuMain extends StatelessWidget {
         'titulo': 'Vincular Dispositivo',
         'ico'   : Icons.phone_android,
         'path'  : 'inxed_page'
-      },      
+      },
       'registro': {
         'titulo': 'Registro de Usuario',
         'ico'   : Icons.security,
+        'path'  : 'reg_index_page'
+      },
+      'constraint': {
+        'titulo': 'Restricciones Push',
+        'ico'   : Icons.notification_important,
+        'path'  : 'constraint_page_push'
+      },
+      'zonaMotora': {
+        'titulo': 'Zona Motora',
+        'ico'   : Icons.business,
         'path'  : 'reg_index_page'
       }
     };
@@ -48,13 +64,37 @@ class MenuMain extends StatelessWidget {
               child: _cabecera(w, h),
             ),
             _titulo(w),
-            _btnCreate(context, btns['autos']),
-            Divider(height: 1, color: Colors.red[200]),
-            _btnCreate(context, btns['vincular']),
-            Divider(height: 1, color: Colors.red[200]),
-            _btnCreate(context, btns['registro']),
-            Divider(height: 1, color: Colors.red[200]),
-            _btnCreate(context, btns['config']),
+            (globals.env == 'dev')
+            ?
+            FrmChangeIpWidget()
+            :
+            SizedBox(height: 0),
+            Expanded(
+              child: ListView(
+                children: [
+                  _btnCreate(context, btns['index']),
+                  Divider(height: 1, color: Colors.red[200]),
+                  _btnCreate(context, btns['autos']),
+                  Divider(height: 1, color: Colors.red[200]),
+                  _btnCreate(context, btns['vincular']),
+                  Divider(height: 1, color: Colors.red[200]),
+                  _btnCreate(context, btns['registro']),
+                  Divider(height: 1, color: Colors.red[200]),
+                  _btnCreate(context, btns['config']),
+                  Divider(height: 1, color: Colors.red[200]),
+                  Consumer<DataShared>(
+                    builder: (_, dataShared, __) {
+                      if(dataShared.role == 'ROLE_SOCIO'){
+                        return  _btnCreate(context, btns['constraint']);
+                      }
+                      return const SizedBox();
+                    }
+                  ),
+                  Divider(height: 1, color: Colors.red[200]),
+                  _btnCreate(context, btns['zonaMotora']),
+                ],
+              ),
+            )
           ],
         ),
       ),
@@ -63,7 +103,7 @@ class MenuMain extends StatelessWidget {
 
   /* */
   Widget _cabecera(double w, double h) {
-    
+
     return Stack(
       alignment: Alignment.center,
       overflow: Overflow.clip,
@@ -101,6 +141,7 @@ class MenuMain extends StatelessWidget {
           right: 10,
           child: Text(
             '${globals.version}',
+            textScaleFactor: 1,
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -133,6 +174,7 @@ class MenuMain extends StatelessWidget {
             }
             return Text(
               'Aplicaión $tipoApp',
+              textScaleFactor: 1,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold
@@ -160,6 +202,7 @@ class MenuMain extends StatelessWidget {
       dense: true,
       title: Text(
         '${data['titulo']}',
+        textScaleFactor: 1,
         textAlign: TextAlign.start,
       ),
       leading: Icon(data['ico'])

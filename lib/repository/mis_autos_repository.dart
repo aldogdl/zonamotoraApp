@@ -3,11 +3,9 @@ import 'package:zonamotora/bds/data_base.dart';
 import 'package:zonamotora/https/mis_autos_http.dart';
 import 'package:zonamotora/repository/autos_repository.dart';
 import 'package:zonamotora/repository/user_repository.dart';
-import 'package:zonamotora/singletons/myAutos_sngt.dart';
 
 class MisAutosRepository {
 
-  MyAutosSngt myAutosSngt = MyAutosSngt();
   UserRepository emUser = UserRepository();
   MisAutosHttp misAutosHttp = MisAutosHttp();
   AutosRepository emAutos = AutosRepository();
@@ -16,34 +14,32 @@ class MisAutosRepository {
     Intl.defaultLocale = 'es_MX';
   }
 
+  DateFormat f = DateFormat('yyyy-MM-dd');
+
   /*
    * @see SeleccionarAnioWidgetPage::_sendFrm
   */
-  Future<Map<String, dynamic>> setNewMisAuto() async {
+  Future<Map<String, dynamic>> setNewMisAuto(Map<String, dynamic> auto) async {
 
     String fecha;
-    DateFormat f = DateFormat('yyyy-MM-d');
     Map<String, dynamic> credentials = await emUser.getCredentials();
-    Map<String, dynamic> auto = new Map.from(await emAutos.getAutoByIdModelo(myAutosSngt.modSelecc));
-
-    if(myAutosSngt.createdAt == null){
+    if(!auto.containsKey('createdAt')) {
       DateTime hoy = DateTime.now();
       fecha = f.format(hoy);
-    }else{
-      fecha = f.format(myAutosSngt.createdAt);
     }
     auto['createdAt'] = fecha;
-    auto['anio'] = myAutosSngt.anio;
     auto['user'] = credentials['u_id'];
-
+    
     Map<String, dynamic> result = await misAutosHttp.setNewMisAuto(auto, credentials['u_tokenServer']);
     if(!result['abort']){
       auto['idReg'] = result['body'];
       final db = await DBApp.db.abrir;
       if(db.isOpen) {
-        await db.insert('misAutos', fromAltaToJson(auto));
+        auto.remove('user');
+        await db.insert('misAutos', auto);
       }
     }
+
     return result;
   }
 
@@ -52,7 +48,6 @@ class MisAutosRepository {
   */
   Future<void> setListAutos(List<Map<String, dynamic>> autos) async {
 
-    DateFormat f = DateFormat('yyyy-MM-d');
     String fecha;
     final db = await DBApp.db.abrir;
     if(db.isOpen) {
@@ -136,18 +131,15 @@ class MisAutosRepository {
     return (hecho > 0) ? true : false;
   }
 
-  /* */
-  Map<String, dynamic> fromAltaToJson(Map<String, dynamic> auto) {
+  ///
+  Future<Map<String, dynamic>> getAutoFromBDByIdAuto(int idAuto) async {
 
-    return {
-      'idReg'    : auto['idReg'],
-      'mdid'     : auto['md_id'],
-      'mkid'     : auto['mk_id'],
-      'mdNombre' : auto['md_nombre'],
-      'mkNombre' : auto['mk_nombre'],
-      'anio'     : auto['anio'],
-      'createdAt': auto['createdAt'],
-    };
+    final db = await DBApp.db.abrir;
+    if(db.isOpen){
+      final auto = await db.query('misAutos', where: 'idReg = ?', whereArgs: [idAuto]);
+      return (auto.isNotEmpty) ? new Map<String,  dynamic>.from(auto[0]) : new Map();
+    }
+    return new Map();
   }
 
   /* Para convertir los datos recuperados del servidor a un json necesario para ls BD interna */
@@ -160,6 +152,7 @@ class MisAutosRepository {
       'mdNombre' : auto['md_nombre'],
       'mkNombre' : auto['mk_nombre'],
       'anio'     : auto['a_anio'],
+      'version'  : auto['a_version'],
       'createdAt': auto['a_createdAt'],
     };
   }

@@ -52,6 +52,7 @@ class _AltaSistemaPalClasPageState extends State<AltaSistemaPalClasPage> {
       DataShared dataShared = Provider.of<DataShared>(this._context, listen: false);
       bgAltasStack.setBuildContext(this._context);
       dataShared.setLastPageVisit('alta_sistema_page');
+
       altaUserSngt.listSistemaSelect.forEach((sistema){
         this._lstIdsSistems.add(sistema['sa_id']);
       });
@@ -179,6 +180,7 @@ class _AltaSistemaPalClasPageState extends State<AltaSistemaPalClasPage> {
         itemBuilder: (BuildContext contex, int index) {
 
           final icono = _getElementByListSeleccionada('icono', index);
+          Map<String, dynamic> sistemaTxt = altaUserSngt.lstSistemas.firstWhere((element) => element['sa_id'] == altaUserSngt.listSistemaSelect[index]['sa_id']);
 
           return ListTile(
             dense: true,
@@ -205,7 +207,7 @@ class _AltaSistemaPalClasPageState extends State<AltaSistemaPalClasPage> {
               });
             },
             title: Text(
-              '${altaUserSngt.lstSistemas[index]['sa_nombre']}',
+              '${sistemaTxt['sa_nombre']}',
               textScaleFactor: 1,
               textAlign: TextAlign.start,
               style: TextStyle(
@@ -224,9 +226,11 @@ class _AltaSistemaPalClasPageState extends State<AltaSistemaPalClasPage> {
   /* */
   Widget _contenedorDelInputPalClas(int index) {
 
+    Map<String, dynamic> sistemaTxt = altaUserSngt.lstSistemas.firstWhere((element) => element['sa_id'] == altaUserSngt.listSistemaSelect[index]['sa_id']);
+
     return Container(
       width: MediaQuery.of(this._context).size.width,
-      height: MediaQuery.of(this._context).size.height * ((this._isSmall) ? 0.42 : 0.32),
+      //height: MediaQuery.of(this._context).size.height * ((this._isSmall) ? 0.42 : 0.32),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20)
@@ -245,7 +249,7 @@ class _AltaSistemaPalClasPageState extends State<AltaSistemaPalClasPage> {
               color: Colors.orange,
             ),
             child: Text(
-              '${altaUserSngt.lstSistemas[index]['sa_nombre']}',
+              '${sistemaTxt['sa_nombre']}',
               textScaleFactor: 1,
               textAlign: TextAlign.center,
               style: TextStyle(

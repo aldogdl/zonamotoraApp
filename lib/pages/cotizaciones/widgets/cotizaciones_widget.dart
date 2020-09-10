@@ -524,12 +524,9 @@ class _CotizacionesWidgetState extends State<CotizacionesWidget> {
   ///
   Future<bool> _getSolicitudes() async {  
 
-    print(Provider.of<DataShared>(this._context, listen: false).cotizacPageView);
-
     if(Provider.of<DataShared>(this._context, listen: false).cotizacPageView == 1) {
 
       bool result = await emSols.getSolicitudesByidUser();
-      print('entra');
       if(result){
         this._lstRespuestas = new List<Map<String, dynamic>>.from(emSols.result['body']);
         Provider.of<DataShared>(this._context, listen: false).setCantCotiz(this._lstRespuestas.length);

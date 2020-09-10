@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 import 'package:zonamotora/singletons/solicitud_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
+import 'package:zonamotora/widgets/dialog_ver_fotos.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
+import 'package:zonamotora/globals.dart' as globals;
 
 class LstPiezasPage extends StatefulWidget {
 
@@ -61,10 +61,8 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
 
     _crearListaDePiezas();
 
-    double alto = (this._screen.height <= 550) ?  0.60 : 0.69;
     return Container(
       width: this._screen.width,
-      height: this._screen.height,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -80,12 +78,10 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
           const SizedBox(height: 10),
           _cabecera(),
           const SizedBox(height: 10),
-          Container(
-            height: this._screen.height * alto,
-            width: this._screen.width,
+          Expanded(
             child: ListView(
               children: this._fichas
-            )
+            ),
           )
         ],
       )
@@ -98,46 +94,60 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
     return Column(
       children: <Widget>[
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: (solicitudSgtn.onlyRead) ? MainAxisAlignment.center : MainAxisAlignment.spaceAround,
           children: <Widget>[
-            RaisedButton.icon(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)
-              ),
-              onPressed: (){
-                solicitudSgtn.setAutoEnJuegoIndexPieza(null);
-                solicitudSgtn.setAutoEnJuegoIdPieza(null);
-                Navigator.of(this._context).pushReplacementNamed('alta_piezas_page');
-              },
-              icon: Icon(Icons.add_circle, color: Colors.blue),
-              color: Colors.black87,
-              textColor: Colors.white,
-              label: Text(
-                'Agregar más'
-              ),
-            ),
-            RaisedButton.icon(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)
-              ),
-              onPressed: (){
-                solicitudSgtn.setAutoEnJuegoIndexPieza(null);
-                solicitudSgtn.setAutoEnJuegoIdPieza(null);
-                solicitudSgtn.setAutoEnJuegoIndexAuto(null);
-                Navigator.of(this._context).pushReplacementNamed('lst_modelos_select_page');
-              },
-              color: Colors.white,
-              icon: Icon(Icons.check_circle, color: Colors.red),
-              label: Text(
-                'Terminar'
-              ),
-            )
+            (solicitudSgtn.onlyRead) ? const SizedBox(width: 0) : _btnAddMasPiezas(),
+            _btnTerminar(titulo: (solicitudSgtn.onlyRead) ? 'Regresar Lista de cotizaciones' : 'Terminar')
           ],
         ),
       ],
     );
   }
 
+  ///
+  Widget _btnAddMasPiezas() {
+
+    return RaisedButton.icon(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20)
+      ),
+      onPressed: (){
+        solicitudSgtn.setAutoEnJuegoIndexPieza(null);
+        solicitudSgtn.setAutoEnJuegoIdPieza(null);
+        Navigator.of(this._context).pushReplacementNamed('alta_piezas_page');
+      },
+      icon: Icon(Icons.add_circle, color: Colors.blue),
+      color: Colors.black87,
+      textColor: Colors.white,
+      label: Text(
+        'Agregar más',
+        textScaleFactor: 1,
+      ),
+    );
+  }
+
+  ///
+  Widget _btnTerminar({String titulo}) {
+
+    return RaisedButton.icon(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20)
+      ),
+      onPressed: (){
+        solicitudSgtn.setAutoEnJuegoIndexPieza(null);
+        solicitudSgtn.setAutoEnJuegoIdPieza(null);
+        solicitudSgtn.setAutoEnJuegoIndexAuto(null);
+        Navigator.of(this._context).pushReplacementNamed('lst_modelos_select_page');
+      },
+      color: Colors.white,
+      icon: Icon(Icons.check_circle, color: Colors.red),
+      label: Text(
+        titulo,
+        textScaleFactor: 1,
+      ),
+    );
+  }
+  
   ///
   void _crearListaDePiezas() {
 
@@ -267,24 +277,7 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
               Stack(
                 overflow: Overflow.visible,
                 children: <Widget>[
-                  InkWell(
-                    child: CircleAvatar(
-                      radius: 26,
-                      backgroundImage: AssetThumbImageProvider(
-                        Asset(pieza['fotos'][0]['identifier'], pieza['fotos'][0]['nombre'], pieza['fotos'][0]['width'], pieza['fotos'][0]['height']),
-                        width: pieza['fotos'][0]['width'],
-                        height: pieza['fotos'][0]['height']
-                      ),
-                    ),
-                    onTap: (){
-                      showDialog(
-                        context: this._context,
-                        builder: (BuildContext context) {
-                          return _dialogVerFotos(new List<Map<String, dynamic>>.from(pieza['fotos']));
-                        }
-                      );
-                    },
-                  ),
+                  (!solicitudSgtn.onlyRead) ? printImgLocal(pieza) : printImgFromServer(pieza),
                   Positioned(
                     top: -5,
                     left: -5,
@@ -336,39 +329,121 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
           const SizedBox(height: 10),
           Divider(color: Colors.black, height: 1),
           Divider(color: Colors.red[200], height: 1),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              FlatButton.icon(
-                textColor: Colors.grey[300],
-                padding: EdgeInsets.all(0),
-                icon: Icon(Icons.delete, color: Colors.amber[100]),
-                label: Text('Borrar'),
-                onPressed: () => _eliminarPieza(pieza['id']),
-              ),
-              FlatButton.icon(
-                textColor: Colors.grey[300],
-                padding: EdgeInsets.all(0),
-                icon: Icon(Icons.edit, color: Colors.lightBlue),
-                label: Text('Cambiar'),
-                onPressed: () => _editarPieza(pieza['id']),
-              ),
-              FlatButton.icon(
-                textColor: Colors.grey[300],
-                padding: EdgeInsets.all(0),
-                icon: Icon(Icons.remove_red_eye, color: Colors.lightBlue),
-                label: Text('VER'),
-                onPressed: () {
-                  this._skfKey.currentState.showBottomSheet(
-                    (BuildContext context) => _verDatosPieza(pieza),
-                    elevation: 5
-                  );
-                }
-              )
-            ],
-          )
+          (solicitudSgtn.onlyRead) ? _accionesOnlyRead(pieza) :_accionesNormales(pieza)
         ],
       ),
+    );
+  }
+
+
+  Widget printImgLocal(pieza) {
+
+    return InkWell(
+      child: CircleAvatar(
+        radius: 26,
+        backgroundImage: AssetThumbImageProvider(
+          Asset(pieza['fotos'][0]['identifier'], pieza['fotos'][0]['nombre'], pieza['fotos'][0]['width'], pieza['fotos'][0]['height']),
+          width: pieza['fotos'][0]['width'],
+          height: pieza['fotos'][0]['height']
+        ),
+      ),
+      onTap: (){
+        showDialog(
+          context: this._context,
+          builder: (BuildContext context) {
+            return DialogVerFotosWidget(fotos: pieza['fotos'], typeFoto: 'solicitudes');
+          }
+        );
+      },
+    );
+  }
+
+  ///
+  Widget printImgFromServer(pieza) {
+
+    List<Map<String, dynamic>> fotosObject = new List();
+
+    pieza['fotos'].forEach((element) {
+      fotosObject.add({'nombre':element});
+    });
+    
+    return InkWell(
+      child: CircleAvatar(
+        radius: 26,
+        backgroundImage: NetworkImage('${globals.uriImgSolicitudes}/${pieza['fotos'][0]}'),
+      ),
+      onTap: (){
+
+        showDialog(
+          context: this._context,
+          builder: (BuildContext context) {
+            return DialogVerFotosWidget(fotos: fotosObject, typeFoto: 'solicitudes');
+          }
+        );
+      },
+    );
+  }
+
+  ///
+  Widget _accionesOnlyRead(Map<String, dynamic> pieza) {
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        _btnVerCotizaciones(),
+        _btnVerDataPieza(pieza)
+      ],
+    );
+  }
+
+  ///
+  Widget _accionesNormales(Map<String, dynamic> pieza) {
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        FlatButton.icon(
+          textColor: Colors.grey[300],
+          padding: EdgeInsets.all(0),
+          icon: Icon(Icons.delete, color: Colors.amber[100]),
+          label: Text(
+            'Borrar',
+            textScaleFactor: 1,
+          ),
+          onPressed: () => _eliminarPieza(pieza['id']),
+        ),
+        FlatButton.icon(
+          textColor: Colors.grey[300],
+          padding: EdgeInsets.all(0),
+          icon: Icon(Icons.edit, color: Colors.lightBlue),
+          label: Text(
+            'Cambiar',
+            textScaleFactor: 1,
+          ),
+          onPressed: () => _editarPieza(pieza['id']),
+        ),
+        _btnVerDataPieza(pieza)
+      ],
+    );
+  }
+  
+  ///
+  Widget _btnVerDataPieza(Map<String, dynamic> pieza) {
+
+    return FlatButton.icon(
+      textColor: Colors.grey[300],
+      padding: EdgeInsets.all(0),
+      icon: Icon(Icons.remove_red_eye, color: Colors.lightBlue),
+      label: Text(
+        'VER',
+        textScaleFactor: 1,
+      ),
+      onPressed: () {
+        this._skfKey.currentState.showBottomSheet(
+          (BuildContext context) => _verDatosPieza(pieza),
+          elevation: 5
+        );
+      }
     );
   }
 
@@ -451,44 +526,76 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
           Divider(height: 2, color: Colors.grey[400]),
           _machoteInfo('Detalles o Características'),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              FlatButton.icon(
-                color: Colors.red,
-                textColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                icon: const Icon(Icons.delete),
-                label: const Text(
-                  'Borrar Pieza'
-                ),
-                onPressed: (){
-                  Navigator.of(this._context).pop(false);
-                  _eliminarPieza(pieza['id']);
-                },
-              ),
-              FlatButton.icon(
-                color: Colors.blue,
-                textColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                icon: const Icon(Icons.edit),
-                label: const Text(
-                  'Cambiar Datos'
-                ),
-                onPressed: (){
-                  Navigator.of(this._context).pop(false);
-                  _editarPieza(pieza['id']);
-                },
-              )
-            ],
-          ),
+          
+          (solicitudSgtn.onlyRead) ?
+          Center(
+            widthFactor: this._screen.width,
+            child: _btnVerCotizaciones(),
+          )
+          : _accionesVerDetallesNormales(pieza),
           const SizedBox(height: 10),
         ]
       )
+    );
+  }
+
+  ///
+  Widget _accionesVerDetallesNormales(Map<String, dynamic> pieza) {
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: <Widget>[
+        FlatButton.icon(
+          color: Colors.red,
+          textColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)
+          ),
+          icon: const Icon(Icons.delete),
+          label: const Text(
+            'Borrar Pieza',
+            textScaleFactor: 1,
+          ),
+          onPressed: (){
+            Navigator.of(this._context).pop(false);
+            _eliminarPieza(pieza['id']);
+          },
+        ),
+        FlatButton.icon(
+          color: Colors.blue,
+          textColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)
+          ),
+          icon: const Icon(Icons.edit),
+          label: const Text(
+            'Cambiar Datos',
+            textScaleFactor: 1,
+          ),
+          onPressed: (){
+            Navigator.of(this._context).pop(false);
+            _editarPieza(pieza['id']);
+          },
+        )
+      ],
+    );
+  }
+  
+  ///
+  Widget _btnVerCotizaciones() {
+
+    return FlatButton.icon(
+      color: Colors.black,
+      textColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10)
+      ),
+      icon: const Icon(Icons.format_list_numbered, color: Colors.blue),
+      label: const Text(
+        'Revisar Cotizaciones',
+        textScaleFactor: 1,
+      ),
+      onPressed: (){},
     );
   }
 
@@ -544,7 +651,7 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
           showDialog(
             context: this._context,
             builder: (BuildContext context) {
-              return _dialogVerFotos(new List<Map<String, dynamic>>.from(fotos));
+              return DialogVerFotosWidget(fotos: fotos, typeFoto: 'solicitudes');
             }
           );
         },
@@ -605,44 +712,5 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
 
     Navigator.of(this._context).pushReplacementNamed('alta_piezas_page');
   }
-
-  ///
-  Widget _dialogVerFotos(List<Map<String, dynamic>> fotos) {
-    
-    return AlertDialog(
-      contentPadding: EdgeInsets.all(2),
-      content: Container(
-        width: MediaQuery.of(this._context).size.width,
-        height: solicitudSgtn.thubFachadaX.toDouble(),
-        color: Colors.black,
-        child: PhotoViewGallery.builder(
-          scrollPhysics: const BouncingScrollPhysics(),
-          itemCount: fotos.length,
-          loadingBuilder: (context, event) => Center(
-            child: Container(
-              width: 20.0,
-              height: 20.0,
-              child: CircularProgressIndicator(
-                value: event == null
-                    ? 0
-                    : event.cumulativeBytesLoaded / event.expectedTotalBytes,
-              ),
-            ),
-          ),
-          builder: (BuildContext context, int index) {
-            return PhotoViewGalleryPageOptions(
-              imageProvider: AssetThumbImageProvider(
-                Asset(fotos[index]['identifier'], fotos[index]['nombre'], fotos[index]['width'], fotos[index]['height']),
-                width: fotos[index]['width'],
-                height: fotos[index]['height']
-              ),
-              initialScale: PhotoViewComputedScale.contained,
-            );
-          },
-        )
-      ),
-    );
-  }
-
 
 }

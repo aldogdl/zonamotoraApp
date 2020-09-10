@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:zonamotora/repository/procc_roto_repository.dart';
 import 'package:zonamotora/data_shared.dart';
-import 'package:zonamotora/repository/user_repository.dart';
-import 'package:zonamotora/singletons/alta_user_sngt.dart';
-import 'package:zonamotora/singletons/tomar_imagenes_sngt.dart';
-import 'package:zonamotora/widgets/alerts_varios.dart';
+import 'package:zonamotora/widgets/menu_main.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
-import 'package:zonamotora/widgets/menu_main.dart';
-import 'package:zonamotora/widgets/regresar_pagina_widget.dart' as regresarPagina;
+import 'package:zonamotora/widgets/alerts_varios.dart';
+import 'package:zonamotora/singletons/alta_user_sngt.dart';
+import 'package:zonamotora/repository/user_repository.dart';
 import 'package:zonamotora/widgets/tomar_imagenes_widget.dart';
+import 'package:zonamotora/singletons/tomar_imagenes_sngt.dart';
+import 'package:zonamotora/repository/procc_roto_repository.dart';
+import 'package:zonamotora/widgets/regresar_pagina_widget.dart' as regresarPagina;
+import 'package:zonamotora/globals.dart' as globals;
 
 class AltaPaginaWebLogoPage extends StatefulWidget {
 
@@ -31,6 +32,8 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
 
   BuildContext _context;
   bool _isInit   = false;
+  String _tokenTmpAsesor;
+
   List<Map<String, dynamic>> _queVende = [
     {
       'id': 1,
@@ -45,12 +48,18 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
     {
       'id': 3,
       'titulo': 'AUTOMÓVILES',
-      'subTit': 'Publicacioón de Autos Seminuevos.',
+      'subTit': 'Publicación de Autos Seminuevos.',
     }
   ];
   List<int> _queVendeSelect = new List();
-  bool _isCheckPublicar = true;
-  bool _isCheckRediseniar = false;
+  bool _isCheckPublicar = false;
+  bool _isCheckRediseniar = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initHidratar());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,8 +81,10 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
           'perfil' : altaUserSngt.createDataSitioWeb['ids']['perfil'],
           'user' : altaUserSngt.createDataSitioWeb['ids']['user'],
         },
-        'contents': Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']
+        'contents': {'tokenAsesor' : proveedor.tokenAsesor['token']}
       };
+      this._tokenTmpAsesor = proveedor.tokenAsesor['token'];
+      this._isCheckRediseniar = true;
     }
 
     return Scaffold(
@@ -95,8 +106,8 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
         child: Icon(Icons.save, size: 25),
         onPressed: () async {
 
+          List<String> queVendeFin = new List();
           if(this._queVendeSelect.isNotEmpty){
-            List<String> queVendeFin = new List();
             for (var i = 0; i < this._queVendeSelect.length; i++) {
               Map<String, dynamic> vende = this._queVende.singleWhere((element) => element['id'] == this._queVendeSelect[i]);
               if(vende.isNotEmpty){
@@ -104,9 +115,15 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
               }
             }
             altaUserSngt.setCreateDataSitioWebByKeySingle('ventaDe', queVendeFin);
+            altaUserSngt.setCreateDataSitioWebByKeySingle('logo', await tomarImagenesSngt.getImageForSend());
             queVendeFin = null;
+            alertsVarios.cargando(this._context);
+            await _sendDataAndLogo();
+          }else{
+            String body = 'Para crear un Sitio Web, es necesario indicar al menos un tipo de producto que publicarás en la WEB.';
+            alertsVarios.entendido(this._context, titulo: 'ERROR AL GUARDAR', body: body);
           }
-          print(altaUserSngt.createDataSitioWeb);
+
         }
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
@@ -201,21 +218,26 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
               if(dataShared.refreshWidget > -1) {
                 return tomarImagenesSngt.previewImage();
               }else{
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.photo_camera, size: 45, color: Colors.grey[400]),
-                    Text(
-                      'Logotipo',
-                      textScaleFactor: 1,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600]
-                      ),
-                    )
-                  ],
-                );
+
+                if(tomarImagenesSngt.childImg != null) {
+                  return tomarImagenesSngt.childImg;
+                }else{
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.photo_camera, size: 45, color: Colors.grey[400]),
+                      Text(
+                        'Logotipo',
+                        textScaleFactor: 1,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600]
+                        ),
+                      )
+                    ],
+                  );
+                }
               }
             },
           ),
@@ -242,6 +264,7 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
 
                 setState(() {
                   this._isCheckPublicar = true;
+                  altaUserSngt.setCreateDataSitioWebByKeySingle('logoSts', 'publicar');
                   this._isCheckRediseniar = false;
                 });
               }
@@ -262,6 +285,7 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
               if(!this._isCheckRediseniar){
                 setState(() {
                   this._isCheckRediseniar = true;
+                  altaUserSngt.setCreateDataSitioWebByKeySingle('logoSts', 'rediseniar');
                   this._isCheckPublicar = false;
                 });
               }
@@ -279,6 +303,69 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
         ],
       ),
     );
+  }
+
+  ///
+  Future<void> _sendDataAndLogo() async {
+
+    Map<String, dynamic> data = {
+      'idpag'   : altaUserSngt.createDataSitioWeb['idp'],
+      'ventaDe' : altaUserSngt.createDataSitioWeb['ventaDe'],
+      'logoSts' : altaUserSngt.createDataSitioWeb['logoSts'],
+      'slug'    : altaUserSngt.createDataSitioWeb['slug'],
+      'changeImg':tomarImagenesSngt.changeImage
+    };
+
+    bool result = await emUser.sendDataAndLogo(data, altaUserSngt.createDataSitioWeb['logo'],  this._tokenTmpAsesor);
+    if(!result) {
+      Navigator.of(this._context).pop();
+      String body = emUser.result['body'];
+      if(body.length == 0){
+        body = 'Ocurrio un Error al guardar la información, por favor, reintenta guardar, por favor';
+      }
+      await alertsVarios.entendido(this._context, titulo: 'ERROR AL GUARDAR', body: body);
+    }else{
+      tomarImagenesSngt.dispose();
+      altaUserSngt.dispose();
+      Provider.of<DataShared>(this._context, listen: false).setRefreshWidget(-1);
+      imageCache.clear();
+      await emRoto.deleteProcesoRoto(nameBackup: 'altaLogoSocio');
+      Navigator.of(this._context).pushNamedAndRemoveUntil('alta_pagina_web_bsk_page', (route) => false);
+    }
+  }
+
+  ///
+  Future<void> _initHidratar() async {
+
+    if(altaUserSngt.createDataSitioWeb['ventaDe'] != null) {
+      for (var i = 0; i < altaUserSngt.createDataSitioWeb['ventaDe'].length; i++) {
+        Map<String, dynamic> qv = this._queVende.firstWhere(
+          (vende) => (vende['titulo'].toLowerCase() == altaUserSngt.createDataSitioWeb['ventaDe'][i]),
+          orElse: () => new Map()
+        );
+        if(qv.isNotEmpty){
+          _queVendeSelect.add(qv['id']);
+        }
+      }
+    }
+
+    if(altaUserSngt.createDataSitioWeb['idp'] != 0) {
+      if(altaUserSngt.createDataSitioWeb['logo'] != '0') {
+        String logo = altaUserSngt.createDataSitioWeb['logo'];
+        if(logo.startsWith('${altaUserSngt.createDataSitioWeb['idp']}__')){
+          this._isCheckPublicar = false;
+          this._isCheckRediseniar = true;
+          altaUserSngt.createDataSitioWeb['logoSts'] = 'rediseniar';
+          tomarImagenesSngt.hidratarImagenFromServer( '${globals.uripublicZmdb}/build_logo/$logo' );
+        }else{
+          this._isCheckPublicar = true;
+          this._isCheckRediseniar = false;
+          altaUserSngt.createDataSitioWeb['logoSts'] = 'publicar';
+          tomarImagenesSngt.hidratarImagenFromServer( '${globals.uripublicZmdb}/images/logotipos/$logo' );
+        }
+      }
+    }
+    setState(() {});
   }
 
 }

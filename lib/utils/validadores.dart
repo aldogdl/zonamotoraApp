@@ -92,13 +92,20 @@ class Validadores {
   /// 
   /// @see AltaPerfilContacPage::_inputNombreContacto
   String hasApellido(String txt) {
+
     String error;
     RegExp patron = RegExp(r'[0-9]', multiLine: true);
     bool res = patron.hasMatch(txt);
     error = (res) ? 'No Coloques números por favor' : null;
     if(error == null){
+      String copyTxt = txt;
+      copyTxt = copyTxt.toLowerCase();
+      List<String> asentuadas = ['á','é','í','ó','ú'];
+      List<String> sinacento = ['a','e','i','o','u'];
+      Map<String, String> map = new Map.fromIterables(asentuadas, sinacento);
+      copyTxt = map.entries.fold(copyTxt, (prev, e) => prev.replaceAll(e.key, e.value));
       patron = RegExp(r'[a-zA-Z]{3}\s+[a-zA-Z]{3}');
-      List<RegExpMatch> resList = patron.allMatches(txt).toList();
+      List<RegExpMatch> resList = patron.allMatches(copyTxt).toList();
       error = (resList.length == 0) ? 'Por lo menos indica un Apellido' : null;
     }
     return error;
@@ -134,5 +141,19 @@ class Validadores {
     return result;
   }
 
+  ///
+  String onlyNumber(String txt) {
 
+    txt = txt.trim();
+    bool res;
+    String error;
+    String p = '[0-9]';
+    RegExp patron = RegExp(p);
+
+    res = patron.hasMatch(txt);
+    if(!res) {
+      return (!res) ? 'Se más específico y usa solo números ' : null;
+    }
+    return error;
+  }
 }

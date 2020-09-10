@@ -89,6 +89,7 @@ class _AltaPaginaWebBuskUserPageState extends State<AltaPaginaWebBuskUserPage> {
                   Expanded(
                     child: TextFormField(
                       controller: this._ctrlCriterio,
+                      autofocus: true,
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.supervised_user_circle),
                         helperText: 'Busca por Usuario o ID del Socio',

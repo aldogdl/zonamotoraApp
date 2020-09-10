@@ -4,9 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/mis_autos_repository.dart';
+import 'package:zonamotora/singletons/buscar_autos_sngt.dart';
+import 'package:zonamotora/singletons/frm_mk_md_anios_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
 
 import 'package:zonamotora/widgets/app_barr_my.dart';
+import 'package:zonamotora/widgets/frm_mk_md_anio_widget.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 import 'package:zonamotora/widgets/template_page_helps.dart';
@@ -24,9 +27,13 @@ class _MisAutosPageState extends State<MisAutosPage> {
 
   final AppBarrMy appBarrMy       = AppBarrMy();
   MisAutosRepository emMisAtos    = MisAutosRepository();
+  FrmMkMdAniosSngt frmSng         = FrmMkMdAniosSngt();
+  BuscarAutosSngt buscarAutosSngt = BuscarAutosSngt();
+  
   final MenuInferior menuInferior = MenuInferior();
   final AlertsVarios alertsVarios = AlertsVarios();
   TemplatePageHelps templatePageHelps = TemplatePageHelps();
+
 
   BuildContext _context;
   bool _isVistaHelp = false;
@@ -40,7 +47,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   Widget _lstAutos;
 
   @override
-  void initState() {
+  void initState()
+  {
     _queVerInicialmente();
     _getAutos();
     this._widgetStarts = Container(
@@ -69,13 +77,19 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-
+  Widget build(BuildContext context)
+  {
     this._context = context;
     context = null;
     if(!this._isInit){
       this._isInit = true;
       appBarrMy.setContext(this._context);
+    }
+    final Map<String, dynamic> popBack = ModalRoute.of(this._context).settings.arguments;
+    if(popBack != null) {
+      if(!popBack.containsKey('popBack')){
+        popBack['popBack'] = false;
+      }
     }
 
     return SafeArea(
@@ -83,7 +97,7 @@ class _MisAutosPageState extends State<MisAutosPage> {
         backgroundColor: Colors.red[100],
         drawer: MenuMain(),
         body: WillPopScope(
-          onWillPop: () => Future.value(false),
+          onWillPop: () => Future.value(popBack['popBack']),
           child: _body(),
         ),
         bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false),
@@ -101,9 +115,9 @@ class _MisAutosPageState extends State<MisAutosPage> {
     );
   }
 
-  /* */
-  Widget _body() {
-
+  ///
+  Widget _body()
+  {
     List<Widget> vistas = [
       _introInfo(),
       _filtroInfo(),
@@ -133,17 +147,17 @@ class _MisAutosPageState extends State<MisAutosPage> {
     );
   }
 
-  /* */
-  Widget _bgContentAppBarr() {
-
+  ///
+  Widget _bgContentAppBarr()
+  {
     return Image(
       image: AssetImage('assets/images/auto_ico.png'),
     );
   }
 
-  /* */
-  SliverList  _content() {
-
+  ///
+  SliverList  _content()
+  {
     return SliverList(
       delegate: SliverChildListDelegate(
         [
@@ -157,15 +171,13 @@ class _MisAutosPageState extends State<MisAutosPage> {
                 Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false);
                 return;
               }
+
               if(this._autosActuales >= this._autosPermitidos) {
                 String body = 'Recuerda que sólo puedes colocar ${this._autosPermitidos} autos, puedes eliminar alguno que ya no necesites';
                 alertsVarios.entendido(this._context, titulo: 'LIMITE PERMITIDO', body: body);
               }else{
-                Navigator.of(this._context).pushNamedAndRemoveUntil(
-                  'seleccionar_auto_page',
-                  (Route ruta) => false,
-                  arguments: {'backToRoute':'mis_autos_page'}
-                );
+
+                showDialogAddAuto();
               }
             },
             child: _addNewAuto(),
@@ -182,15 +194,51 @@ class _MisAutosPageState extends State<MisAutosPage> {
               ),
             ),
           ),
-          this._lstAutos
+          this._lstAutos,
+          const SizedBox(height: 40),
         ]
       ),
     );
   }
 
-  /* */
-  Widget _addNewAuto() {
-
+  ///
+  Future<void> showDialogAddAuto() async {
+    
+    await showDialog(
+      context: this._context,
+      builder: (_) {
+        return AlertDialog(
+          scrollable: true,
+          contentPadding: EdgeInsets.all(0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FrmMkMdAnioWidget(),
+              RaisedButton.icon(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                icon: Icon(Icons.add, color: Colors.white),
+                color: Colors.black,
+                textColor: Colors.blue[400],
+                onPressed: (){
+                  _createNewAuto();
+                },
+                label: Text(
+                  'Agregar Auto',
+                  textScaleFactor: 1,
+                ),
+              ),
+              SizedBox(height: 10)
+            ],
+          ),
+        );
+      }
+    );
+  }
+  ///
+  Widget _addNewAuto()
+  {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
       height: 75,
@@ -256,9 +304,9 @@ class _MisAutosPageState extends State<MisAutosPage> {
     );
   }
 
-  /* */
-  Future<bool> _getAutos() async {
-
+  ///
+  Future<bool> _getAutos() async
+  {
     if(this._autos.isEmpty) {
       this._autos = await emMisAtos.getMisAutos();
     }
@@ -270,9 +318,9 @@ class _MisAutosPageState extends State<MisAutosPage> {
     return false;
   }
 
-  /* */
-  Future<void> _eliminarAuto(int idAuto) async {
-
+  ///
+  Future<void> _eliminarAuto(int idAuto) async
+  {
     String body = 'Se eliminará permanentemente éste vehículo registrado,\n\n¿Estas segur@ de CONTINUAR?';
     bool acc = await alertsVarios.aceptarCancelar(this._context, titulo: 'ELIMINANDO', body: body);
     if(acc) {
@@ -292,9 +340,21 @@ class _MisAutosPageState extends State<MisAutosPage> {
     return;
   }
 
-  /* */
-  List<Widget> _hacerListaDeAutos() {
+  ///
+  Future<void> _editarAuto(int idAuto) async {
 
+    Map<String, dynamic> auto = await emMisAtos.getAutoFromBDByIdAuto(idAuto);
+    frmSng.setContext(this._context);
+    frmSng.setCtrAnio(auto['anio']);
+    frmSng.setCtrVersion(auto['version']);
+    frmSng.txtModelo = auto['mdNombre'];
+    frmSng.txtMarca = auto['mkNombre'];
+
+  }
+
+  ///
+  List<Widget> _hacerListaDeAutos()
+  {
     List<Widget> lstAutosLocal = new List();
     if(this._autos.isEmpty) {
       this._lstAutos = Center(
@@ -307,25 +367,28 @@ class _MisAutosPageState extends State<MisAutosPage> {
         ),
       );
     }else{
+
       this._autos.forEach((auto){
         lstAutosLocal.add(
           cardMiniAuto.printCard(
             idAuto: auto['idReg'],
             markMod: '${auto['mkNombre']} - ${auto['mdNombre']}',
             anio: auto['anio'],
-            fechReg: DateTime.parse('2020-03-23'),
+            fechReg: DateTime.parse(auto['createdAt']),
             showAcc: true,
-            fncEliminar: _eliminarAuto
+            fncEliminar: _eliminarAuto,
+            fncEditar: _editarAuto
           )
         );
       });
     }
+
     return lstAutosLocal;
   }
 
-  /* */
-  List<Widget> _calcularEstrellas() {
-
+  ///
+  List<Widget> _calcularEstrellas()
+  {
     List<Widget> lst = new List();
     this._autosActuales = this._autos.length;
     int numStarBorder = this._autosPermitidos - this._autos.length;
@@ -342,9 +405,9 @@ class _MisAutosPageState extends State<MisAutosPage> {
     return lst;
   }
   
-  /* */
-  Future<void> _queVerInicialmente() async {
-
+  ///
+  Future<void> _queVerInicialmente() async
+  {
     this._sess = await SharedPreferences.getInstance();
     this._isVistaHelp = this._sess.getBool(spConst.sp_isViewAutos);
     if(this._isVistaHelp == null){
@@ -354,16 +417,15 @@ class _MisAutosPageState extends State<MisAutosPage> {
     setState(() {});
   }
 
-
   /* Paginas de HELPS */
 
-  Widget _introInfo() {
-    
+  Widget _introInfo()
+  {
     return templatePageHelps.getTemplate(
       context: this._context,
       icono: Icons.directions_bus,
       titulo: '¿QUÉ AUTOS TE INTERESAN?',
-      subTitulo: 'Dile a tu App, que autos te interesan.\nSólo indica Marca, Modelo y Año.',
+      subTitulo: 'Dile a tu App, qué autos te interesan.\nSólo indica Marca, Modelo y Año.',
       body: 'Recibe información de primera mano, acerca de Ofertas, '
         +'Servicios, Accesorios y Refacciones exclusivas para tu automóvil.',
       accionEntendido: _accionEntendidoHelpPages,
@@ -373,8 +435,9 @@ class _MisAutosPageState extends State<MisAutosPage> {
     );
   }
 
-  Widget _filtroInfo() {
-    
+  ///
+  Widget _filtroInfo()
+  {
     return templatePageHelps.getTemplate(
       context: this._context,
       icono: Icons.search,
@@ -389,8 +452,9 @@ class _MisAutosPageState extends State<MisAutosPage> {
     );
   }
 
-  Widget _flexibleInfo() {
-    
+  ///
+  Widget _flexibleInfo()
+  {
     return templatePageHelps.getTemplate(
       context: this._context,
       icono: Icons.edit,
@@ -406,11 +470,38 @@ class _MisAutosPageState extends State<MisAutosPage> {
     );
   }
 
-  void _accionEntendidoHelpPages() {
+  ///
+  void _accionEntendidoHelpPages()
+  {
     this._sess.setBool(spConst.sp_isViewAutos, true);
     this._isVistaHelp = true;
     setState(() {});
   }
 
+  ///
+  Future<void> _createNewAuto() async {
+
+    Map<String, dynamic> autoSeleccionado = {
+      'idReg'   : 0,
+      'mkid'    : buscarAutosSngt.idMarca,
+      'mdid'    : buscarAutosSngt.idModelo,
+      'mkNombre': frmSng.txtMarca,
+      'mdNombre': frmSng.txtModelo,
+      'anio'    : frmSng.ctrAnio.text,
+      'version' : frmSng.ctrVersion.text,
+    };
+
+    alertsVarios.cargando(this._context, titulo: 'GUARDANDO', body: 'Se está almacenando la información de tu auto, por favor, espera un momento.');
+    Map<String, dynamic> result = await emMisAtos.setNewMisAuto(autoSeleccionado);
+
+    if(!result['abort']) {
+      frmSng.resetScreen();
+      Navigator.of(this._context).pushNamedAndRemoveUntil('mis_autos_page', (Route rutas) => false);
+    }else{
+      Navigator.of(this._context).pop();
+      await alertsVarios.entendido(this._context, titulo: result['msg'], body: result['body']);
+    }
+
+  }
 
 }

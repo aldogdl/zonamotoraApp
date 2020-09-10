@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:provider/provider.dart';
+
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/procc_roto_repository.dart';
 import 'package:zonamotora/singletons/tomar_imagenes_sngt.dart';
@@ -14,10 +14,8 @@ class TomarImagenWidget extends StatelessWidget {
   final ProccRotoRepository emProcRoto = ProccRotoRepository();
 
   final Widget child;
-  final _picker = ImagePicker();
   final String actionBarTitle;
   final int maxImages;
-  final String restringirPosition = 'all';
   final BuildContext contextFrom;
 
   TomarImagenWidget({Key key, this.contextFrom, this.child, this.actionBarTitle, this.maxImages}) : super(key: key);
@@ -27,33 +25,32 @@ class TomarImagenWidget extends StatelessWidget {
 
     int sumaRefresh = Provider.of<DataShared>(this.contextFrom, listen: false).refreshWidget;
 
+    if(tomarImagenesSngt.isRecovery){
+      Future.delayed(Duration(seconds: 1), (){
+        alertGetFotoFrom(sumaRefresh);
+      });
+    }
+
     return InkWell(
       child: this.child,
       onTap: () async {
-
-        bool fromFoto = await _alertGetFotoFrom();
-        if(fromFoto != null){
-
-          if(fromFoto) {
-            tomarImagenesSngt.proccRoto['metadata']['source'] = 'camara';
-            await emProcRoto.makeBackupGral(
-              nameBackup: tomarImagenesSngt.proccRoto['nombre'],
-              metadata: tomarImagenesSngt.proccRoto['metadata'],
-              contents: {'tokenAsesor':tomarImagenesSngt.proccRoto['contents']}
-            );
-            await _tomarFotoDesdeCamara(sumaRefresh);
-          }else{
-            await _loadImagenDesdeGaleria(sumaRefresh);
-          }
-        }
+        await emProcRoto.makeBackupGral(
+          nameBackup: tomarImagenesSngt.proccRoto['nombre'],
+          metadata: tomarImagenesSngt.proccRoto['metadata'],
+          contents: tomarImagenesSngt.proccRoto['contents']
+        );
+        await _loadImagenDesdeGaleria(sumaRefresh);
       },
     );
   }
 
   /* */
-  Future<bool> _alertGetFotoFrom() {
+  Future<bool> alertGetFotoFrom(int sumaRefresh) {
 
-    String body = '¿Desde donde deseas seleccionar la fotografia? desde...';
+    String body;
+    bool colorTxt = false; 
+    body = 'Ésta es una recuperación del proceso.\n\nSi ya tomaste la fotografía, ya puedes seleccionarla desde "LA GALERÍA".';
+
     return showDialog(
       barrierDismissible: true,
       context: this.contextFrom,
@@ -101,62 +98,38 @@ class TomarImagenWidget extends StatelessWidget {
                 textScaleFactor: 1,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 20
+                  color: (colorTxt) ? Colors.blue : Colors.orange,
+                  fontSize: 16
                 ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: RaisedButton.icon(
+                      icon: Icon(Icons.folder_special, color: Colors.amber, size: 30),
+                      color: Colors.black,
+                      textColor: Colors.blue[300],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)
+                      ),
+                      label: Text(
+                        'LA GALERÍA',
+                        textScaleFactor: 1,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(false);
+                        _loadImagenDesdeGaleria(sumaRefresh);
+                      },
+                    ),
+                  )
+                ],
               )
             ],
           ),
-          actions: <Widget>[
-            Align(
-              alignment: Alignment.center,
-              child: RaisedButton.icon(
-                icon: Icon(Icons.folder_special, color: Colors.amber, size: 30),
-                color: Colors.black,
-                textColor: Colors.blue[300],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)
-                ),
-                label: Text(
-                  'GALERÍA',
-                  textScaleFactor: 1,
-                ),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-            ),
-            Align(
-              alignment: Alignment.center,
-              child: RaisedButton.icon(
-                icon: Icon(Icons.camera_enhance, color: Colors.yellow, size: 30),
-                color: Colors.black,
-                textColor: Colors.blue[300],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)
-                ),
-                label: Text(
-                  'CÁMARA',
-                  textScaleFactor: 1,
-                ),
-                onPressed: () => Navigator.of(context).pop(true),
-              ),
-            ),
-          ],
         );
       }
     );
-  }
-
-  ///
-  Future<void> _tomarFotoDesdeCamara(int sumaRefresh) async {
-
-    try {
-      int sumar = sumaRefresh + 1;
-      Provider.of<DataShared>(this.contextFrom, listen: false).setRefreshWidget(sumar);
-      tomarImagenesSngt.imagenFile = await this._picker.getImage(source: ImageSource.camera);
-      tomarImagenesSngt.source = 'camara';
-    } catch (e) {
-      tomarImagenesSngt.error = e.toString();
-    }
   }
 
   ///
@@ -168,7 +141,7 @@ class TomarImagenWidget extends StatelessWidget {
     try {
       resultList = await MultiImagePicker.pickImages(
         maxImages: this.maxImages,
-        enableCamera: false,
+        enableCamera: true,
         cupertinoOptions: CupertinoOptions(
           takePhotoIcon: "chat",
         ),
@@ -179,7 +152,7 @@ class TomarImagenWidget extends StatelessWidget {
           textOnNothingSelected: 'No se ha seleccionado nada',
           lightStatusBar: false,
           useDetailsView: false,
-          startInAllView: true,
+          startInAllView: false,
           autoCloseOnSelectionLimit: true,
           actionBarColor: "#7C0000",
           statusBarColor: "#7C0000",
@@ -191,13 +164,13 @@ class TomarImagenWidget extends StatelessWidget {
     }
 
     if(resultList != null){
-
-      if(this.restringirPosition != 'all'){
-        if(this.restringirPosition == 'h') {
+      if(tomarImagenesSngt.restringirPosition != 'all'){
+        if(tomarImagenesSngt.restringirPosition == 'h') {
           if(resultList.first.isLandscape) {
             seguir = true;
           }else{
             resultList = null;
+            seguir = false;
             tomarImagenesSngt.error = 'La imagen debe ser Horizontal';
           }
         }else{
@@ -217,8 +190,26 @@ class TomarImagenWidget extends StatelessWidget {
         Provider.of<DataShared>(this.contextFrom, listen: false).setRefreshWidget(sumar);
         tomarImagenesSngt.imagenAsset = (resultList.isNotEmpty) ? resultList.first : null;
         tomarImagenesSngt.source = 'galeria';
+      }else{
+        if(tomarImagenesSngt.error.length > 0) {
+          await alertsVarios.entendido(this.contextFrom, titulo: 'TAMAÑO INADECUADO', body: tomarImagenesSngt.error);
+          return false;
+        }
       }
 
+    }else{
+
+      return InkWell(
+        child: this.child,
+        onTap: () async {
+          await _loadImagenDesdeGaleria(sumaRefresh);
+        },
+      );
+
+    }
+
+    if(tomarImagenesSngt.isRecovery){
+      tomarImagenesSngt.isRecovery = false;
     }
   }
 

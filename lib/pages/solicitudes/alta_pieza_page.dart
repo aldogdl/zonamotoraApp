@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:zonamotora/repository/procc_roto_repository.dart';
 
 import 'package:zonamotora/singletons/buscar_autos_sngt.dart';
+import 'package:zonamotora/singletons/config_gms_sngt.dart';
 import 'package:zonamotora/singletons/solicitud_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
+import 'package:zonamotora/widgets/app_barr_my.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 
@@ -22,7 +25,10 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   BuscarAutosSngt buscarAutosSngt = BuscarAutosSngt();
   AlertsVarios alertsVarios = AlertsVarios();
   MenuInferior menuInferior = MenuInferior();
-  
+  ConfigGMSSngt configGMSSngt = ConfigGMSSngt();
+  AppBarrMy appBarrMy = AppBarrMy();
+  ProccRotoRepository emRoto = ProccRotoRepository();
+
 
   SwiperController _swipCtrl = SwiperController();
   ScrollController _ctrScroll= ScrollController();
@@ -39,6 +45,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   
   bool _hasFotos = false;
   bool _hasData  = false;
+  bool _isRecovery  = false;
   int _cantPiezaSaved = 0;
   int _idPiezaInScreen = -1;
   List<Asset> _images = List<Asset>();
@@ -67,6 +74,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
     _calculaCantPiezas();
     if(solicitudSgtn.isRecovery) {
       solicitudSgtn.setIsRecovery(false);
+      this._isRecovery = true;
     }
     this._ctrCant.text = '1';
     WidgetsBinding.instance.addPostFrameCallback(_getDataActuales);
@@ -74,7 +82,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   }
 
   ///
-  void _getDataActuales(_) {
+  void _getDataActuales(_) async {
 
     if(solicitudSgtn.autos.length > 0){
       // Si tengo autos
@@ -101,8 +109,12 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
     }else{
       Navigator.of(this._context).pop(false);
     }
-
+    configGMSSngt.setContext(this._context);
     this._scrollOffset = (MediaQuery.of(this._context).size.height <= 550) ? 440 : 420;
+    if(this._isRecovery) {
+      this._isRecovery = false;
+      await _showDialogDeRecovery();
+    }
   }
 
   @override
@@ -114,17 +126,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
     
     return Scaffold(
       key: this._skfKey,
-      appBar: AppBar(
-        backgroundColor: Color(0xff7C0000),
-        title: Text(
-          'Piezas para $titulo',
-          textScaleFactor: 1,
-          style: TextStyle(
-            fontSize: 16
-          ),
-        ),
-        elevation: 5,
-      ),
+      appBar: appBarrMy.getAppBarr(titulo: 'Piezas ... para $titulo'),
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: _body(),
@@ -134,6 +136,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
   ///
   void _calculaCantPiezas() {
+
     if(solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']].containsKey('piezas')) {
       this._cantPiezaSaved = (solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['piezas'].length > 0)
       ? solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['piezas'].length
@@ -195,7 +198,14 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
             )
             :
             _btnCambiarAutoOnly(),
-            _cantPiezasBtnAyuda(),
+            InkWell(
+              onTap: () {
+                _resetScreen();
+                solicitudSgtn.indexAutoIsEditing = -1;
+                Navigator.of(this._context).pushNamedAndRemoveUntil('lst_piezas_page', (Route rutas) => false);
+              },
+              child: _cantPiezasBtnAyuda(),
+            ),
             const SizedBox(height: 15),
             _form(),
             const SizedBox(height: 15),
@@ -250,9 +260,10 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       color: Colors.black54,
       textColor: Colors.white,
       label: Text(
-        'Cambiar Automóvil'
+        'Cambiar Automóvil Aquí'
       ),
       onPressed: (){
+
         if(solicitudSgtn.autos.length > 1) {
           Navigator.of(this._context).pushNamedAndRemoveUntil('lst_modelos_select_page', (Route rutas) => false);
         }else{
@@ -501,7 +512,6 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       ladosWidget.add(
         DropdownMenuItem(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 5),
             width: MediaQuery.of(this._context).size.width * ancho,
             child: Row(
               children: <Widget>[
@@ -564,7 +574,6 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       ladosWidget.add(
         DropdownMenuItem(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 5),
             width: MediaQuery.of(this._context).size.width * ancho,
             child: Row(
               children: <Widget>[
@@ -675,7 +684,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       },
       onChanged: (String txt){
         txt = txt.trim();
-        if(txt.length > 3){
+        if(txt.length >= 3){
           setState(() {
             this._hasData = true;
           });
@@ -807,7 +816,8 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
               Icon(Icons.add_a_photo, color: Colors.white, size: 30),
               const SizedBox(width: 10),
               Text(
-                'Seleccionar Fotografía AQUÍ',
+                'Seleccionar Fotografías',
+                textScaleFactor: 1,
                 style: TextStyle(
                   color: Colors.blueAccent[600],
                 ),
@@ -986,11 +996,12 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20)
         ),
-        icon: Icon(Icons.check_circle, color: Colors.white),
-        color: Colors.red,
+        icon: Icon(Icons.check_circle, color: Colors.blue),
+        color: Colors.black,
         textColor: Colors.white,
         label: Text(
           'Guardar y TERMINAR Cotización',
+          textScaleFactor: 1,
           style: TextStyle(
             letterSpacing: 1.1,
             shadows: [
@@ -1078,7 +1089,10 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     } on Exception catch (e) {
       this._error = e.toString();
-      print(this._error);
+      assert((){
+        print(this._error);
+        return true;
+      }());
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -1151,10 +1165,12 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
             ListTile(
               leading: Icon(Icons.phone_android, size: 35, color: Colors.orange),
               title: Text(
-                'Vía Telefónica'
+                'Vía Telefónica',
+                textScaleFactor: 1,
               ),
               subtitle: Text(
-                'Haz tu cotización por teléfono'
+                'Haz tu cotización por teléfono',
+                textScaleFactor: 1,
               ),
               trailing: Icon(Icons.arrow_forward_ios, size: 14),
               onTap: () => _launchTelefono(),
@@ -1215,50 +1231,25 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     if(this._frmKey.currentState.validate()){
 
-      bool res = true;
-      bool save = true;
-      FocusScope.of(this._context).requestFocus(new FocusNode());
+      _saveAfterValidar(clickFrom);
 
-      Map<String, dynamic> piezaNueva = await _getPiezaToScreen();
+    }else{
 
-      if(piezaNueva['fotos'].length == 0) {
-        res = await _dialogSinFotos();
-        save = (res) ? res : false;
-      }
-
-      if(res && save) {
-
-        if(solicitudSgtn.autoEnJuego['idPieza'] != null) {
-          await solicitudSgtn.editPieza(piezaNueva);
-          solicitudSgtn.setAutoEnJuegoIndexPieza(null);
-          solicitudSgtn.setAutoEnJuegoIdPieza(null);
-        }else{
-          int indexPieza = solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['piezas'].indexWhere((pieza) => (pieza['id'] == this._idPiezaInScreen));
-          if(indexPieza > -1){
-
-            solicitudSgtn.setAutoEnJuegoIndexPieza(indexPieza);
-            solicitudSgtn.setAutoEnJuegoIdPieza(this._idPiezaInScreen);
-
-            await solicitudSgtn.editPieza(piezaNueva);
-
-            solicitudSgtn.setAutoEnJuegoIndexPieza(null);
-            solicitudSgtn.setAutoEnJuegoIdPieza(null);
-
+      bool save = false;
+      solicitudSgtn.autos.forEach((auto) {
+        if(auto.containsKey('piezas')){
+          if(auto['piezas'].length > 0) {
+            save =true;
           }else{
-            await solicitudSgtn.addPieza(piezaNueva);
+            save =false;
           }
         }
-        piezaNueva = null;
+      });
+
+      if(save){
+
         _calculaCantPiezas();
         _resetScreen();
-
-        // Agregar Otra.
-        if(clickFrom == 1) {
-          solicitudSgtn.setAutoEnJuegoIndexPieza(this._cantPiezaSaved);
-          setState(() {});
-          this._ctrScroll.animateTo(0.0, duration: Duration(seconds: 1), curve: Curves.ease);
-          return;
-        }
 
         if(this._cantPiezaSaved > 1) {
           Navigator.of(this._context).pushReplacementNamed('lst_piezas_page');
@@ -1266,15 +1257,71 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
           Navigator.of(this._context).pushReplacementNamed('lst_modelos_select_page');
         }
 
+      }else{
+        setState(() {
+          this._skfKey.currentState.showSnackBar(stackErrorFrm());
+        });
+        this._ctrScroll.animateTo(this._scrollOffset, duration: Duration(seconds: 1), curve: Curves.ease);
+      }
+    }
+  }
+
+  ///
+  Future<void> _saveAfterValidar(int clickFrom) async {
+
+    bool res = true;
+    bool save = true;
+    FocusScope.of(this._context).requestFocus(new FocusNode());
+
+    Map<String, dynamic> piezaNueva = await _getPiezaToScreen();
+
+    if(piezaNueva['fotos'].length == 0) {
+      res = await _dialogSinFotos();
+      save = (res) ? res : false;
+    }
+ 
+    if(res && save) {
+
+      if(solicitudSgtn.autoEnJuego['idPieza'] != null) {
+        await solicitudSgtn.editPieza(piezaNueva);
+        solicitudSgtn.setAutoEnJuegoIndexPieza(null);
+        solicitudSgtn.setAutoEnJuegoIdPieza(null);
+      }else{
+        int indexPieza = solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['piezas'].indexWhere((pieza) => (pieza['id'] == this._idPiezaInScreen));
+        if(indexPieza > -1){
+
+          solicitudSgtn.setAutoEnJuegoIndexPieza(indexPieza);
+          solicitudSgtn.setAutoEnJuegoIdPieza(this._idPiezaInScreen);
+
+          await solicitudSgtn.editPieza(piezaNueva);
+
+          solicitudSgtn.setAutoEnJuegoIndexPieza(null);
+          solicitudSgtn.setAutoEnJuegoIdPieza(null);
+
+        }else{
+          await solicitudSgtn.addPieza(piezaNueva);
+        }
+      }
+      piezaNueva = null;
+      _calculaCantPiezas();
+      _resetScreen();
+
+      // Agregar Otra.
+      if(clickFrom == 1) {
+        solicitudSgtn.setAutoEnJuegoIndexPieza(this._cantPiezaSaved);
+        setState(() {});
+        this._ctrScroll.animateTo(0.0, duration: Duration(seconds: 1), curve: Curves.ease);
+        return;
       }
 
-    }else{
+      if(this._cantPiezaSaved > 1) {
+        Navigator.of(this._context).pushReplacementNamed('lst_piezas_page');
+      }else{
+        Navigator.of(this._context).pushReplacementNamed('lst_modelos_select_page');
+      }
 
-      setState(() {
-        this._skfKey.currentState.showSnackBar(stackErrorFrm());
-      });
-      this._ctrScroll.animateTo(this._scrollOffset, duration: Duration(seconds: 1), curve: Curves.ease);
     }
+
   }
 
   ///
@@ -1423,5 +1470,98 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
     );
   }
 
+  ///
+  Future<void> _showDialogDeRecovery() async {
 
+    await showDialog(
+      context: this._context,
+      builder: (_) {
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)
+          ),
+          titlePadding: EdgeInsets.all(10),
+          contentPadding: EdgeInsets.all(5),
+          title: Text(
+            'RECUPERACIÓN DE SOLICITUD',
+            textScaleFactor: 1,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.blue
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 150,
+                height: 150,
+                child: Image(
+                  image: AssetImage('assets/images/important-event.png'),
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Column(
+                  children: [
+                    Text(
+                      'El sistema detectó una Solicitud Pendiente de Terminar',
+                      textScaleFactor: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.green
+                      ),
+                    ),
+                    Divider(),
+                    Text(
+                      '¿QUÉ DESEAS HACER?',
+                      textScaleFactor: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.red
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+          actionsOverflowButtonSpacing: 20,
+          actions: [
+            RaisedButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)
+              ),
+              color: Colors.red,
+              textColor: Colors.white,
+              child: Text(
+                'Cancelar TODO',
+                textScaleFactor: 1,
+              ),
+              onPressed: () async {
+                await emRoto.deleteProcesosRotosByAltaDeRefaccs();
+                Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (route) => false);
+              },
+            ),
+            RaisedButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)
+              ),
+              color: Colors.blue,
+              textColor: Colors.white,
+              child: Text(
+                ' CONTINUAR ',
+                textScaleFactor: 1,
+              ),
+              onPressed: (){
+                Navigator.of(this._context).pop(true);
+              },
+            )
+          ],
+        );
+      }
+    );
+  }
 }

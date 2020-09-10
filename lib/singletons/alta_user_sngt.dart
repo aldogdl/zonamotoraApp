@@ -12,7 +12,7 @@ class AltaUserSngt {
 
   // ---------------------------------------------------------------//
 
-  PerfilEntity     perfilEntity     = PerfilEntity();
+  PerfilEntity perfilEntity = PerfilEntity();
   List<Map<String, dynamic>> redesSociales = [
     {'titulo':'Facebook', 'slug':'facebook', 'link':'https://facebook.com/'},
     {'titulo':'Instagram', 'slug':'instagram', 'link':'https://instagram.com/'},
@@ -200,6 +200,7 @@ class AltaUserSngt {
       String nom = noms[i].trim();
       if(txt.length > 3 || i == 0) {
         noms[i] = _toTitle(nom);
+        noms[i] = noms[i].trim();
       }
     }
     return noms.join(' ');
@@ -207,12 +208,14 @@ class AltaUserSngt {
 
   /// Convertimos en txt en tipo Titulo, la primer letra en mayusculas
   String _toTitle(String txt) {
-
-    txt = txt.toLowerCase();
-    String ini = txt.substring(0, 1);
-    String rest = txt.substring(1, txt.length);
-    txt = '${ini.toUpperCase()}$rest';
-    return txt;
+    if(txt.length > 0){
+      txt = txt.toLowerCase();
+      String ini = txt.substring(0, 1);
+      String rest = txt.substring(1, txt.length);
+      txt = '${ini.toUpperCase()}$rest';
+      return txt;
+    }
+    return '';
   }
 
   ///
@@ -262,6 +265,91 @@ class AltaUserSngt {
   void setFachada(Asset fachada) => this._fachada = fachada;
   Asset get fachada => this._fachada;
 
+  /// Usado para cuando damos de alta la pagina y avanza a la siguiente seccion, que no realice gasto de datos.
+  bool isAtras = false;
+  Map<String, dynamic> createDataSitioWeb;
+  void setCreateDataSitioWebInit() {
+    this.createDataSitioWeb = _getDataSitioEmpty();
+  }
+  void setCreateDataSitioWebByKeySingle(String key, dynamic valor) {
+    this.createDataSitioWeb[key] = valor;
+  }
+  void setCreateDataSitioWebByKeyMap(String key, String subKey, dynamic valor) {
+    this.createDataSitioWeb[key][subKey] = valor;
+  }
+  void setCreateDataSitioWebByCarruselByKey(String key, String subKey, dynamic valor) {
+    this.createDataSitioWeb['carrucel'][key][subKey] = valor;
+  }
+  void hidratarCreateDataSitioWeb(Map<String, dynamic> data) {
+
+    int perfil = this.createDataSitioWeb['ids']['perfil'];
+    int user = this.createDataSitioWeb['ids']['user'];
+    String pagWeb = this.createDataSitioWeb['pagWeb'];
+
+    this.createDataSitioWeb = {
+      'idp': data['pw_id'],
+      'ids': {
+        'perfil':perfil,
+        'user':user
+      },
+      'slug': data['pw_slug'],
+      'pagWeb': pagWeb,
+      'aniosExp':data['pw_aniosExp'],
+      'despeq' : data['pw_despeq'],
+      'logoSts': 'rediseniar',
+      'carrucel': data['pw_carrucel'],
+      'ventaDe': data['pw_ventaDe'],
+      'logo': data['pw_logotipo'],
+    };
+
+  }
+
+  ///
+  Future<void> hisratarPaginaWebFromServer(Map<String, dynamic> data, int user, int perfil) async {
+
+    setCreateDataSitioWebInit();
+    this.createDataSitioWeb['idp']          = data['pw_id'];
+    this.createDataSitioWeb['slug']         = data['pw_slug'];
+    this.createDataSitioWeb['logo']         = data['pw_logotipo'];
+    this.createDataSitioWeb['despeq']       = data['pw_despeq'];
+    this.createDataSitioWeb['ventaDe']      = data['pw_ventaDe'];
+    this.createDataSitioWeb['carrucel']     = data['pw_carrucel'];
+    this.createDataSitioWeb['aniosExp']     = data['pw_aniosExp'];
+    this.createDataSitioWeb['ids']['perfil']= perfil;
+    this.createDataSitioWeb['ids']['user']  = user;
+  }
+
+  ///
+  Map<String, dynamic> _getDataSitioEmpty() {
+    return {
+      'idp': 0,
+      'ids': {
+        'perfil':0,
+        'user':0
+      },
+      'slug': '',
+      'logoSts': 'rediseñar',
+      'aniosExp':0,
+      'despeq' : '',
+      'carrucel':{
+        'mision': {
+          'titulo':'',
+          'body'  :''
+        },
+        'diff'  : {
+          'titulo':'',
+          'body'  :''
+        },
+        'espec' : {
+          'titulo':'',
+          'body'  :''
+        }
+      },
+      'ventaDe': new List(),
+      'logo': '',
+    };
+  }
+  
   ///
   void dispose() {
     perfilEntity.dispose();
@@ -274,5 +362,6 @@ class AltaUserSngt {
     this.lstCiudades = new List();
     this.lstColonias = new List();
     this.lstPalClas  = new List();
+    this.createDataSitioWeb = _getDataSitioEmpty();
   }
 }

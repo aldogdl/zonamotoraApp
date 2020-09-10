@@ -78,4 +78,176 @@ class DataShared with ChangeNotifier {
     this._lastPageVisit = lastPageVisit;
   }
 
+  /*  
+   * Utilizado para la prueba de cominucacion vilateral
+   * 
+   * @see ConfigGMSSngt::initConfigGMS  --> Asigno
+   * @see PrbaPush::_msgDeRespuesta     --> Consumido
+   */
+  Map<String, dynamic> _prbaPush = new Map();
+  Map<String, dynamic> get prbaPush => _prbaPush;
+  setPrbaPush(Map<String, dynamic> prbaPush) {
+    this._prbaPush = prbaPush;
+    notifyListeners();
+  }
+
+  /*  
+  * Utilizado para mostrar el Icono de notificaciones
+  * 
+  * @see ConfigGMSSngt::initConfigGMS  --> Asigno
+  * @see IcoNotifWidget::build     --> Consumido
+  */
+  bool _showNotif = false;
+  bool get showNotif => _showNotif;
+  setShowNotif(bool showNotif) {
+    this._showNotif = showNotif;
+    notifyListeners();
+  }
+
+  /*  
+  * Utilizado para mostrar la cantidad de notificaciones
+  * 
+  * @see ConfigGMSSngt::initConfigGMS  --> Asigno
+  * @see IcoNotifWidget::build     --> Consumido
+  */
+  int _cantNotif = 0;
+  int get cantNotif => _cantNotif;
+  setCantNotif(int cantNotif) {
+    this._cantNotif = cantNotif;
+    notifyListeners();
+  }
+
+  /*
+  * Utilizado para mostrar la cantidad de solicitudes a Cotizar
+  *
+  * @see ACotizarWidget::_getPedidoParaCotizar  --> Asigno
+  * @see OportunidadesPage::build     --> Consumido
+  */
+  int _opVtasAcotizar = 0;
+  int get opVtasAcotizar => this._opVtasAcotizar;
+  setOpVtasAcotizar(int aCotizar) {
+    this._opVtasAcotizar = aCotizar;
+    notifyListeners();
+  }
+
+  /*
+  * Utilizado para mostrar la cantidad de solicitudes Apartadas
+  *
+  * @see ACotizarWidget::_getPedidoParaCotizar  --> Asigno
+  * @see OportunidadesPage::build     --> Consumido
+  */
+  int _opVtasApartadas = 0;
+  int get opVtasApartadas => this._opVtasApartadas;
+  setOpVtasApartadas(int apartadas) {
+    this._opVtasApartadas = apartadas;
+    notifyListeners();
+  }
+
+  /*
+  * Utilizado para mostrar la cantidad de solicitudes a Cotizar
+  *
+  * @see ACotizarWidget::_getPedidoParaCotizar  --> Asigno
+  * @see OportunidadesPage::build     --> Consumido
+  */
+  int _opVtasInventario = 0;
+  int get opVtasInventario => this._opVtasInventario;
+  setIpVtasInventario(int inventario) {
+    this._opVtasInventario = inventario;
+    notifyListeners();
+  }
+
+  /*
+  * Utilizado para saber que pagina mostrar en la seccion de oportunidades de venta.
+  * Cotizar | Apartadas | Inventario
+  *
+  * @see OportunidadesPage::build     --> Consumido
+  */
+  int _opsVtasPageView = 0;
+  int get opsVtasPageView => this._opsVtasPageView;
+  setOpsVtasPageView(int pageView) => this._opsVtasPageView = pageView;
+
+  /*
+  * Utilizado para saber que pagina mostrar en la seccion de Revisar Solicitudes -> cotizaciones.
+  * Pedientes | Cotizadas | Carrito
+  *
+  * @see IndexCotizaPage::_verCotizacione  --> Consumido
+  */
+  int _cotizacPageView = 0;
+  int get cotizacPageView => this._cotizacPageView;
+  setCotizacPageView(int pageView) => this._cotizacPageView = pageView;
+
+  /*  
+  * Utilizado para mostrar el Icono de notificaciones
+  * 
+  * @see ConfigGMSSngt::initConfigGMS  --> Asigno
+  * @see IcoNotifWidget::build     --> Consumido
+  */
+  List<Map<String, dynamic>> _notifics = new List();
+  List<Map<String, dynamic>> get notifics => _notifics;
+  setNotifics(Map<String, dynamic> notific) => this._notifics.add(notific);
+  setAllNotifics(List<Map<String, dynamic>> notifics) {
+    if(this._notifics.length > 0) {
+      for (var i = 0; i < this._notifics.length; i++) {
+        this._notifics.add(notifics[i]);
+      }
+    }else{
+      this._notifics = notifics;
+    }
+  }
+  void get cleanNotifics => _notifics = new List();
+
+  /// :: Usada en la seccion de cotizaciones(pestañas) y menu inferior.
+  int _cantInCarrito = 0;
+  IconData icoCarShopBtn = Icons.close;
+  Color colorCarShopBtn = Colors.red;
+  String txtCarShopBtn = 'CERRAR';
+  get cantInCarrito => this._cantInCarrito;
+  void setCantInCarrito() {
+    this._cantInCarrito = this._cantInCarrito + 1;
+    txtCarShopBtn = 'CONTINUAR';
+    colorCarShopBtn = Colors.blue;
+    icoCarShopBtn = Icons.shopping_cart;
+    notifyListeners();
+  }
+  void delCantInCarrito() {
+    this._cantInCarrito = this._cantInCarrito - 1;
+    if(this._cantInCarrito < 0) {
+      this._cantInCarrito = 0;
+    }
+    if(this._cantInCarrito == 0){
+      icoCarShopBtn = Icons.close;
+      colorCarShopBtn = Colors.red;
+      txtCarShopBtn = 'CERRAR';
+    }
+    notifyListeners();
+  }
+  void setCantTotalInCarrito(int cant) {
+    this._cantInCarrito = cant;
+    notifyListeners();
+  }
+
+  /// Cantidad de Solicitudes :: Usada en la seccion de cotizaciones(pestañas).
+  int _cantSolicitudesPendientes = 0;
+  get cantSolicitudesPendientes => this._cantSolicitudesPendientes;
+  void setCantSolicitudesPendientes(int newCant) {
+    this._cantSolicitudesPendientes = newCant;
+    notifyListeners();
+  }
+  /// Cantidad de Cotizaciones :: Usada en la seccion de cotizaciones(pestañas).
+  int _cantCotiz = 0;
+  get cantCotiz => this._cantCotiz;
+  void setCantCotiz(int newCant) {
+    this._cantCotiz = newCant;
+    notifyListeners();
+  }
+
+  //Plugin propio para tomar una imganen desde el dispositivo
+  int _refreshWidget = -1;
+  get refreshWidget => this._refreshWidget;
+  void setRefreshWidget(int refresh){
+    this._refreshWidget = refresh;
+    notifyListeners();
+  }
+
+  
 }

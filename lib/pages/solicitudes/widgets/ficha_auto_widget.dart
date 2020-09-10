@@ -41,6 +41,7 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
     if(solicitudSgtn.autos[this._indexAuto]['anio'] != '0'){
       this._hasAnio = true;
     }
+
     return Padding(
       padding: EdgeInsets.all(10),
       child: Container(
@@ -179,47 +180,14 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
       cantPiezas = solicitudSgtn.autos[this._indexAuto]['piezas'].length;
     }
     String plural = (cantPiezas == 0) ? 's' : (cantPiezas > 1) ? 's' : '';
+    String sufixPiezas = (solicitudSgtn.onlyRead) ? 'Contiene' : 'Actualmente';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         Expanded(
           flex: 1,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  InkWell(
-                    child: CircleAvatar(
-                      radius: 19,
-                      child: Icon(Icons.delete),
-                    ),
-                    onTap: () async => widget.borrarAuto(this._indexAuto),
-                  ),
-                  InkWell(
-                    child: CircleAvatar(
-                      radius: 19,
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.edit, color: Colors.white),
-                    ),
-                    onTap: () async => _editarAuto(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 7),
-              const Text(
-                'Automóvil',
-                textScaleFactor: 1,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13
-                ),
-              )  
-            ],
-          ),
+          child: (solicitudSgtn.onlyRead) ? _dataCotizacion() : _btnDeleteAndEdit(),
         ),
         const SizedBox(width: 20),
         Expanded(
@@ -229,7 +197,7 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
             children: <Widget> [
               _btnPiezas(),
               Text(
-                'Actualmente $cantPiezas Pieza$plural',
+                '$sufixPiezas $cantPiezas Pieza$plural',
                 textScaleFactor: 1,
                 style: TextStyle(
                   color: Colors.grey,
@@ -244,6 +212,103 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
   }
 
   ///
+  Widget _dataCotizacion() {
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Enviada:',
+          textScaleFactor: 1,
+          style: TextStyle(
+            color: Colors.black54,
+            fontSize: 13,
+            fontWeight: FontWeight.bold
+          ),
+        ),
+        Row(
+          children: <Widget>[
+            Text(
+              'AYER',
+              textScaleFactor: 1,
+              style: TextStyle(
+                color: Colors.black54,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              '2:00 p.m.',
+              textScaleFactor: 1,
+              style: TextStyle(
+                color: Colors.black54,
+                fontSize: 12,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Container(
+          padding: EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: Colors.orange,
+            borderRadius: BorderRadius.circular(5)
+          ),
+          child: Text(
+            ' EN COLA ',
+            textScaleFactor: 1,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  ///
+  Widget _btnDeleteAndEdit() {
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        const SizedBox(height: 5),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            InkWell(
+              child: CircleAvatar(
+                radius: 19,
+                child: Icon(Icons.delete),
+              ),
+              onTap: () async => widget.borrarAuto(this._indexAuto),
+            ),
+            InkWell(
+              child: CircleAvatar(
+                radius: 19,
+                backgroundColor: Colors.blue,
+                child: Icon(Icons.edit, color: Colors.white),
+              ),
+              onTap: () async => _editarAuto(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 7),
+        const Text(
+          'Automóvil',
+          textScaleFactor: 1,
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 13
+          ),
+        )  
+      ],
+    );
+  }
+
+  ///
   Widget _btnPiezas() {
 
     int cantPiezas = 0;
@@ -252,12 +317,15 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
     }
 
     return FlatButton(
+      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 9),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10)
       ),
       color: (cantPiezas > 0) ? Colors.green : Colors.blue,
       child: Text(
-        (cantPiezas > 0) ? 'Ver sus Piezas' : 'Agregar Pieza',
+        (cantPiezas > 0)
+        ? (solicitudSgtn.onlyRead) ? 'Piezas Cotizadas' : 'Ver sus Piezas'
+        : 'Agregar Pieza',
         textScaleFactor: 1,
         style: TextStyle(
           fontWeight: FontWeight.bold,

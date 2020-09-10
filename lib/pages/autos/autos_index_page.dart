@@ -51,6 +51,7 @@ class _AutosIndexPageState extends State<AutosIndexPage> {
           top: 0,
           child:  BannersTop()
         ),
+
       ],
     );
   }

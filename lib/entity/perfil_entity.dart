@@ -96,7 +96,6 @@ class PerfilEntity {
       'colonia'       : this._colonia,
       'latLng'        : this._latLng,
       'telsContac'    : this._telsContac,
-      'colonia'       : this._colonia,
       'email'         : this._email,
       'roles'         : this._roles,
       'redsocs'       : this._redsocs,

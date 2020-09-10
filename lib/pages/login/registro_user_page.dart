@@ -97,14 +97,14 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
     );
   }
 
-  /* */
-  Widget _body() {
-
+  ///
+  Widget _body()
+  {
     String tituloLinkBackPage = (this._params['source'] == 'user') ? 'REGRESAR' : 'IR AL MENÚ DE OPCIONES';
 
     return CustomScrollView(
       slivers: <Widget>[
-        appBarrMy.getAppBarrSliver(titulo: 'Registro de Usuario', bgContent: _cabecera()),
+        appBarrMy.getAppBarrSliver(titulo: 'Crear CUENTA', bgContent: _cabecera()),
         SliverList(
           delegate: SliverChildListDelegate(
             [
@@ -132,9 +132,9 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
     );
   }
 
-  /* */
-  Widget _cabecera() {
-
+  ///
+  Widget _cabecera()
+  {
     return Center(
       child: Container(
         height: this._screen.width * 0.4,
@@ -214,7 +214,6 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
       },
       isExpanded: true,
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.all(0),
         fillColor: Colors.white,
         filled: true,
         prefixIcon: Icon(Icons.work),
@@ -241,9 +240,10 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
         val = val.toLowerCase();
         return _nombreIsValid(val);
       },
-      onFieldSubmitted: (String val) {
+      onFieldSubmitted: (String val) async {
         val = val.toLowerCase();
         FocusScope.of(this._context).requestFocus(this._focusMovil);
+        await verAlertaDeTelCorrecto();
       },
       decoration: InputDecoration(
         hintText: 'Ej. mireya cervantes jiménez',
@@ -271,6 +271,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
         val = val.toLowerCase();
         FocusScope.of(this._context).requestFocus(this._focusUser);
       },
+      onTap: () => verAlertaDeTelCorrecto(),
       decoration: InputDecoration(
         hintText: 'Ej. 33 00 00 00 00',
         fillColor: Colors.white,
@@ -431,7 +432,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
       color: Colors.black87,
       icon: Icon(Icons.settings_input_antenna, color: Colors.orange, size: 15,),
       label: Text(
-        'REGISTRAR USUARIO',
+        'CREAR MI CUENTA',
         textScaleFactor: 1,
         style: TextStyle(
           fontSize: 19,
@@ -453,8 +454,9 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
     if(this._frmkKey.currentState.validate()){
 
       String token = await configGMSSngt.getTokenDevice();
+
       if(token == null) {
-        String msg = 'Éste dispositivo necesita enviar su token para las notificaciones, Inténtalo nuevamente por favor';
+        String msg = 'Este dispositivo necesita enviar su token para las notificaciones, Inténtalo nuevamente por favor.';
         await alertsVarios.entendido(this._context, titulo: 'Dispositivo Sin TOKEN', body: msg);
         return false;
       }
@@ -477,6 +479,13 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
 
       return false;
     }
+  }
+
+  /* */
+  Future<void> verAlertaDeTelCorrecto() async {
+
+    String body = 'Todas las solicitudes, cotizaciones e informes que requieras de ZonaMotora llegarán al número de Celular que indiques en este campo';
+    await alertsVarios.entendido(this._context, titulo: 'ACERCA DEL TELÉFONO', body: body);
   }
 
   /* */
@@ -542,15 +551,18 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
     dataShared.setUsername(username);
     dataShared.setsegReg(1);
     dataShared.setTokenAsesor(null);
+
     if(!dataShared.isConfigPush) {
+      configGMSSngt.setContext(this._context);
       await configGMSSngt.initConfigGMS();
       await configGMSSngt.getTokenDevice();
+      dataShared.setIsCofigPush(true);
     }
     await _checandoConfigFinal();
     await alertsVarios.entendido(
       this._context,
-      titulo: 'REGISTRO REALIZADO',
-      body: 'Tu registro fué un Éxito, el sistema se reinicilizará para configurar tu Aplicación',
+      titulo: 'CUENTA CREADA',
+      body: 'Tu cuenta fué creada con éxito. El Sistema se reiniciará para configurar tu Aplicación',
       redirec: () async {
         Navigator.of(this._context).pushNamedAndRemoveUntil('init_config_page', (Route rutas) => true);
       }

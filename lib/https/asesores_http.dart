@@ -1,12 +1,30 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:zonamotora/globals.dart' as globals;
 import 'package:zonamotora/https/errores_server.dart';
+import 'package:zonamotora/utils/cambiando_la_ip_dev.dart';
 
 class AsesoresHttp {
+  
+  /// Bloque Utilizado solo en modo developer para cambios de IP repentinos
+    CambiandoLaIpDev gestionDeIp = CambiandoLaIpDev();
+    String _uriBase = globals.uriBase;
+    AsesoresHttp() { if(globals.env == 'dev') { _getIpDev(); } }
+    Future<String> _getIpDev() async {
+      String ip = await gestionDeIp.getIp();
+      return this._uriBase.replaceFirst('${globals.ip}', ip);
+    }
+    Future<void> _printAndRefreshIp(String metodo) async {
+      this._uriBase = (globals.env == 'dev') ? await _getIpDev() : globals.uriBase;
+      assert((){
+        print(this._uriBase);
+        print('Gastando datos -> AsesoresHttp::$metodo');
+        return true;
+      }());
+    }
+  /// End Bloque
 
   ErroresServer erroresServer = ErroresServer();
   Map<String, dynamic> result = {'abort':false, 'msg' : 'ok', 'body':''};
@@ -17,8 +35,10 @@ class AsesoresHttp {
   */
   Future<List<Map<String, dynamic>>> getAsesores() async {
 
+    await this._printAndRefreshIp('getAsesores');
     List<Map<String, dynamic>> asesores = new List();
-    Uri uri = Uri.parse('${globals.uriBase}/asesores/get-asesores/');
+    Uri uri = Uri.parse('${this._uriBase}/asesores/get-asesores/');
+
     final req = http.MultipartRequest('GET', uri);
     http.Response reServer = await http.Response.fromStream(await req.send());
     if(reServer.statusCode == 200) {
@@ -35,8 +55,10 @@ class AsesoresHttp {
   */
   Future<String> autenticar(String username, String pass) async {
 
+    await this._printAndRefreshIp('autenticar');
     String token;
-    Uri uri = Uri.parse('${globals.uriBase}/login/integrantes/login_check');
+    Uri uri = Uri.parse('${this._uriBase}/login/integrantes/login_check');
+
     final req = http.MultipartRequest('POST', uri);
     req.fields['_usname'] = username;
     req.fields['_uspass'] = pass;
@@ -56,8 +78,11 @@ class AsesoresHttp {
   */
   Future<List<Map<String, dynamic>>> getTiposDeSocios() async {
 
+    await this._printAndRefreshIp('getTiposDeSocios');
+
     List<dynamic> tipos;
-    Uri uri = Uri.parse('${globals.uriBase}/asesores/get-tipos-socios/');
+    Uri uri = Uri.parse('${this._uriBase}/asesores/get-tipos-socios/');
+
     final req = http.MultipartRequest('GET', uri);
     http.Response reServer = await http.Response.fromStream(await req.send());
     if(reServer.statusCode == 200) {
@@ -73,7 +98,9 @@ class AsesoresHttp {
   */
   Future<http.Response> setColonia(Map<String, dynamic> colonia, token) async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/$_apiAsoser/set-colonias/');
+    await this._printAndRefreshIp('setColonia');
+
+    Uri uri = Uri.parse('${this._uriBase}/$_apiAsoser/set-colonias/');
     final req = http.MultipartRequest('POST', uri);
     req.headers['Authorization'] = 'Bearer $token';
     req.fields['colonia'] = json.encode(colonia);
@@ -85,11 +112,15 @@ class AsesoresHttp {
   /// @see AltaSaveResumPage::build
   Future<bool> saveAltaNuevoUser(Map<String, dynamic> data, String tokenAsesor) async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/${this._apiAsoser}/save-alta-nuevo-user/');
+    await this._printAndRefreshIp('saveAltaNuevoUser');
+
+    Uri uri = Uri.parse('${this._uriBase}/${this._apiAsoser}/save-alta-nuevo-user/');
+    
     final req = http.MultipartRequest('POST', uri);
     req.headers['Authorization'] = 'Bearer $tokenAsesor';
     req.fields['data'] = json.encode(data);
     http.Response  reServer = await http.Response.fromStream(await req.send());
+
     if(reServer.statusCode == 200) {
       final res = json.decode(reServer.body);
       return res['abort'];
@@ -102,18 +133,20 @@ class AsesoresHttp {
   /// Guardamos en el servidor los datos en bruto del nuevo usuario
   /// 
   /// @see AltaSaveResumPage::build
-  Future<bool> saveFachada(int idUser, ByteData fachada, String tokenAsesor) async {
+  Future<bool> saveFachada(int idUser, Map<String, dynamic> fachada, String tokenAsesor) async {
 
-    Uri uri = Uri.parse('${globals.uriBase}/${this._apiAsoser}/save-fachada/');
+    await this._printAndRefreshIp('saveFachada');
+
+    Uri uri = Uri.parse('${this._uriBase}/${this._apiAsoser}/save-fachada/');
+
     final req = http.MultipartRequest('POST', uri);
     req.headers['Authorization'] = 'Bearer $tokenAsesor';
 
-    List<int> imageData = fachada.buffer.asUint8List();
     http.MultipartFile multipartFile = http.MultipartFile.fromBytes(
-      'fachada', imageData, filename: '${idUser}_zonamotora.jpg', contentType: MediaType("image", "jpg"),
+      'fachada', fachada['img'], filename: '${idUser}_zonamotora.jpg', contentType: MediaType("image", fachada['ext']),
     );
     req.files.add(multipartFile);
-
+    fachada = null;
     http.Response  reServer = await http.Response.fromStream(await req.send());
     if(reServer.statusCode == 200) {
       final res = json.decode(reServer.body);
@@ -121,6 +154,24 @@ class AsesoresHttp {
     }else{
       this.result = erroresServer.determinarError(reServer);
     }
+    
     return false;
+  }
+
+  /*
+  * @see ProccRotoRepository::_recoveryLogotipoSocio
+  */
+  Future<Map<String, dynamic>> recoveryDataPagWebById(int idUser) async {
+
+    await this._printAndRefreshIp('recoveryDataPagWebById');
+    
+    Uri uri = Uri.parse('${this._uriBase}/asesores/$idUser/recovery-data-pageweb-by-user/');
+
+    final req = http.MultipartRequest('GET', uri);
+    http.Response reServer = await http.Response.fromStream(await req.send());
+    if(reServer.statusCode == 200) {
+      return new Map<String, dynamic>.from(json.decode(reServer.body));
+    }
+    return new Map();
   }
 }

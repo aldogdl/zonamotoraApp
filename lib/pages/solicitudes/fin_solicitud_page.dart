@@ -434,13 +434,21 @@ class _FinSolicitudPageState extends State<FinSolicitudPage> {
   Future<bool> _sendDataSolicitud() async {
 
     Map<String, dynamic> data = {
-      'user' : solicitudSgtn.getIdUser(),
-      'solicitud' : this._data
+      'user'     : solicitudSgtn.getIdUser(),
+      'solicitud': this._data,
+      'sendMsg'  : (this._fotos.length > 0) ? false : true
     };
+
     this._data = null;
     bool res = await emSolicitud.enviarDataSolicitud(data);
     if(res){
-      solicitudSgtn.filenameInServer = emSolicitud.result['body'];
+      solicitudSgtn.filenameInServer = emSolicitud.result['body']['filename'];
+      await emSolicitud.setNewCotizacion(emSolicitud.result['body']);
+    }else{
+      if(emSolicitud.result['msg'] == 'TOKEN EXPIRADO'){
+        
+        //ToDo:: Refrescar el token del usuario y repetir esta accion
+      }
     }
     return res;
   }

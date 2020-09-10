@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
 
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/https/asesores_http.dart';
 import 'package:zonamotora/repository/autos_repository.dart';
+import 'package:zonamotora/repository/procc_roto_repository.dart';
 import 'package:zonamotora/singletons/alta_user_sngt.dart';
+import 'package:zonamotora/singletons/tomar_imagenes_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
 import 'package:zonamotora/widgets/bg_altas_stack.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 import 'package:zonamotora/utils/validadores.dart';
+import 'package:zonamotora/widgets/tomar_imagenes_widget.dart';
 
 class AltaSaveResumPage extends StatefulWidget {
   @override
@@ -28,10 +30,15 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
   BgAltasStack bgAltasStack = BgAltasStack();
   AutosRepository emAutos   = AutosRepository();
   AsesoresHttp asesoresHttp = AsesoresHttp();
+  ProccRotoRepository emProcRoto = ProccRotoRepository();
+  TomarImagenesSngt tomarImagenesSngt = TomarImagenesSngt();
 
   BuildContext _context;
   bool _isInit = false;
   bool _isSaved= false;
+  bool _isSavedFachada= false;
+  bool _processRoto = false;
+  bool _showBtnAtras = true;
   GlobalKey<ScaffoldState> _skfKey = GlobalKey<ScaffoldState>();
 
   Widget _lstSistemas;
@@ -51,8 +58,7 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
   double _isValid = 0;
   String _error;
   String _txtFachada = 'sin imagen aún';
-  int _thubFachadaX = 533;
-  int _thubFachadaY = 300;
+
   Widget _widgetImage = Image(
     image: AssetImage('assets/images/img_fin_alta.png'),
     fit: BoxFit.cover,
@@ -66,7 +72,15 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
   @override
   void dispose() {
     altaUserSngt.setFachada(null);
+    tomarImagenesSngt.dispose();
+    imageCache.clear();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) => _initWidget());
   }
 
   @override
@@ -82,6 +96,15 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
       bgAltasStack.setBuildContext(this._context);
       DataShared dataShared = Provider.of<DataShared>(this._context, listen: false);
       dataShared.setLastPageVisit('alta_perfil_otros_page');
+    }
+
+    if(this._isSaved && !this._processRoto) {
+      this._processRoto = true;
+      tomarImagenesSngt.proccRoto = {
+        'nombre': 'altSoc',
+        'metadata': {'idUser':altaUserSngt.userId},
+        'contents': {'tokenAsesor': Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']}
+      };
     }
 
     return Scaffold(
@@ -136,57 +159,19 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
   }
 
   ///
-  Future<void> _saveData() async {
+  Future<void> _initWidget() async {
 
-    int cantMaxDePuntos = (altaUserSngt.roles == 'ROLE_AUTOS') ? 8 : 10;
-    if(this._isValid < cantMaxDePuntos) {
-      String body = 'Por favor, revisa los datos que vas a enviar al servidor, ya que no estan completos.';
-      await alertsVarios.entendido(this._context, titulo: 'DATOS INCOMPLETOS', body: body);
-    }else{
-      Map<String, dynamic> data = altaUserSngt.jsonToSend();
-      alertsVarios.cargando(this._context);
-      bool res = await asesoresHttp.saveAltaNuevoUser(data, Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']);
-      Navigator.of(this._context).pop(false);
-      if(res){
-        await alertsVarios.entendido(this._context, titulo: asesoresHttp.result['msg'], body: asesoresHttp.result['body']);
-      }else{
-        // Eliminamos el singleton del alta.
-        setState(() {
-          this._isSaved = true;
-          altaUserSngt.dispose();
-        });
-      }
+    if(tomarImagenesSngt.isRecovery) {
+      this._isSaved = true;
+      this._processRoto = false;
+      tomarImagenesSngt.isRecovery = false;
+      this._showBtnAtras = false;
+      setState(() {});
     }
+    tomarImagenesSngt.restringirPosition = 'h';
   }
 
   ///
-  Future<void> _saveFachada() async {
-
-    if(altaUserSngt.fachada != null) {
-      alertsVarios.cargando(this._context, titulo: 'FACHADA');
-      Asset fachada = altaUserSngt.fachada;
-      bool res = await asesoresHttp.saveFachada(
-        altaUserSngt.userId,
-        await fachada.getThumbByteData(this._thubFachadaX, this._thubFachadaY),
-        Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']
-      );
-      Navigator.of(this._context).pop(false);
-      if(!res){
-        this._txtFachada = 'Asegurada';
-        this._tituloDataSaved = 'IMAGEN GUARDADA';
-        this._bodyDataSaved = 'Haz completado con éxito el alta del usuario.\n¿Qué deceas hacer ahora?';
-        setState(() { });
-      }else{
-        await alertsVarios.entendido(this._context, titulo: asesoresHttp.result['msg'], body: asesoresHttp.result['body']);
-      }
-    }else{
-      String body = 'Los datos ya fueron guardados con éxito, puedes proseguir con lo demás.';
-      await alertsVarios.entendido(this._context, titulo: 'DATOS GUARDADOS', body: body);
-      return;
-    }
-  }
-
-  /* */
   Widget _body() {
 
     return Column(
@@ -417,6 +402,12 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
               ),
             ),
           ),
+          TomarImagenWidget(
+            contextFrom: this._context,
+            actionBarTitle: 'FACHADA',
+            maxImages: 1,
+            child: _btnTomarFachada(),
+          ),
           Divider(),
           Text(
             'ACCIONES POSTERIORES',
@@ -426,35 +417,71 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
               color: Colors.blue
             ),
           ),
+          (this._isSavedFachada)
+          ?
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: <Widget>[
-                _machoteBtnAcciones(titulo: 'Alta de Pag. Web', accion: (){
-                  altaUserSngt.setUserId(null);
-                  Navigator.of(this._context).pushNamedAndRemoveUntil('alta_index_menu_page', (Route rutas) => false);
-                }),
-                SizedBox(width: 10),
                 _machoteBtnAcciones(titulo: 'MENÚ', accion: (){
+                  altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
                   Navigator.of(this._context).pushNamedAndRemoveUntil('alta_index_menu_page', (Route rutas) => false);
                 }),
                 SizedBox(width: 10),
                 _machoteBtnAcciones(titulo: 'Nuevo Registro', accion: (){
+                  altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
                   Navigator.of(this._context).pushNamedAndRemoveUntil('reg_user_page', (Route rutas) => false, arguments: {'source':'asesor'});
                 }),
                 SizedBox(width: 10),
                 _machoteBtnAcciones(titulo: 'Continuar Nueva Alta', accion: (){
+                  altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
                   Navigator.of(this._context).pushNamedAndRemoveUntil('alta_lst_users_page', (Route rutas) => false);
                 }),
                 SizedBox(width: 10),
                 _machoteBtnAcciones(titulo: 'Inicio', accion: (){
+                  altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
                   Navigator.of(this._context).pushNamedAndRemoveUntil('index_page', (Route rutas) => false);
                 })
               ],
+            ),
+          )
+          :
+          SizedBox(height: 0)
+        ],
+      ),
+    );
+  }
+
+  ///
+  Widget _btnTomarFachada() {
+
+    return Container(
+      width: MediaQuery.of(this._context).size.width * 0.6,
+      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 3,
+            offset: Offset(1, 1),
+            color: Colors.black.withAlpha(150)
+          )
+        ]
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Icon(Icons.folder_special, color: Colors.amber[600]),
+          Text(
+            'Seleccionar Fachada',
+            textScaleFactor: 1,
+            style: TextStyle(
+              color: Colors.blue[300]
             ),
           )
         ],
@@ -488,7 +515,18 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
           top: 0, left: 0,
           child: Container(
             color: Colors.blue,
-            child: this._widgetImage,
+            child: Consumer<DataShared>(
+              builder: (_, dataShared, __){
+                if(dataShared.refreshWidget > -1){
+                  if(tomarImagenesSngt.childImg != null) {
+                    return tomarImagenesSngt.childImg;
+                  }else{
+                  return tomarImagenesSngt.previewImage();
+                  }
+                }
+                return this._widgetImage;
+              }
+            ),
           ),
         ),
         Positioned(
@@ -525,6 +563,10 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
             ),
           ),
         ),
+        (!this._showBtnAtras)
+        ?
+        SizedBox(height: 0)
+        :
         Positioned(
           top: (this._altoAppBar - MediaQuery.of(this._context).size.width * 0.07),
           left: MediaQuery.of(this._context).size.width * 0.05,
@@ -543,33 +585,83 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
             ),
           ),
         ),
-        Positioned(
-          top: (this._altoAppBar - MediaQuery.of(this._context).size.width * 0.09),
-          right: MediaQuery.of(this._context).size.width * 0.05,
-          child: CircleAvatar(
-            maxRadius: 22,
-            backgroundColor: Colors.white,
-            child: IconButton(
-              alignment: Alignment.center,
-              icon: Icon(Icons.folder_special, size: 25, color: Colors.amber),
-              onPressed: () async {
-                if(!this._isSaved) {
-                  String body = 'Se detectó que no se ha guardado datos en el servidor.\n¿Deseas aun así continuar con el proceso de la fachada?';
-                  bool acc = await alertsVarios.aceptarCancelar(this._context, titulo: 'ALERTA DE DATOS', body: body);
-                  if(acc){
-                    setState(() {
-                      this._isSaved = true;
-                    });
-                  }
-                }
-                if(this._isSaved) {
-                  _loadAssets();
-                }
-              },
-            ),
-          ),
-        )
       ],
+    );
+  }
+  
+  ///
+  Widget _tituloInfo(String titulo, {Color txtColor = Colors.green}) {
+
+    return Text(
+      '$titulo',
+      textScaleFactor: 1,
+      textAlign: TextAlign.start,
+      style: TextStyle(
+        color: txtColor
+      ),
+    );
+  }
+
+  ///
+  Widget _containerDataRaw({@required child}) {
+
+    return Container(
+      width: MediaQuery.of(this._context).size.width,
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(10)
+      ),
+      child: child,
+    );
+  }
+
+  ///
+  Widget _containerOfDatas({
+    @required String titulo,
+    @required String rutaEdit,
+    @required Future futuro,
+    @required Widget child
+  }) {
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      width: MediaQuery.of(this._context).size.width,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                '$titulo',
+                textScaleFactor: 1,
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                  fontSize: 15,
+                ),
+              ),
+              IconButton(
+                padding: EdgeInsets.all(0),
+                icon: Icon(Icons.edit, color: Colors.blueGrey),
+                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('$rutaEdit', (Route rutas) => false)
+              ),
+            ],
+          ),
+          Divider(color: Colors.red, height: 1,),
+          Divider(color: Colors.white, height: 1,),
+          const SizedBox(height: 10),
+          FutureBuilder(
+            future: futuro,
+            builder: (_, AsyncSnapshot snapshot){
+              if(child != null) {
+                return child;
+              }
+              return LinearProgressIndicator();
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -927,130 +1019,57 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
   }
 
   ///
-  Widget _tituloInfo(String titulo, {Color txtColor = Colors.green}) {
+  Future<void> _saveData() async {
 
-    return Text(
-      '$titulo',
-      textScaleFactor: 1,
-      textAlign: TextAlign.start,
-      style: TextStyle(
-        color: txtColor
-      ),
-    );
+    int cantMaxDePuntos = (altaUserSngt.roles == 'ROLE_AUTOS') ? 8 : 10;
+
+    if(this._isValid < cantMaxDePuntos) {
+      String body = 'Por favor, revisa los datos que vas a enviar al servidor, ya que no estan completos.';
+      await alertsVarios.entendido(this._context, titulo: 'DATOS INCOMPLETOS', body: body);
+    }else{
+      Map<String, dynamic> data = altaUserSngt.jsonToSend();
+      alertsVarios.cargando(this._context);
+      bool res = await asesoresHttp.saveAltaNuevoUser(data, Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']);
+      Navigator.of(this._context).pop(false);
+      if(res){
+        await alertsVarios.entendido(this._context, titulo: asesoresHttp.result['msg'], body: asesoresHttp.result['body']);
+      }else{
+        // Eliminamos el singleton del alta.
+
+        setState(() {
+          this._isSaved = true;
+        });
+      }
+    }
   }
 
   ///
-  Widget _containerDataRaw({@required child}) {
+  Future<void> _saveFachada() async {
 
-    return Container(
-      width: MediaQuery.of(this._context).size.width,
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(10)
-      ),
-      child: child,
-    );
-  }
+    if(tomarImagenesSngt.imagenAsset != null) {
 
-  ///
-  Widget _containerOfDatas({
-    @required String titulo,
-    @required String rutaEdit,
-    @required Future futuro,
-    @required Widget child
-  }) {
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      width: MediaQuery.of(this._context).size.width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Text(
-                '$titulo',
-                textScaleFactor: 1,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontSize: 15,
-                ),
-              ),
-              IconButton(
-                padding: EdgeInsets.all(0),
-                icon: Icon(Icons.edit, color: Colors.blueGrey),
-                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('$rutaEdit', (Route rutas) => false)
-              ),
-            ],
-          ),
-          Divider(color: Colors.red, height: 1,),
-          Divider(color: Colors.white, height: 1,),
-          const SizedBox(height: 10),
-          FutureBuilder(
-            future: futuro,
-            builder: (_, AsyncSnapshot snapshot){
-              if(child != null) {
-                return child;
-              }
-              return LinearProgressIndicator();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  ///
-  Future<void> _loadAssets() async {
-
-    List<Asset> resultList;
-
-    try {
-      resultList = await MultiImagePicker.pickImages(
-        maxImages: 1,
-        enableCamera: true,
-        cupertinoOptions: CupertinoOptions(
-          takePhotoIcon: "chat",
-        ),
-        materialOptions: MaterialOptions(
-          actionBarTitle: "FACHADA",
-          allViewTitle:   "Todas las Fotos",
-          selectionLimitReachedText: 'Haz llegado al limite',
-          textOnNothingSelected: 'No se ha seleccionado nada',
-          lightStatusBar: false,
-          useDetailsView: false,
-          actionBarColor: "#7C0000",
-          statusBarColor: "#7C0000",
-          selectCircleStrokeColor: "#000000",
-        ),
+      alertsVarios.cargando(this._context, titulo: 'FACHADA');
+      bool res = await asesoresHttp.saveFachada(
+        altaUserSngt.userId,
+        await tomarImagenesSngt.getImageForSend(),
+        Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']
       );
-    } on Exception catch (e) {
-      this._error = e.toString();
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    if(resultList != null){
-      setState(() {
-        if(resultList.first.isLandscape){
-          altaUserSngt.setFachada(resultList.first);
-          this._widgetImage = Container(
-            width: MediaQuery.of(this._context).size.width,
-            height: MediaQuery.of(this._context).size.height * 0.4,
-            child: AssetThumb(asset: resultList.first, width: this._thubFachadaX, height: this._thubFachadaY),
-          );
-        }else{
-          String body = 'El sistema acepta sólo imágenes HORIZONTALES.';
-          resultList = null;
-          alertsVarios.entendido(this._context, titulo: 'RECOMENDACIÓN', body:body);
-        }
-      });
+      Navigator.of(this._context).pop(false);
+      if(!res){
+        this._txtFachada = 'Asegurada';
+        this._tituloDataSaved = 'IMAGEN GUARDADA';
+        this._bodyDataSaved = 'Haz completado con éxito el alta del usuario.\n¿Qué deceas hacer ahora?';
+        await emProcRoto.deleteProcesoRoto(nameBackup: 'altSoc');
+        setState(() {
+          this._isSavedFachada = true;
+        });
+      }else{
+        await alertsVarios.entendido(this._context, titulo: asesoresHttp.result['msg'], body: asesoresHttp.result['body']);
+      }
+    }else{
+      String body = 'Los datos ya fueron guardados con éxito, puedes proseguir con lo demás.';
+      await alertsVarios.entendido(this._context, titulo: 'DATOS GUARDADOS', body: body);
+      return;
     }
   }
-
 }

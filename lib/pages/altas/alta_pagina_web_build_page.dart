@@ -33,7 +33,6 @@ class _AltaPaginaWebBuildPageState extends State<AltaPaginaWebBuildPage> {
     
     this._context = context;
     context = null;
-
     
     if(!this._isInit) {
       this._isInit = true;
@@ -189,7 +188,10 @@ class _AltaPaginaWebBuildPageState extends State<AltaPaginaWebBuildPage> {
           this._txtError = emUser.result['body'];
         });
       }else{
-        altaUserSngt.setCreateDataSitioWebByKeySingle('idp', emUser.result['body']);
+        altaUserSngt.setCreateDataSitioWebByKeySingle('idp', emUser.result['body']['idp']);
+        if(emUser.result['body']['slug']['hasChangeSlug']){
+          altaUserSngt.setCreateDataSitioWebByKeySingle('slug', emUser.result['body']['slug']['oldSlug']);
+        }
         Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_logo_page');
       }
     }

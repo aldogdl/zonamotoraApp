@@ -28,6 +28,7 @@ class SolicitudSngt {
   int indexAutoIsEditing = -1;
   String editAutoPage;
   bool addOtroAuto = false;
+  bool onlyRead = false;
   String filenameInServer;
   ///
   Map<String, dynamic> _autoEnJuego = {'indexAuto': null, 'indexPieza': null, 'idPieza': null};
@@ -91,6 +92,51 @@ class SolicitudSngt {
       });
     }
     return fotosRecovery;
+  }
+
+  ///
+  Future<List<Map<String, dynamic>>> isValidContentOfAutos() async {
+
+    List<Map<String, dynamic>> errores = new List();
+    bool hasError = false;
+    this._autosSeleccionados.forEach((auto){
+
+      if(auto.containsKey('mk_id')) {
+        if(auto['mk_id'] > 0){ hasError = false; }
+      }else{
+        hasError = true;
+      }
+      if(hasError){
+        errores.add({
+          'titulo':'Error en uno de los AUTOS',
+          'stitulo':'No se detectó la MARCA del Auto.'
+        });
+      }
+      hasError = false;
+      if(auto.containsKey('md_id')) {
+        if(auto['md_id'] > 0){ hasError = false; }
+      }else{
+        hasError = true;
+      }
+      if(hasError){
+        errores.add({
+          'titulo':'Error en uno de los AUTOS',
+          'stitulo':'No se detectó el MODELO del Auto.'
+        });
+      }
+      if(auto.containsKey('anio')){
+        if(auto['anio'].length < 4) {
+          errores.add({
+            'titulo':'Para el Auto ${auto['md_nombre']}',
+            'stitulo':'Indica el AÑO con 4 números.'
+          });
+        }
+      }else{
+        hasError = true;
+      }
+    });
+
+    return errores;
   }
 
   ///
@@ -234,16 +280,19 @@ class SolicitudSngt {
   }
 
   ///
-  void limpiarSingleton() {
+  void limpiarSingleton({force = true}) {
 
     this.indexAutoIsEditing = -1;
     this.editAutoPage = null;
     this.addOtroAuto = false;
+    this.onlyRead = false;
     this._autoEnJuego = {'indexAuto': null, 'indexPieza': null, 'idPieza': null};
     this._user = new Map();
     this._autosSeleccionados = new List();
     this._isRecovery = false;
     emProccRotos.deleteProcesosRotosByAltaDeRefaccs();
-    dispose();
+    if(force){
+      dispose();
+    }
   }
 }

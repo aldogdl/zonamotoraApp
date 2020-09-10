@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/user_repository.dart';
 import 'package:zonamotora/singletons/alta_user_sngt.dart';
+import 'package:zonamotora/utils/validadores.dart';
+import 'package:zonamotora/widgets/alerts_varios.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
@@ -20,9 +22,12 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
   MenuInferior menuInferior = MenuInferior();
   AltaUserSngt altaUserSngt = AltaUserSngt();
   UserRepository emUser     = UserRepository();
+  Validadores utils         = Validadores();
+  AlertsVarios alertsVarios = AlertsVarios();
 
   BuildContext _context;
   bool _isInit   = false;
+  bool _makeBusquedaPagWeb = false;
   String _tokenTmpAsesor;
   GlobalKey<FormState> _keyFrm = GlobalKey<FormState>();
 
@@ -95,13 +100,29 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
         child: Icon(Icons.save, size: 25),
         onPressed: () async {
           
-          //this._ctrlDespeq.text = altaUserSngt.getTxtPrueba();
           if(this._keyFrm.currentState.validate()) {
 
-            altaUserSngt.createDataSitioWeb['slug'] = this._ctrlSlug.text;
-            altaUserSngt.createDataSitioWeb['aniosExp'] = this._ctrlAnios.text;
-            altaUserSngt.createDataSitioWeb['despeq'] = this._ctrlDespeq.text;
-            Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_carrucel_page');
+            Map<String, dynamic> slug = utils.quitarAcentos(this._ctrlSlug.text);
+            if(slug['error'] != '0'){
+              String body = 'Revisa el Sub Dominio seleccionado, se encontro un error de captura';
+              await alertsVarios.entendido(this._context, titulo: 'ERROR EN EL SLUG', body: body);
+              return false;
+            }
+            String slugOk = slug['newtext'];
+            slugOk = slugOk.replaceAll(' ', '-');
+
+            bool resp = await emUser.checkSlugParaSitioWeb(slugOk, altaUserSngt.createDataSitioWeb['idp'], this._tokenTmpAsesor);
+            if(resp){
+              String body = 'El Sub Dominio $slugOk, ya esta ocupado, por favor, selecciona otro.';
+              await alertsVarios.entendido(this._context, titulo: 'ERROR EN EL SLUG', body: body);
+              return false;
+            }else{
+              this._ctrlSlug.text = slugOk;
+              altaUserSngt.createDataSitioWeb['slug'] = slugOk;
+              altaUserSngt.createDataSitioWeb['aniosExp'] = this._ctrlAnios.text;
+              altaUserSngt.createDataSitioWeb['despeq'] = this._ctrlDespeq.text;
+              Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_carrucel_page');
+            }
           }
         }
       ),
@@ -350,6 +371,7 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
   ///
   Future<bool> _hasSitioWeb() async {
 
+    if(this._makeBusquedaPagWeb){ return true; }
     bool retorno;
     if(altaUserSngt.isAtras){
       hidratarControladores();
@@ -358,6 +380,7 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
     Map<String, dynamic> sitioWeb = new Map();
     Map<String, dynamic> data = altaUserSngt.createDataSitioWeb;
     sitioWeb = await emUser.hasSitioWebByIdPerfil(data['ids']['perfil'], this._tokenTmpAsesor);
+
     if(sitioWeb.containsKey('pw_id')){
       altaUserSngt.hidratarCreateDataSitioWeb(sitioWeb);
       hidratarControladores();
@@ -365,6 +388,8 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
     }else{
       retorno = false;
     }
+
+    this._makeBusquedaPagWeb = true;
     return retorno;
   }
 

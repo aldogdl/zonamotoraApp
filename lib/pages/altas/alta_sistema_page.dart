@@ -81,6 +81,7 @@ class _AltaSistemaPageState extends State<AltaSistemaPage> {
 
   /* */
   Widget _body() {
+    
     return Column(
       children: _createListWidgets()
     );
@@ -117,6 +118,7 @@ class _AltaSistemaPageState extends State<AltaSistemaPage> {
         ),
         Divider(),
     ];
+
     for (var i = 0; i < altaUserSngt.lstSistemas.length; i++) {
       lw.add(_swithSistemaCard(index: i));
     }
@@ -129,13 +131,16 @@ class _AltaSistemaPageState extends State<AltaSistemaPage> {
 
     double marginHrz = 20;
     List<IconData > iconos = [
+      Icons.extension,
       Icons.airport_shuttle,
-      Icons.cached,
+      Icons.local_car_wash,
+      Icons.call_split,
       Icons.battery_charging_full,
       Icons.pan_tool,
+      Icons.album,
       Icons.build,
       Icons.category,
-      Icons.call_split
+      Icons.cached
     ];
 
     int idEnCurso = altaUserSngt.lstSistemas[index]['sa_id'];

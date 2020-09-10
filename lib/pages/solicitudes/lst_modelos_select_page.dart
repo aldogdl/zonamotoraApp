@@ -41,6 +41,9 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
       _createFichaDeAutos();
       appBarrMy.setContext(this._context);
     }
+    String titulo = (solicitudSgtn.onlyRead)
+    ? '${solicitudSgtn.autos.length.toString()} Cotizaciones Solicitadas'
+    : '${solicitudSgtn.autos.length.toString()} MODELOS SELECCIONADOS';
 
     return Scaffold(
       backgroundColor: Colors.red[100],
@@ -49,7 +52,7 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
         onWillPop: () => Future.value(false),
         child: CustomScrollView(
           slivers: <Widget>[
-            appBarrMy.getAppBarrSliver(titulo: '${solicitudSgtn.autos.length.toString()} MODELOS SELECCIONADOS', bgContent: _cabecera()),
+            appBarrMy.getAppBarrSliver(titulo: titulo, bgContent: _cabecera()),
             SliverList(
               delegate: SliverChildListDelegate(this._widgetLstAutos),
             )
@@ -74,10 +77,12 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
   }
 
   ///
-  void _createFichaDeAutos() {
-
+  void _createFichaDeAutos()
+  {
     this._widgetLstAutos = new List();
-    this._widgetLstAutos.add(_btnSave());
+    this._widgetLstAutos.add(
+      (solicitudSgtn.onlyRead) ?_btnCreateNewSolicitud() : _btnSave()
+    );
 
     if(solicitudSgtn.autos.length == 0) {
       this._widgetLstAutos.add(
@@ -122,11 +127,15 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
 
     if(this._screen.height <= 550){
       if(solicitudSgtn.autos.length > 2) {
-        this._widgetLstAutos.add(_btnSave());
+        this._widgetLstAutos.add(
+          (solicitudSgtn.onlyRead) ?_btnCreateNewSolicitud() : _btnSave()
+        );
       }
     }else{
       if(solicitudSgtn.autos.length > 3) {
-        this._widgetLstAutos.add(_btnSave());
+        this._widgetLstAutos.add(
+          (solicitudSgtn.onlyRead) ?_btnCreateNewSolicitud() : _btnSave()
+        );
       }
     }
     this._widgetLstAutos.add(const SizedBox(height: 20));
@@ -134,8 +143,8 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
   }
 
   ///
-  Widget _btnSave() {
-
+  Widget _btnSave()
+  {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
@@ -169,6 +178,32 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
           textColor: Colors.white,
           label: Text(
             'ENVIAR Solicitud',
+            textScaleFactor: 1,
+          )
+        ),
+      ],
+    );
+  }
+
+  ///
+  Widget _btnCreateNewSolicitud() {
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: <Widget>[
+        RaisedButton.icon(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)
+          ),
+          onPressed: () {
+            solicitudSgtn.limpiarSingleton();
+            Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route route) => false);
+          },
+          icon: Icon(Icons.check_circle, color: Colors.blue),
+          color: Colors.black,
+          textColor: Colors.white,
+          label: Text(
+            'Solicitar otra cotización',
             textScaleFactor: 1,
           )
         ),
