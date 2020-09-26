@@ -289,4 +289,15 @@ class UsuariosHttp {
     }
     return {'error':respuesta};
   }
+
+  /// 
+  Future<http.Response> getDatosUserByFile(int idUser, String username, String tokenAsesor) async {
+
+    await this._printAndRefreshIp('getDatosUserByFile');
+    Uri uri = Uri.parse('${this._uriBase}/${this.uriApiAsesor}/$idUser/$username/get-datos-user-by-file/');
+
+    final req = http.MultipartRequest('GET', uri);
+    req.headers['Authorization'] = 'Bearer $tokenAsesor';
+    return await http.Response.fromStream(await req.send());
+  }
 }

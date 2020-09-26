@@ -52,7 +52,7 @@ class MisAutosRepository {
     final db = await DBApp.db.abrir;
     if(db.isOpen) {
 
-      // eliminamos todo en caso de encotrar datos.
+      // Eliminamos all en caso de encotrar datos.
       List<dynamic> has = await db.query('misAutos');
       if(has.isNotEmpty) {
         await db.delete('misAutos');

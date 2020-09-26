@@ -72,7 +72,7 @@ class _IcoNotifWidgetState extends State<IcoNotifWidget> {
               topRight: Radius.circular(10),
             ),
             child: Image(
-              image: AssetImage('assets/images/notif_push.jpg'),
+              image: AssetImage('assets/images/notif_push.png'),
               fit: BoxFit.cover,
             ),
           ),

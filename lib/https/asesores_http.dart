@@ -110,12 +110,12 @@ class AsesoresHttp {
   /// Guardamos en el servidor los datos en bruto del nuevo usuario
   /// 
   /// @see AltaSaveResumPage::build
-  Future<bool> saveAltaNuevoUser(Map<String, dynamic> data, String tokenAsesor) async {
+  Future<Map<String, dynamic>> saveAltaNuevoUser(Map<String, dynamic> data, String tokenAsesor) async {
 
     await this._printAndRefreshIp('saveAltaNuevoUser');
 
     Uri uri = Uri.parse('${this._uriBase}/${this._apiAsoser}/save-alta-nuevo-user/');
-    
+    print(data);
     final req = http.MultipartRequest('POST', uri);
     req.headers['Authorization'] = 'Bearer $tokenAsesor';
     req.fields['data'] = json.encode(data);
@@ -123,11 +123,11 @@ class AsesoresHttp {
 
     if(reServer.statusCode == 200) {
       final res = json.decode(reServer.body);
-      return res['abort'];
+      return new Map<String, dynamic>.from(res);
     }else{
       this.result = erroresServer.determinarError(reServer);
     }
-    return false;
+    return new Map();
   }
 
   /// Guardamos en el servidor los datos en bruto del nuevo usuario

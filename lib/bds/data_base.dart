@@ -101,6 +101,14 @@ class DBApp {
         );
 
         await db.execute(
+          'CREATE TABLE categos ('
+          ' cat_id INTEGER,'
+          ' cat_catego TEXT,'
+          ' cat_despeq TEXT'
+          ');'
+        );
+
+        await db.execute(
           'CREATE TABLE cotizaciones ('
           ' filename TEXT,'
           ' createdAt TEXT'

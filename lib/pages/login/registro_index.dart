@@ -22,6 +22,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
   Size _screen;
   BuildContext _context;
   bool _isInit = false;
+  String lastUri;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +33,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
     if(!this._isInit) {
       this._isInit = true;
       appBarrMy.setContext(this._context);
+      lastUri = Provider.of<DataShared>(this._context, listen: false).lastPageVisit;
       Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('reg_index_page');
     }
 
@@ -39,9 +41,17 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
       appBar: appBarrMy.getAppBarr(titulo: 'Crea tu CUENTA!'),
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
-      body: Container(
-        width: this._screen.width,
-        child: _body(),
+      body: WillPopScope(
+        onWillPop: (){
+          if(lastUri != null){
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
+        child: Container(
+          width: this._screen.width,
+          child: _body(),
+        ),
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );

@@ -94,38 +94,6 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
           },
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        child: Icon(Icons.save, size: 25),
-        onPressed: () async {
-          
-          if(this._keyFrm.currentState.validate()) {
-
-            Map<String, dynamic> slug = utils.quitarAcentos(this._ctrlSlug.text);
-            if(slug['error'] != '0'){
-              String body = 'Revisa el Sub Dominio seleccionado, se encontro un error de captura';
-              await alertsVarios.entendido(this._context, titulo: 'ERROR EN EL SLUG', body: body);
-              return false;
-            }
-            String slugOk = slug['newtext'];
-            slugOk = slugOk.replaceAll(' ', '-');
-
-            bool resp = await emUser.checkSlugParaSitioWeb(slugOk, altaUserSngt.createDataSitioWeb['idp'], this._tokenTmpAsesor);
-            if(resp){
-              String body = 'El Sub Dominio $slugOk, ya esta ocupado, por favor, selecciona otro.';
-              await alertsVarios.entendido(this._context, titulo: 'ERROR EN EL SLUG', body: body);
-              return false;
-            }else{
-              this._ctrlSlug.text = slugOk;
-              altaUserSngt.createDataSitioWeb['slug'] = slugOk;
-              altaUserSngt.createDataSitioWeb['aniosExp'] = this._ctrlAnios.text;
-              altaUserSngt.createDataSitioWeb['despeq'] = this._ctrlDespeq.text;
-              Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_carrucel_page');
-            }
-          }
-        }
-      ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
   }
@@ -137,7 +105,7 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
       children: [
         Column(
           children: [
-            regresarPagina.widget(this._context, 'VOLVER A BUSCAR', lstMenu: altaUserSngt.crearMenuSegunRole(), showBtnMenualta: false),
+            regresarPagina.widget(this._context, 'alta_pagina_web_bsk_page', lstMenu: altaUserSngt.crearMenuSegunRole(), showBtnMenualta: false),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 5),
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
@@ -176,11 +144,56 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
                     ),
                     const SizedBox(height: 20),
                     _inputDespeq(),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      height: 50,
+                      width: MediaQuery.of(this._context).size.width * 0.8,
+                      child: RaisedButton.icon(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        icon: Icon(Icons.save),
+                        label: Text(
+                          'Siguiente',
+                          textScaleFactor: 1,
+                          style: TextStyle(
+                            fontSize: 18
+                          ),
+                        ),
+                        onPressed: () async {
+                          if(this._keyFrm.currentState.validate()) {
+
+                            Map<String, dynamic> slug = utils.quitarAcentos(this._ctrlSlug.text);
+                            if(slug['error'] != '0'){
+                              String body = 'Revisa el Sub Dominio seleccionado, se encontro un error de captura';
+                              await alertsVarios.entendido(this._context, titulo: 'ERROR EN EL SLUG', body: body);
+                              return false;
+                            }
+                            String slugOk = slug['newtext'];
+                            slugOk = slugOk.replaceAll(' ', '-');
+
+                            bool resp = await emUser.checkSlugParaSitioWeb(slugOk, altaUserSngt.createDataSitioWeb['idp'], this._tokenTmpAsesor);
+                            if(resp){
+                              String body = 'El Sub Dominio $slugOk, ya esta ocupado, por favor, selecciona otro.';
+                              await alertsVarios.entendido(this._context, titulo: 'ERROR EN EL SLUG', body: body);
+                              return false;
+                            }else{
+                              this._ctrlSlug.text = slugOk;
+                              altaUserSngt.createDataSitioWeb['slug'] = slugOk;
+                              altaUserSngt.createDataSitioWeb['aniosExp'] = this._ctrlAnios.text;
+                              altaUserSngt.createDataSitioWeb['despeq'] = this._ctrlDespeq.text;
+                              Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_carrucel_page');
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               )
             ),
-            SizedBox(height: MediaQuery.of(this._context).size.height * 0.1)
+            SizedBox(height: MediaQuery.of(this._context).size.height * 0.03)
           ],
         ),
       ],
@@ -318,30 +331,38 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
     );
 
     Map<String, dynamic> data = altaUserSngt.createDataSitioWeb;
+    
     String slug = '';
     String pagWeb = '';
     
-    if(data['slug'].isNotEmpty) {
-      slug = data['slug'];
-      slug = slug.toLowerCase();
-      slug = slug.replaceAll(
-        new RegExp(r'\s', caseSensitive: false),
-        '-'
-      );
-      Map<String, String> txtSinAcentos = {'á':'a','é':'e','í':'i','ó':'o','ú':'u'};
+    if(data['slug'] != null){
 
-      RegExp exp = RegExp(r'[áéíóú]');
-      slug = slug.replaceAllMapped(exp, (m){
-        return txtSinAcentos[m.group(0)];
-      });
-      propuestas.add(_machotePropuesta(slug));
+      if(data['slug'].isNotEmpty) {
+        
+        slug = data['slug'];
+        slug = slug.toLowerCase();
+        slug = slug.replaceAll(
+          new RegExp(r'\s', caseSensitive: false),
+          '-'
+        );
+        Map<String, String> txtSinAcentos = {'á':'a','é':'e','í':'i','ó':'o','ú':'u'};
+
+        RegExp exp = RegExp(r'[áéíóú]');
+        slug = slug.replaceAllMapped(exp, (m){
+          return txtSinAcentos[m.group(0)];
+        });
+        propuestas.add(_machotePropuesta(slug));
+      }
     }
 
-    if(data['pagWeb'].length > 0) {
-      pagWeb = data['pagWeb'];
-      pagWeb = pagWeb.toLowerCase();
-      List<String> partes = pagWeb.split('.');
-      propuestas.add(_machotePropuesta(partes[0]));
+    if(data['pagWeb'] != null) {
+      if(data['pagWeb'].isNotEmpty) {
+        print('entra');
+        pagWeb = data['pagWeb'];
+        pagWeb = pagWeb.toLowerCase();
+        List<String> partes = pagWeb.split('.');
+        propuestas.add(_machotePropuesta(partes[0]));
+      }
     }
 
     return propuestas;

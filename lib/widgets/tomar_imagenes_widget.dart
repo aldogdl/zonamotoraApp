@@ -15,10 +15,11 @@ class TomarImagenWidget extends StatelessWidget {
 
   final Widget child;
   final String actionBarTitle;
+  final bool isMultiple;
   final int maxImages;
   final BuildContext contextFrom;
 
-  TomarImagenWidget({Key key, this.contextFrom, this.child, this.actionBarTitle, this.maxImages}) : super(key: key);
+  TomarImagenWidget({Key key, this.contextFrom, this.child, this.actionBarTitle, this.maxImages, this.isMultiple}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +35,11 @@ class TomarImagenWidget extends StatelessWidget {
     return InkWell(
       child: this.child,
       onTap: () async {
-        await emProcRoto.makeBackupGral(
-          nameBackup: tomarImagenesSngt.proccRoto['nombre'],
-          metadata: tomarImagenesSngt.proccRoto['metadata'],
-          contents: tomarImagenesSngt.proccRoto['contents']
-        );
+        // await emProcRoto.makeBackupGral(
+        //   nameBackup: tomarImagenesSngt.proccRoto['nombre'],
+        //   metadata: tomarImagenesSngt.proccRoto['metadata'],
+        //   contents: tomarImagenesSngt.proccRoto['contents']
+        // );
         await _loadImagenDesdeGaleria(sumaRefresh);
       },
     );
@@ -188,7 +189,22 @@ class TomarImagenWidget extends StatelessWidget {
       if(seguir){
         int sumar = sumaRefresh + 1;
         Provider.of<DataShared>(this.contextFrom, listen: false).setRefreshWidget(sumar);
-        tomarImagenesSngt.imagenAsset = (resultList.isNotEmpty) ? resultList.first : null;
+        // El satus de la imagen es para saber en que estado esta: new | process | fin
+        if(this.isMultiple){
+          if(resultList.isNotEmpty){
+            resultList.forEach((foto){
+              tomarImagenesSngt.imagesAsset.add({
+                'id'    : tomarImagenesSngt.imagesAsset.length + 1,
+                'imagen': foto,
+                'status': 'new',
+                'isSaved' : false
+              });
+            });
+            resultList = null;
+          }
+        }else{
+          tomarImagenesSngt.imagenAsset = (resultList.isNotEmpty) ? resultList.first : null;
+        }
         tomarImagenesSngt.source = 'galeria';
       }else{
         if(tomarImagenesSngt.error.length > 0) {

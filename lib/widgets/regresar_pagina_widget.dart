@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/widgets/menu_dialog_alta_widget.dart';
 
 MenuDialogAltaWidget mnuDialog = MenuDialogAltaWidget();
 
 Widget widget(
   BuildContext context,
-  String titulo,
+  String backTo,
   {
     Color colorTxt = Colors.redAccent,
     Color colorIcon = Colors.purple,
@@ -27,7 +25,7 @@ Widget widget(
       children: <Widget> [
         FlatButton.icon(
           label: Text(
-            titulo,
+            'REGRESAR',
             textScaleFactor: 1,
             style: TextStyle(
               color: colorTxt,
@@ -36,10 +34,7 @@ Widget widget(
           ),
           icon: Icon(Icons.arrow_back, size: 30, color: colorIcon),
           onPressed: () {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              Provider.of<DataShared>(context, listen: false).lastPageVisit,
-              (Route rutas) => false
-            );
+            Navigator.of(context).pushNamedAndRemoveUntil(backTo, (Route rutas) => false);
           },
         ),
         (showBtnMenualta)

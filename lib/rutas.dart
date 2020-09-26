@@ -14,7 +14,13 @@ import 'package:zonamotora/pages/altas/alta_save_resum_page.dart';
 import 'package:zonamotora/pages/altas/alta_sistema_page.dart';
 import 'package:zonamotora/pages/altas/alta_sistema_palclas_page.dart';
 import 'package:zonamotora/pages/altas/lista_users_page.dart';
-import 'package:zonamotora/pages/autos/autos_index_page.dart';
+import 'package:zonamotora/pages/notificaciones/notificaciones_page.dart';
+import 'package:zonamotora/pages/pubs_autos/autos_index_page.dart';
+import 'package:zonamotora/pages/pubs_autos/favs_autos_index_page.dart';
+import 'package:zonamotora/pages/pubs_refacs/favs_refacs_index_page.dart';
+import 'package:zonamotora/pages/pubs_refacs/refacs_index_page.dart';
+import 'package:zonamotora/pages/pubs_servicios/favs_servicios_index_page.dart';
+import 'package:zonamotora/pages/pubs_servicios/servicios_index_page.dart';
 import 'package:zonamotora/pages/comprar/comprar_index_page.dart';
 import 'package:zonamotora/pages/config/config_page.dart';
 import 'package:zonamotora/pages/config/prba_push.dart';
@@ -35,6 +41,7 @@ import 'package:zonamotora/pages/oportunidades/fin_msg_cot_page.dart';
 import 'package:zonamotora/pages/oportunidades/oportunidadesPage.dart';
 import 'package:zonamotora/pages/oportunidades/send_fotos_cot_page.dart';
 import 'package:zonamotora/pages/oportunidades/set_fotos_cotizacion_page.dart';
+import 'package:zonamotora/pages/publicar/publicar_page.dart';
 import 'package:zonamotora/pages/solicitudes/alta_pieza_page.dart';
 import 'package:zonamotora/pages/solicitudes/add_autos_page.dart';
 import 'package:zonamotora/pages/solicitudes/fin_solicitud_page.dart';
@@ -52,10 +59,16 @@ class Rutas {
       'config_page'            : (context) => ConfigPage(),
       'prba_push'              : (context) => PrbaPush(),
       'autos_index_page'       : (context) => AutosIndexPage(),
-      'login_page'             : (context) => LoginPage(),
+      'refac_index_page'       : (context) => PubsRefacsIndexPage(),
+      'servs_index_page'       : (context) => PubsServiciosIndexPage(),
+      'favs_autos_index_page'  : (context) => FavsAutosIndexPage(),
+      'favs_refac_index_page'  : (context) => FavsPubsRefacsIndexPage(),
+      'favs_servs_index_page'  : (context) => FavsPubsServiciosIndexPage(),
+      'notificaciones_page'    : (context) => NotificacionesPage(),
       'recovery_cuenta_page'   : (context) => RecoveryCuentaPage(),
       'login_asesor_page'      : (context) => LoginAsesorPage(),
 
+      'login_page'             : (context) => LoginPage(),
       'reg_index_page'         : (context) => RegistroIndexPage(),
       'reg_prof_index_page'    : (context) => RegistroProfIndex(),
       'reg_prof_grax_page'     : (context) => RegistroProfGraxPage(),
@@ -94,6 +107,8 @@ class Rutas {
       'set_fotos_cotizacion'   : (context) => SetfotosToCotizacionPage(),
       'send_fotos_cotizacion'  : (context) => SendFotosCotPage(),
       'fin_msg_cotizacion'     : (context) => FinMsgCotPage(),
+
+      'publicar_page'          : (context) => PublicarPage()
     };
   }
 }

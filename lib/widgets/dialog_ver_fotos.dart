@@ -12,12 +12,13 @@ class DialogVerFotosWidget extends StatelessWidget {
   
   final List<dynamic> fotos;
   final String typeFoto;
-
-  DialogVerFotosWidget({this.fotos, this.typeFoto});
+  final String subForder;
+  DialogVerFotosWidget({this.fotos, this.typeFoto, this.subForder});
 
   final Map<String, dynamic> _prefixFoto = {
     'solicitudes': '${globals.uriImgSolicitudes}',
-    'inventario' : '${globals.uriImageInvent}'
+    'inventario' : '${globals.uriImageInvent}',
+    'publicacion': '${globals.uriImagePublica}'
   };
 
   @override
@@ -47,9 +48,14 @@ class DialogVerFotosWidget extends StatelessWidget {
           builder: (BuildContext context, int index) {
 
             ImageProvider imagen;
-
+            String pathFoto;
+            if(this.subForder != null){
+              pathFoto = '${this._prefixFoto[this.typeFoto]}/${this.subForder}/${fotos[index]}';
+            }else{
+              pathFoto = '${this._prefixFoto[this.typeFoto]}/${fotos[index]}';
+            }
             if(fotos[index].runtimeType == String) {
-              imagen = NetworkImage('${this._prefixFoto[this.typeFoto]}/${fotos[index]}');
+              imagen = NetworkImage(pathFoto);
             }else{
 
               if(fotos[index].containsKey('identifier')) {

@@ -34,13 +34,14 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
 
     this._context = context;
     context = null;
+    this._screen = MediaQuery.of(this._context).size;
 
     if(!this._isInit) {
       this._isInit = true;
-      this._screen = MediaQuery.of(this._context).size;
       _createFichaDeAutos();
       appBarrMy.setContext(this._context);
     }
+
     String titulo = (solicitudSgtn.onlyRead)
     ? '${solicitudSgtn.autos.length.toString()} Cotizaciones Solicitadas'
     : '${solicitudSgtn.autos.length.toString()} MODELOS SELECCIONADOS';
@@ -125,19 +126,9 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
       this._widgetLstAutos.add(newW);
     }
 
-    if(this._screen.height <= 550){
-      if(solicitudSgtn.autos.length > 2) {
-        this._widgetLstAutos.add(
-          (solicitudSgtn.onlyRead) ?_btnCreateNewSolicitud() : _btnSave()
-        );
-      }
-    }else{
-      if(solicitudSgtn.autos.length > 3) {
-        this._widgetLstAutos.add(
-          (solicitudSgtn.onlyRead) ?_btnCreateNewSolicitud() : _btnSave()
-        );
-      }
-    }
+    this._widgetLstAutos.add(
+      (solicitudSgtn.onlyRead) ?_btnCreateNewSolicitud() : _btnSave()
+    );
     this._widgetLstAutos.add(const SizedBox(height: 20));
     setState(() {});
   }

@@ -4,12 +4,12 @@ import 'package:zonamotora/widgets/banners_top.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 
-class AutosIndexPage extends StatefulWidget {
+class FavsPubsServiciosIndexPage extends StatefulWidget {
   @override
-  _AutosIndexPageState createState() => _AutosIndexPageState();
+  _FavsPubsServiciosIndexPageState createState() => _FavsPubsServiciosIndexPageState();
 }
 
-class _AutosIndexPageState extends State<AutosIndexPage> {
+class _FavsPubsServiciosIndexPageState extends State<FavsPubsServiciosIndexPage> {
 
   AppBarrMy appBarrMy = AppBarrMy();
   MenuInferior menuInferior = MenuInferior();
@@ -24,7 +24,7 @@ class _AutosIndexPageState extends State<AutosIndexPage> {
     this._screen = MediaQuery.of(this._context).size;
 
     return Scaffold(
-      appBar: appBarrMy.getAppBarr(),
+      appBar: appBarrMy.getAppBarr(titulo: 'FAVORITOS SERVICIOS'),
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: _body(),

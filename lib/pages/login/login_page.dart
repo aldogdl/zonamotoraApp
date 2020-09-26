@@ -33,6 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _oculatarPass = true;
   bool _isInit = false;
   DataShared _dataShared;
+  String lastUri;
 
   @override
   void dispose() {
@@ -51,6 +52,8 @@ class _LoginPageState extends State<LoginPage> {
     if(!this._isInit) {
       this._isInit = true;
       this._dataShared = Provider.of<DataShared>(this._context, listen: false);
+      lastUri = this._dataShared.lastPageVisit;
+      this._dataShared.setLastPageVisit('login_page');
     }
 
     return Scaffold(
@@ -59,7 +62,12 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: WillPopScope(
-        onWillPop: () => Future.value(false),
+        onWillPop: (){
+          if(lastUri != null) {
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
         child: _body(),
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
@@ -69,12 +77,11 @@ class _LoginPageState extends State<LoginPage> {
   /* */
   Widget _body() {
 
-    String tituloBack = (this._dataShared.lastPageVisit == 'index_page') ? 'REGRESAR AL INICIO' : 'IR AL MENÚ DE OPCIONES';
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
           _cabecera(),
-          regresarPagina.widget(this._context, tituloBack, showBtnMenualta: false),
+          regresarPagina.widget(this._context, lastUri, showBtnMenualta: false),
           _form(),
           const SizedBox(height: 10),
           Row(
@@ -123,6 +130,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ],
           ),
+          const SizedBox(height: 20)
         ],
       ),
     );

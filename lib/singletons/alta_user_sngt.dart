@@ -45,6 +45,8 @@ class AltaUserSngt {
     return menu;
   }
 
+  bool         isDowloadData = false;
+  bool         isBack = true;
   int          _ciudad;
   int          _userId;
   String       _usname;
@@ -173,6 +175,7 @@ class AltaUserSngt {
 
   /// Hidratamos la seccion de contactato del perfil del usuario
   void hidratarPerfilContacSgtn({
+    int id,
     String razonSocial,
     String nombreContacto,
     String domicilio,
@@ -183,14 +186,18 @@ class AltaUserSngt {
     nombreContacto = _toTitleFrase(nombreContacto);
     domicilio = _formatDomicilio(domicilio);
     razonSocial = razonSocial.toUpperCase();
-
+    perfilEntity.setIdPerfil(id);
     perfilEntity.hidratarPerfilContact(
+      id: perfilEntity.id,
       nombreContacto: nombreContacto.trim(),
       razonSocial: razonSocial.trim(),
       domicilio: domicilio.trim(),
       telsContac: tels
     );
   }
+
+  ///
+  int getIdPerfil() => perfilEntity.id;
 
   /// Convertimos en txt en tipo Titulo, la primer letra en mayusculas
   String _toTitleFrase(String txt) {
@@ -208,6 +215,7 @@ class AltaUserSngt {
 
   /// Convertimos en txt en tipo Titulo, la primer letra en mayusculas
   String _toTitle(String txt) {
+
     if(txt.length > 0){
       txt = txt.toLowerCase();
       String ini = txt.substring(0, 1);
@@ -298,7 +306,6 @@ class AltaUserSngt {
       'despeq' : data['pw_despeq'],
       'logoSts': 'rediseniar',
       'carrucel': data['pw_carrucel'],
-      'ventaDe': data['pw_ventaDe'],
       'logo': data['pw_logotipo'],
     };
 
@@ -312,7 +319,6 @@ class AltaUserSngt {
     this.createDataSitioWeb['slug']         = data['pw_slug'];
     this.createDataSitioWeb['logo']         = data['pw_logotipo'];
     this.createDataSitioWeb['despeq']       = data['pw_despeq'];
-    this.createDataSitioWeb['ventaDe']      = data['pw_ventaDe'];
     this.createDataSitioWeb['carrucel']     = data['pw_carrucel'];
     this.createDataSitioWeb['aniosExp']     = data['pw_aniosExp'];
     this.createDataSitioWeb['ids']['perfil']= perfil;
@@ -345,7 +351,6 @@ class AltaUserSngt {
           'body'  :''
         }
       },
-      'ventaDe': new List(),
       'logo': '',
     };
   }
@@ -355,6 +360,8 @@ class AltaUserSngt {
     perfilEntity.dispose();
     this._ciudad = null;
     this._usname = null;
+    this.isDowloadData = false;
+    this.isBack = true;
     this.mrksSelect = new Set();
     this.mdsSelect  = new Set();
     this.listSistemaSelect = new List();

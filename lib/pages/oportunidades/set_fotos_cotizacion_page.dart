@@ -137,7 +137,11 @@ class _SetfotosToCotizacionPageState extends State<SetfotosToCotizacionPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: _instrucciones(),
+            ),
+            const SizedBox(height: 15),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
               child: (sgtnCot.isRecovery) ? _printFotosRecovery() : _listaFotos(),
@@ -168,10 +172,6 @@ class _SetfotosToCotizacionPageState extends State<SetfotosToCotizacionPage> {
                   color: Colors.white
                 ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              child: _instrucciones(),
             ),
             const SizedBox(height: 10),
           ],

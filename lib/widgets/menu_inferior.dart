@@ -13,7 +13,7 @@ class MenuInferior {
     return BottomNavigationBar(
       currentIndex: indexPage,
       unselectedItemColor: Colors.red,
-      selectedItemColor: Colors.green,
+      selectedItemColor: Colors.orange,
       elevation: 0,
       onTap: (int page) {
         switch (page) {
@@ -24,7 +24,13 @@ class MenuInferior {
             Navigator.of(context).pushReplacementNamed('index_page');
             break;
           case 1:
-            Navigator.of(context).pushReplacementNamed('autos_index_page');
+            Navigator.of(context).pushReplacementNamed('notificaciones_page');
+            break;
+          case 2:
+            Navigator.of(context).pushReplacementNamed('favs_servs_index_page');
+            break;
+          case 3:
+            Navigator.of(context).pushReplacementNamed('favs_autos_index_page');
             break;
           case 4:
             Provider.of<DataShared>(context, listen: false).setCotizacPageView(2);
@@ -47,36 +53,125 @@ class MenuInferior {
           SizedBox(height: 0),
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.extension),
-          title: Text(
-            'Refacciones',
-            textScaleFactor: 1,
-          ),
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.build),
-          title: Text(
-            'Servicios',
-            textScaleFactor: 1,
-          )
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.directions_car),
-          title: Text(
-            'Autos',
-            textScaleFactor: 1,
-          )
-        ),
-        BottomNavigationBarItem(
           icon: Stack(
             overflow: Overflow.visible,
             children: [
-              Icon(Icons.shopping_cart, color: Colors.amber[700]),
+              Icon(Icons.star, color: Colors.blueGrey, size: 27),
               Positioned(
                 right: -10,
                 top: -5,
                 child: CircleAvatar(
                   radius: 8,
+                  backgroundColor: Colors.red[200],
+                  child: Consumer<DataShared>(
+                    builder: (_, dataShared, __){
+                      return Text(
+                        '${dataShared.cantFavRefacs}',
+                        textScaleFactor: 1,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          color: Colors.white
+                        ),
+                      );
+                    },
+                  )
+                ),
+              )
+            ],
+          ),
+          title: Text(
+            'Favoritos',
+            textScaleFactor: 1,
+          ),
+        ),
+        BottomNavigationBarItem(
+          icon: Consumer<DataShared>(
+            builder: (BuildContext _context, dataShared, _){
+              int cantidad = 0;
+              Color bg = Colors.red[200];
+              Color bgIcon = Colors.blueGrey;
+
+              if(dataShared.showNotif){
+                cantidad = dataShared.cantNotif;
+                bg = Colors.red;
+                bgIcon = Colors.orange;
+              }
+
+              return Stack(
+                overflow: Overflow.visible,
+                children: [
+                  Icon(Icons.notifications_active, color: bgIcon, size: 27),
+                  Positioned(
+                    right: -10,
+                    top: -5,
+                    child: CircleAvatar(
+                      radius: 8,
+                      backgroundColor: bg,
+                      child: Text(
+                        '$cantidad',
+                        textScaleFactor: 1,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          color: Colors.white
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              );
+            },
+          ),
+          title: Text(
+            'Avisos',
+            textScaleFactor: 1,
+          )
+        ),
+        // BottomNavigationBarItem(
+        //   icon: Stack(
+        //     overflow: Overflow.visible,
+        //     children: [
+        //       Icon(Icons.directions_car, color: Colors.blueGrey),
+        //       Positioned(
+        //         right: -10,
+        //         top: -5,
+        //         child: CircleAvatar(
+        //           radius: 8,
+        //           backgroundColor: Colors.red[200],
+        //           child: Consumer<DataShared>(
+        //             builder: (_, dataShared, __){
+        //               return Text(
+        //                 '${dataShared.cantFavAutos}',
+        //                 textScaleFactor: 1,
+        //                 style: TextStyle(
+        //                   fontWeight: FontWeight.bold,
+        //                   fontSize: 10,
+        //                   color: Colors.white
+        //                 ),
+        //               );
+        //             },
+        //           )
+        //         ),
+        //       )
+        //     ],
+        //   ),
+        //   title: Text(
+        //     'Autos',
+        //     textScaleFactor: 1,
+        //   )
+        // ),
+        BottomNavigationBarItem(
+          icon: Stack(
+            overflow: Overflow.visible,
+            children: [
+              Icon(Icons.shopping_cart, color: Colors.blueGrey, size: 27),
+              Positioned(
+                right: -10,
+                top: -5,
+                child: CircleAvatar(
+                  radius: 8,
+                  backgroundColor: Colors.red[200],
                   child: Consumer<DataShared>(
                     builder: (_, dataShared, __){
                       return Text(
@@ -84,7 +179,8 @@ class MenuInferior {
                         textScaleFactor: 1,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 10
+                          fontSize: 10,
+                          color: Colors.white
                         ),
                       );
                     },

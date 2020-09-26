@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/app_varios_repository.dart';
+import 'package:zonamotora/repository/user_repository.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 import 'package:zonamotora/utils/validadores.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
@@ -31,7 +32,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
   BgAltasStack bgAltasStack = BgAltasStack();
   ContainerInput containerInputs = ContainerInput();
   AppVariosRepository emAppVarios = AppVariosRepository();
-
+  UserRepository emUser = UserRepository();
 
   TextEditingController _ctrlNombreContacto = TextEditingController();
   TextEditingController _ctrlRazonSocial = TextEditingController();
@@ -47,6 +48,8 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
   bool _isInit = false;
   bool _hasGps = false;
   int _cdSelect = 1;
+  String _accionSubTitulo = 'DATOS DE CONTACTO';
+
   GlobalKey<ScaffoldState> _skfKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> _frmKey = GlobalKey<FormState>();
 
@@ -70,6 +73,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
     this._ctrlRazonSocial.dispose();
     this._ctrlDomicilio.dispose();
     this._ctrlTelContac.dispose();
+    altaUserSngt.isDowloadData = false;
     super.dispose();
   }
 
@@ -79,7 +83,9 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
     this._context = context;
     context = null;
     if(!this._isInit) {
+      this._isInit = true;
       bgAltasStack.setBuildContext(this._context);
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_perfil_contac_page');
     }
 
     return Scaffold(
@@ -104,33 +110,21 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
           ),
           child: Column(
             children: [
-              regresarPagina.widget(this._context, 'REGRESAR', lstMenu: altaUserSngt.crearMenuSegunRole()),
+              regresarPagina.widget(this._context, 'alta_lst_users_page', lstMenu: altaUserSngt.crearMenuSegunRole()),
+              (!altaUserSngt.isDowloadData)
+              ?
+              LinearProgressIndicator()
+              :
+              SizedBox(height: 0),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: _crearLstInputs(),
                 ),
-              )
+              ),
             ]
           )
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        child: Icon(Icons.save, size: 25),
-        onPressed: () async {
-          bool res = await _procesarFormulario();
-          if(res) {
-            if(await _checkGPS()) {
-              if(this._cdSelect != altaUserSngt.ciudad) {
-                altaUserSngt.lstColonias = new List();
-              }
-              altaUserSngt.setCiudad(this._cdSelect);
-              Navigator.of(this._context).pushReplacementNamed('alta_perfil_pwrs_page');
-            }
-          }
-        },
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
@@ -147,6 +141,8 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
       }
       Provider.of<DataShared>(this._context, listen: false).setLastPageVisit(ruta);
     }
+
+    await _revisarSiExistenDatosRegistrados();
     await _getPosicionGPS();
   }
 
@@ -188,6 +184,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
     if(this._frmKey.currentState.validate()) {
 
       altaUserSngt.hidratarPerfilContacSgtn(
+        id: altaUserSngt.getIdPerfil(),
         nombreContacto: this._ctrlNombreContacto.text,
         razonSocial: this._ctrlRazonSocial.text,
         domicilio: this._ctrlDomicilio.text,
@@ -217,10 +214,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
   ///
   Widget _crearLstInputs() {
 
-    double altoSizedBox = (MediaQuery.of(this._context).size.height < 550) ? 100 : 80;
-
     List<Widget> listInputs = [
-      
       SizedBox(
         width: MediaQuery.of(this._context).size.width,
         child: Padding(
@@ -237,7 +231,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
                   ),
                 ),
                 Text(
-                  'DATOS DE CONTACTO',
+                  this._accionSubTitulo,
                   textScaleFactor: 1,
                   style: TextStyle(
                     color: Colors.red[100]
@@ -253,7 +247,38 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
       _selectCiudades(),
       _intpuDomicilio(),
       _intpuTelsContac(),
-      SizedBox(height: altoSizedBox),
+      const SizedBox(height: 30),
+      SizedBox(
+        height: 50,
+        width: MediaQuery.of(this._context).size.width * 0.8,
+        child: RaisedButton.icon(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)
+          ),
+          icon: Icon(Icons.save),
+          label: Text(
+            'Siguiente',
+            textScaleFactor: 1,
+            style: TextStyle(
+              fontSize: 18
+            ),
+          ),
+          onPressed: () async {
+            bool res = await _procesarFormulario();
+            if(res) {
+              if(await _checkGPS()) {
+                if(this._cdSelect != altaUserSngt.ciudad) {
+                  altaUserSngt.lstColonias = new List();
+                }
+                altaUserSngt.setCiudad(this._cdSelect);
+                altaUserSngt.isDowloadData = true;                
+                Navigator.of(this._context).pushReplacementNamed('alta_perfil_pwrs_page');
+              }
+            }
+          },
+        ),
+      ),
+      const SizedBox(height: 20),
     ];
 
     return Form(
@@ -369,8 +394,8 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
           setState(() {
             this._ctrlTelContac.text = val;
           });
-          FocusScope.of(this._context).requestFocus(new FocusNode());
         }
+        FocusScope.of(this._context).requestFocus(new FocusNode());
       },
     );
   }
@@ -435,6 +460,56 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
     });
 
     return ciudades;
+  }
+
+  ///
+  Future<void> _revisarSiExistenDatosRegistrados() async {
+    
+    if(altaUserSngt.isDowloadData){ return false; }
+    if(altaUserSngt.isBack){
+      setState(() {
+        altaUserSngt.isDowloadData = true;
+      });
+      return false;
+    }
+    setState(() {
+      this._accionSubTitulo = 'BUSCANDO DATOS EXISTENTES...';
+    });
+    String tokenAsesor =  Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token'];
+    Map<String, dynamic> result = await emUser.getDatosUserByFile(altaUserSngt.userId, altaUserSngt.usname, tokenAsesor);
+    tokenAsesor = null;
+
+    if(result['body'] != null){
+      Map<String, dynamic> dataUser = new Map<String, dynamic>.from(result['body']);
+      result = null;
+
+      if(dataUser.containsKey('perfil')){
+
+        altaUserSngt.hidratarPerfilContacSgtn(
+          id: dataUser['perfil']['id'],
+          razonSocial: dataUser['perfil']['razonSocial'],
+          domicilio: dataUser['perfil']['domicilio'],
+          nombreContacto: dataUser['perfil']['nombreContacto'],
+          telsContac: dataUser['perfil']['telsContac'][0]
+        );
+        
+        altaUserSngt.setColonia(dataUser['perfil']['colonia']);
+        altaUserSngt.setHasDelivery(dataUser['perfil']['hasDelivery']);
+        altaUserSngt.setPagoCard(dataUser['perfil']['pagoCard']);
+        altaUserSngt.setEmail(dataUser['perfil']['email']);
+        altaUserSngt.setLatLng(dataUser['perfil']['latLng']);
+        altaUserSngt.setSistemSelect(new Set<int>.from(dataUser['sistemas']));
+        altaUserSngt.mrksSelect = new Set<int>.from(dataUser['marcas']);
+        altaUserSngt.mdsSelect = new Set<int>.from(dataUser['modelo']);
+        dataUser = null;
+        setState(() {
+          this._accionSubTitulo = 'DATOS DE CONTACTO';
+        });
+        Navigator.of(this._context).pushReplacementNamed('alta_perfil_contac_page');
+      }
+    }
+    altaUserSngt.isBack = true;
+    altaUserSngt.isDowloadData = true;
   }
 
 }

@@ -45,6 +45,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   int _autosPermitidos = 5;
   Widget _widgetStarts;
   Widget _lstAutos;
+  //Utilizado para ver si existe una ultima pagina registrada
+  String lastUri;
 
   @override
   void initState()
@@ -84,6 +86,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
     if(!this._isInit){
       this._isInit = true;
       appBarrMy.setContext(this._context);
+      lastUri = Provider.of<DataShared>(this.context, listen: false).lastPageVisit;
+      Provider.of<DataShared>(this.context, listen: false).setLastPageVisit('mis_autos_page');
     }
     final Map<String, dynamic> popBack = ModalRoute.of(this._context).settings.arguments;
     if(popBack != null) {
@@ -97,7 +101,20 @@ class _MisAutosPageState extends State<MisAutosPage> {
         backgroundColor: Colors.red[100],
         drawer: MenuMain(),
         body: WillPopScope(
-          onWillPop: () => Future.value(popBack['popBack']),
+          onWillPop: () {
+            if(popBack == null || !popBack['popBack']) {
+              if(lastUri != null) {
+                if(lastUri == 'mis_autos_page'){
+                  Navigator.of(this._context).pushReplacementNamed('index_page');
+                }else{
+                  Navigator.of(this._context).pushReplacementNamed(lastUri);
+                }
+              }
+            }else{
+              return Future.value(popBack['popBack']);
+            }
+            return Future.value(false);
+          },
           child: _body(),
         ),
         bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false),

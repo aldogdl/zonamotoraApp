@@ -17,6 +17,7 @@ class PerfilEntity {
   String _fachada;
 
   int get id => this._id;
+  void setIdPerfil(int id) => this._id = id;
 
   ///
   void setRole(String role){
@@ -108,11 +109,14 @@ class PerfilEntity {
 
   ///
   void hidratarPerfilContact({
+    int id,
     String razonSocial,
     String nombreContacto,
     String domicilio,
     List<String> telsContac
   }) {
+   
+    this._id = id;
     this._razonSocial = razonSocial;
     this._nombreContacto = nombreContacto;
     this._domicilio = domicilio;
@@ -123,6 +127,7 @@ class PerfilEntity {
   Map<String, dynamic> toJsonPerfilContact() {
 
      return {
+      'id'             : this._id,
       'nombreContacto' : this._nombreContacto,
       'razonSocial'    : this._razonSocial,
       'domicilio'      : this._domicilio,

@@ -7,7 +7,6 @@ import 'package:zonamotora/pages/oportunidades/widgets/acotizar_widget.dart';
 import 'package:zonamotora/pages/oportunidades/widgets/inventario_widget.dart';
 import 'package:zonamotora/singletons/config_gms_sngt.dart';
 import 'package:zonamotora/singletons/cotizacion_sngt.dart';
-import 'package:zonamotora/widgets/ico_notif_widget.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 
@@ -54,17 +53,6 @@ class _OportunidadesPageState extends State<OportunidadesPage> {
               fontSize: 16
             ),
           ),
-          actions: <Widget>[
-            Consumer<DataShared>(
-              builder: (BuildContext _context, dataShared, _){
-                if(dataShared.showNotif){
-                  return IcoNotifWidget();
-                }else{
-                  return SizedBox(height: 30);
-                }
-              },
-            )
-          ],
           bottom: TabBar(tabs: this._tabsBar),
         ),
         backgroundColor: Colors.red[100],

@@ -56,8 +56,10 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
   IconData _iconRsWev;
   IconData _iconMapOtros;
   double _isValid = 0;
+  String lastUri;
   String _error;
   String _txtFachada = 'sin imagen aún';
+  Map<String, dynamic> _dataResultSave = new Map();
 
   Widget _widgetImage = Image(
     image: AssetImage('assets/images/img_fin_alta.png'),
@@ -88,13 +90,14 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
 
     this._context = context;
     context = null;
-    this._altoAppBar = MediaQuery.of(this.context).size.height * 0.35;
+    this._altoAppBar = MediaQuery.of(this.context).size.height * 0.30;
 
     if(!this._isInit) {
       this._isInit = true;
       this._estrellas = Text('Calculando...');
       bgAltasStack.setBuildContext(this._context);
       DataShared dataShared = Provider.of<DataShared>(this._context, listen: false);
+      lastUri = dataShared.lastPageVisit;
       dataShared.setLastPageVisit('alta_perfil_otros_page');
     }
 
@@ -141,18 +144,6 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
             )
           ],
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        child: Icon(Icons.check_circle, size: 25),
-        onPressed: () async {
-          if(this._isSaved) {
-            _saveFachada();
-          }else{
-            await _saveData();
-          }
-        },
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
@@ -265,7 +256,41 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
         const SizedBox(height: 20),
         (this._isSaved) ? _dataSaved() : _recomendacion(),
         (this._isSaved) ? SizedBox(height: 0) : _listaDeSecciones(),
-        const SizedBox(height: 70),
+        const SizedBox(height: 20),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Necesitas guardar los datos hasta ahora registrados para proceguir con la imagen de la fachada del negocio',
+            textScaleFactor: 1,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 50,
+          width: MediaQuery.of(this._context).size.width * 0.8,
+          child: RaisedButton.icon(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)
+            ),
+            icon: Icon(Icons.save),
+            label: Text(
+              'Guardar y Continuar',
+              textScaleFactor: 1,
+              style: TextStyle(
+                fontSize: 18
+              ),
+            ),
+            onPressed: () async {
+              if(this._isSaved) {
+                _saveFachada();
+              }else{
+                await _saveData();
+              }
+            },
+          ),
+        ),
+        const SizedBox(height: 30),
       ],
     );
   }
@@ -300,6 +325,7 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
         )
       );
     }
+
     secciones.add(
       _containerOfDatas(
         titulo: altaUserSngt.allPasosDelAltas[3]['titulo'],
@@ -406,6 +432,7 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
             contextFrom: this._context,
             actionBarTitle: 'FACHADA',
             maxImages: 1,
+            isMultiple: false,
             child: _btnTomarFachada(),
           ),
           Divider(),
@@ -423,24 +450,36 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: <Widget>[
+                _machoteBtnAcciones(titulo: 'CREAR SITIO WEB', accion: () async {
+                  altaUserSngt.dispose();
+                  if(this._dataResultSave.isNotEmpty){
+                    altaUserSngt.setUserId(this._dataResultSave['u_id']);
+                    altaUserSngt.setCreateDataSitioWebByKeyMap('ids', 'perfil', this._dataResultSave['p_id']);
+                    altaUserSngt.setCreateDataSitioWebByKeyMap('ids', 'user', this._dataResultSave['u_id']);
+                    altaUserSngt.setCreateDataSitioWebByKeySingle('slug', this._dataResultSave['p_razonSocial']);
+                    altaUserSngt.setCreateDataSitioWebByKeySingle('pagWeb', this._dataResultSave['p_pagWeb']);
+                    Navigator.of(this._context).pushNamedAndRemoveUntil('alta_pagina_web_despeq_page', (Route rutas) => false);
+                  }else{
+                    String body = 'No se tiene por el momento, información para crear el sitio Web, espera a ser procesada.';
+                    await alertsVarios.entendido(this._context, titulo: 'PROCESO INVALIDO', body: body);
+                    return false;
+                  }
+                }),
                 _machoteBtnAcciones(titulo: 'MENÚ', accion: (){
                   altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
                   Navigator.of(this._context).pushNamedAndRemoveUntil('alta_index_menu_page', (Route rutas) => false);
                 }),
-                SizedBox(width: 10),
                 _machoteBtnAcciones(titulo: 'Nuevo Registro', accion: (){
                   altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
                   Navigator.of(this._context).pushNamedAndRemoveUntil('reg_user_page', (Route rutas) => false, arguments: {'source':'asesor'});
                 }),
-                SizedBox(width: 10),
                 _machoteBtnAcciones(titulo: 'Continuar Nueva Alta', accion: (){
                   altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
                   Navigator.of(this._context).pushNamedAndRemoveUntil('alta_lst_users_page', (Route rutas) => false);
                 }),
-                SizedBox(width: 10),
                 _machoteBtnAcciones(titulo: 'Inicio', accion: (){
                   altaUserSngt.dispose();
                   altaUserSngt.setUserId(null);
@@ -492,17 +531,20 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
   ///
   Widget _machoteBtnAcciones({String titulo, Function accion}) {
 
-    return FlatButton(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(7)
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 5),
+      child: FlatButton(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(7)
+        ),
+        color: Colors.lightBlue,
+        textColor: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text(
+          '$titulo'
+        ),
+        onPressed: accion,
       ),
-      color: Colors.lightBlue,
-      textColor: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 12),
-      child: Text(
-        '$titulo'
-      ),
-      onPressed: accion,
     );
   }
 
@@ -514,6 +556,7 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
         Positioned(
           top: 0, left: 0,
           child: Container(
+            width: MediaQuery.of(this._context).size.width,
             color: Colors.blue,
             child: Consumer<DataShared>(
               builder: (_, dataShared, __){
@@ -521,7 +564,7 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
                   if(tomarImagenesSngt.childImg != null) {
                     return tomarImagenesSngt.childImg;
                   }else{
-                  return tomarImagenesSngt.previewImage();
+                    return tomarImagenesSngt.previewImage();
                   }
                 }
                 return this._widgetImage;
@@ -577,10 +620,7 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
               alignment: Alignment.center,
               icon: Icon(Icons.arrow_back_ios, size: 17, color: Colors.red),
               onPressed: () {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  Provider.of<DataShared>(context, listen: false).lastPageVisit,
-                  (Route rutas) => false
-                );
+                Navigator.of(context).pushNamedAndRemoveUntil('alta_perfil_otros_page', (Route rutas) => false);
               },
             ),
           ),
@@ -643,7 +683,7 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
               ),
               IconButton(
                 padding: EdgeInsets.all(0),
-                icon: Icon(Icons.edit, color: Colors.blueGrey),
+                icon: Icon(Icons.edit, color: Colors.purpleAccent),
                 onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('$rutaEdit', (Route rutas) => false)
               ),
             ],
@@ -1029,13 +1069,16 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
     }else{
       Map<String, dynamic> data = altaUserSngt.jsonToSend();
       alertsVarios.cargando(this._context);
-      bool res = await asesoresHttp.saveAltaNuevoUser(data, Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']);
+      Map<String, dynamic> res = await asesoresHttp.saveAltaNuevoUser(data, Provider.of<DataShared>(this._context, listen: false).tokenAsesor['token']);
       Navigator.of(this._context).pop(false);
-      if(res){
+
+      if(res['abort']){
         await alertsVarios.entendido(this._context, titulo: asesoresHttp.result['msg'], body: asesoresHttp.result['body']);
       }else{
         // Eliminamos el singleton del alta.
-
+        if(res['msg'] == 'hasData'){
+          this._dataResultSave = new Map<String, dynamic>.from(res['body']);
+        }
         setState(() {
           this._isSaved = true;
         });
@@ -1060,6 +1103,11 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
         this._tituloDataSaved = 'IMAGEN GUARDADA';
         this._bodyDataSaved = 'Haz completado con éxito el alta del usuario.\n¿Qué deceas hacer ahora?';
         await emProcRoto.deleteProcesoRoto(nameBackup: 'altSoc');
+        // Cuando se abre esta pantalla por recuperacion del proceso roto, el usuario del asesor es null
+        if(Provider.of<DataShared>(this._context, listen: false).tokenAsesor['username'] == null){
+          Navigator.of(this._context).pushNamedAndRemoveUntil('reg_index_page', (route) => false);
+          return;
+        }
         setState(() {
           this._isSavedFachada = true;
         });
@@ -1067,8 +1115,12 @@ class _AltaSaveResumPageState extends State<AltaSaveResumPage> {
         await alertsVarios.entendido(this._context, titulo: asesoresHttp.result['msg'], body: asesoresHttp.result['body']);
       }
     }else{
-      String body = 'Los datos ya fueron guardados con éxito, puedes proseguir con lo demás.';
-      await alertsVarios.entendido(this._context, titulo: 'DATOS GUARDADOS', body: body);
+      String body = 'Los datos ya fueron guardados con éxito, y el sistema no ha detectado una imagen '+
+      'para la FACHADA.\n\n¿Estas segur@ de querer terminar el registro sin FACHADA?.';
+      bool acc = await alertsVarios.aceptarCancelar(this._context, titulo: 'TERMINAR REGISTRO', body: body);
+      if(acc){
+        Navigator.of(this._context).pushNamedAndRemoveUntil('alta_index_menu_page', (route) => false);
+      }
       return;
     }
   }

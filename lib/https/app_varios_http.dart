@@ -85,6 +85,18 @@ class AppVariosHttp {
   }
 
   /*
+  * @see AppVariosRepository::getAllCategosFromServer
+  */
+  Future<http.Response> getAllCategosFromServer() async {
+
+    await this._printAndRefreshIp('getAllCategos');
+
+    Uri uri = Uri.parse('${this._uriBase}/${this._uriApi}/get-all-categos/');
+    final req = http.MultipartRequest('GET', uri);
+    return await http.Response.fromStream(await req.send());
+  }
+
+  /*
   * @see NotificsRepository::getConstraints
   */
   Future<http.Response> getConstraints(Map<String, dynamic> dataUser) async {

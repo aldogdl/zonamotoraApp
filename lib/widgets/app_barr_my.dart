@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:zonamotora/data_shared.dart';
-import 'package:zonamotora/widgets/ico_notif_widget.dart';
 
 class AppBarrMy {
 
@@ -22,17 +19,6 @@ class AppBarrMy {
         ),
       ),
       elevation: 0,
-      actions: <Widget>[
-        Consumer<DataShared>(
-          builder: (BuildContext _context, dataShared, _){
-            if(dataShared.showNotif){
-              return IcoNotifWidget();
-            }else{
-              return SizedBox(height: 30);
-            }
-          },
-        )
-      ],
     );
   }
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:zonamotora/data_shared.dart';
 
 import 'package:zonamotora/repository/autos_repository.dart';
 import 'package:zonamotora/repository/mis_autos_repository.dart';
@@ -34,6 +36,8 @@ class AddAutosPageState extends State<AddAutosPage> {
 
   Size _screen;
   BuildContext _context;
+  bool _isInit = false;
+  String lastUri;
   bool _isEditing = false;
   int _cantAutosSeleccionados = 0;
 
@@ -108,8 +112,14 @@ class AddAutosPageState extends State<AddAutosPage> {
   @override
   Widget build(BuildContext context) {
     
-    this._context = context;
+     this._context = context;
     context = null;
+    if(!this._isInit){
+      this._isInit = true;
+      lastUri = Provider.of<DataShared>(this._context, listen: false).lastPageVisit;
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('add_autos_page');
+    }
+   
     this._screen = MediaQuery.of(this._context).size;
 
     this._cantAutosSeleccionados = solicitudSgtn.autos.length;
@@ -120,7 +130,12 @@ class AddAutosPageState extends State<AddAutosPage> {
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: WillPopScope(
-        onWillPop: () => Future.value(false),
+        onWillPop: () {
+          if(lastUri != null){
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
         child: Stack(
           children: <Widget>[
             Positioned(
@@ -164,7 +179,7 @@ class AddAutosPageState extends State<AddAutosPage> {
                       child: CircleAvatar(
                         radius: 16,
                         backgroundColor: Colors.green,
-                        child: Icon(Icons.arrow_back_ios, color: Colors.black),
+                        child: Icon(Icons.home, color: Colors.black),
                       ),
                       onTap: () {
                         frmSng.resetScreen();
@@ -323,17 +338,6 @@ class AddAutosPageState extends State<AddAutosPage> {
     if(solicitudSgtn.addOtroAuto) {
       return Column(
         children: <Widget>[
-          _machoteBtnAccion(
-            titulo: 'AGREGAR OTRO AUTO',
-            color: Colors.grey,
-            icono: Icons.plus_one,
-            accion: () {
-              this._isEditing = false;
-              solicitudSgtn.indexAutoIsEditing = -1;
-              _agregarOtroAuto(forceAdd: true);
-            }
-          ),
-          const SizedBox(height: 10),
           SizedBox(
             width: this._screen.width * 0.9,
             child: RaisedButton(
@@ -356,6 +360,17 @@ class AddAutosPageState extends State<AddAutosPage> {
               },
             ),
           ),
+          const SizedBox(height: 10),
+          _machoteBtnAccion(
+            titulo: 'AGREGAR OTRO AUTO',
+            color: Colors.grey,
+            icono: Icons.plus_one,
+            accion: () {
+              this._isEditing = false;
+              solicitudSgtn.indexAutoIsEditing = -1;
+              _agregarOtroAuto(forceAdd: true);
+            }
+          ),
         ],
       );
     }
@@ -363,21 +378,20 @@ class AddAutosPageState extends State<AddAutosPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-
-         _machoteBtnAccion(
-          titulo: 'AGREGAR otro AUTO',
-          color: Colors.grey,
-          icono: Icons.plus_one,
-          accion: _agregarOtroAuto
-        ),
-        const SizedBox(height: 20),
         _machoteBtnAccion(
-          titulo: 'ir a Solicitar PIEZAS ',
+          titulo: ' AGREGAR LAS PIEZAS ',
           color: Colors.black,
           icono: Icons.play_circle_filled,
           icoColor: Colors.blue,
           accion: _cotizarRefaccion,
           indicador: false,
+        ),
+        const SizedBox(height: 20),
+         _machoteBtnAccion(
+          titulo: 'AGREGAR otro AUTO',
+          color: Colors.grey,
+          icono: Icons.plus_one,
+          accion: _agregarOtroAuto
         ),
       ],
     );

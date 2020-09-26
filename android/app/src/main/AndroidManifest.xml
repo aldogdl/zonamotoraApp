@@ -14,7 +14,7 @@
     <!-- android:name="io.flutter.app.FlutterApplication" -->
     <application
         android:name=".Application"
-        android:label="zonamotora"
+        android:label="ZonaMotora"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -41,5 +41,5 @@
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBFQoeNqkyFHJAgIWPykHN41CRBzVmUjY8"/>
     </application>
-
+    
 </manifest>

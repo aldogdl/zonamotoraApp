@@ -6,7 +6,8 @@ import 'package:zonamotora/widgets/buscar_autos_by.dart';
 
 class FrmMkMdAnioWidget extends StatefulWidget {
 
-  FrmMkMdAnioWidget({Key key}) : super(key: key);
+  final BuildContext context;
+  FrmMkMdAnioWidget({Key key, this.context}) : super(key: key);
 
   @override
   _FrmMkMdAnioWidgetState createState() => _FrmMkMdAnioWidgetState();
@@ -24,8 +25,14 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
   @override
   Widget build(BuildContext context) {
 
-    this._context = context;
-    context = null;
+    if(widget.context != null){
+      this._context = widget.context;
+      frmSng.setContext(this._context);
+    }else{
+      this._context = context;
+      context = null;
+    }
+
     this._screen = MediaQuery.of(this._context).size;
 
     if(buscarAutosSngt.idMarca != null) {

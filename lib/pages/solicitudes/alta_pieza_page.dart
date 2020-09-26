@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/procc_roto_repository.dart';
 
 import 'package:zonamotora/singletons/buscar_autos_sngt.dart';
@@ -46,6 +48,8 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   bool _hasFotos = false;
   bool _hasData  = false;
   bool _isRecovery  = false;
+  bool _isInit = true;
+  String lastUri;
   int _cantPiezaSaved = 0;
   int _idPiezaInScreen = -1;
   List<Asset> _images = List<Asset>();
@@ -71,6 +75,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
   @override
   void initState() {
+
     _calculaCantPiezas();
     if(solicitudSgtn.isRecovery) {
       solicitudSgtn.setIsRecovery(false);
@@ -122,6 +127,11 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     this._context = context;
     context = null;
+    if(!this._isInit){
+      this._isInit = true;
+      lastUri = Provider.of<DataShared>(this._context, listen: false).lastPageVisit;
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_piezas_page');
+    }
     String titulo = solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['md_nombre'];
     
     return Scaffold(
@@ -129,7 +139,15 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       appBar: appBarrMy.getAppBarr(titulo: 'Piezas ... para $titulo'),
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
-      body: _body(),
+      body: WillPopScope(
+        onWillPop: (){
+          if(lastUri != null){
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
+        child: _body(),
+      ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
   }
@@ -930,9 +948,9 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     return Column(
       children: <Widget>[
-        (this._hasData) ? _btnAddOtra() : _msgPedirAsistencia(),
-        const SizedBox(height: 20),
         (this._hasData) ? _btnTerminar() : const SizedBox(width: 0),
+        const SizedBox(height: 20),
+        (this._hasData) ? _btnAddOtra() : _msgPedirAsistencia(),
         const SizedBox(height: 20),
       ],
     );
@@ -944,13 +962,12 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     return Column(
       children: <Widget>[
-        _btnAddOtra(),
-        const SizedBox(height: 10),
         _btnTerminar(),
+        const SizedBox(height: 10),
+        _btnAddOtra(),
         const SizedBox(height: 20),
       ],
     );
-
   }
 
   ///

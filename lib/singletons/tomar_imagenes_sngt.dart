@@ -22,18 +22,20 @@ class TomarImagenesSngt {
   String error;
   Widget childImg;
   Asset imagenAsset;
+  List<Map<String, dynamic>> imagesAsset = new List();
   bool changeImage = false;
   int _thubFachadaX = 533;
   int _thubFachadaY = 300;
   String restringirPosition = 'all';
 
   ///
-  void dispose() {
+  Future<void> dispose() async {
 
     source = null;
     error = null;
     childImg = null;
     imagenAsset = null;
+    imagesAsset = new List();
     isRecovery = false;
     proccRoto = {'nombre': '', 'metadata': '', 'contents': ''};
     restringirPosition = 'all';
@@ -42,12 +44,24 @@ class TomarImagenesSngt {
   ///
   Widget previewImage() {
     this.changeImage = true;
-    return AssetThumb(asset: this.imagenAsset, width: this._thubFachadaX, height: this._thubFachadaY);
+      return AssetThumb(
+      asset: this.imagenAsset,
+      width: this._thubFachadaX,
+      height: this._thubFachadaY,
+    );
+  }
+
+  ///
+  Widget convertImageToAsset(Asset imagen) {
+    return AssetThumb(asset: imagen, width: this._thubFachadaX, height: this._thubFachadaY);
   }
 
   //
-  Future<Map<String, dynamic>> getImageForSend() async {
+  Future<Map<String, dynamic>> getImageForSend({Asset otraImagen}) async {
 
+    if(otraImagen != null){
+      imagenAsset = otraImagen;
+    }
     Map<String, dynamic> response = {'nombre':'', 'ext':'', 'img':''};
     if(imagenAsset != null){
       
@@ -58,6 +72,9 @@ class TomarImagenesSngt {
       response['ext'] = extParts.last;
       response['img'] = bytes.buffer.asUint8List();
 
+      if(otraImagen != null){
+        imagenAsset = null;
+      }
       return response;
     }
 
@@ -70,6 +87,15 @@ class TomarImagenesSngt {
     this.changeImage = false;
     childImg = CachedNetworkImage(
       imageUrl: imagen,
+      errorWidget: (_, String err, __){
+        return Center(
+          child: Text(
+            'Selecciona una Imágen Aquí',
+            textAlign: TextAlign.center,
+            textScaleFactor: 1,
+          ),
+        );
+      },
       placeholder: (_, url) {
         return Center(
           child: SizedBox(
@@ -81,4 +107,22 @@ class TomarImagenesSngt {
     );
   }
 
+  ///
+  Future<String> delImagenById(int id) async {
+
+    int rota = imagesAsset.length;
+    List<Map<String, dynamic>> newList = new List();
+    int newId = 1;
+    String deleteTo = 'local';
+    for (var i = 0; i < rota; i++) {
+      if(imagesAsset[i]['id'] != id) {
+        imagesAsset[i]['id'] = newId;
+        newList.add(imagesAsset[i]);
+        newId = newId +1;
+      }
+    }
+    imagesAsset = newList;
+    newList = null;
+    return deleteTo;
+  }
 }

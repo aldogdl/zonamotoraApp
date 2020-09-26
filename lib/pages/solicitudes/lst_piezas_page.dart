@@ -666,7 +666,7 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
       width: this._screen.width,
       height: this._screen.height * 0.23,
       child: Image(
-        image: AssetImage('assets/images/refacs_sin_foto.jpg'),
+        image: AssetImage('assets/images/refacs_sin_foto.png'),
         fit: BoxFit.cover,
       ),
     );

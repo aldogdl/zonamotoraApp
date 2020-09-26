@@ -22,12 +22,9 @@ class FrmMkMdAniosSngt {
   void setContext(BuildContext context) {
     this._context = context;
     context = null;
-    this._ctrAnio.text = '';
-  }
-
-  void dispose() {
-    this._ctrAnio?.dispose();
-    this._ctrVersion?.dispose();
+    if(this._ctrAnio.text == '0'){
+      this._ctrAnio.text = '';
+    }
   }
 
   FocusNode focusAnio = FocusNode();
@@ -101,4 +98,9 @@ class FrmMkMdAniosSngt {
     return res;
   }
 
+  ///
+  void dispose() {
+    this._ctrAnio?.dispose();
+    this._ctrVersion?.dispose();
+  }
 }

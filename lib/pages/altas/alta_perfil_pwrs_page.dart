@@ -41,6 +41,7 @@ class _AltaPerfilPWRSPageState extends State<AltaPerfilPWRSPage> {
   PersistentBottomSheetController _ctrlHojaInf;
   GlobalKey<ScaffoldState> _skfKey = GlobalKey<ScaffoldState>();
   GlobalKey<FormState> _frmKey = GlobalKey<FormState>();
+  String lastUri;
 
   @override
   void initState() {
@@ -71,7 +72,8 @@ class _AltaPerfilPWRSPageState extends State<AltaPerfilPWRSPage> {
       this._isInit = true;
       bgAltasStack.setBuildContext(this._context);
       DataShared dataShared = Provider.of<DataShared>(this._context, listen: false);
-      dataShared.setLastPageVisit('alta_perfil_contac_page');
+      lastUri = dataShared.lastPageVisit;
+      dataShared.setLastPageVisit('alta_perfil_pwrs_page');
     }
 
     return Scaffold(
@@ -80,7 +82,12 @@ class _AltaPerfilPWRSPageState extends State<AltaPerfilPWRSPage> {
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: WillPopScope(
-        onWillPop: () => Future.value(false),
+        onWillPop: () {
+          if(lastUri != null){
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
         child: SingleChildScrollView(
           child: Container(
             width: MediaQuery.of(this._context).size.width,
@@ -98,27 +105,6 @@ class _AltaPerfilPWRSPageState extends State<AltaPerfilPWRSPage> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        child: Icon(Icons.save, size: 25),
-        onPressed: () {
-          bool isValid = false;
-          if(altaUserSngt.paginaWeb == null && this._ctrlPW.text != '') {
-            this._errorPW = _validarPaginaWeb();
-            if(this._errorPW == null){
-              isValid = true;
-              isValid = _procesarFormulario();
-            }
-            setState(() { });
-          }else{
-            isValid = _procesarFormulario();
-          }
-          if(isValid){
-            Navigator.of(this._context).pushReplacementNamed('alta_perfil_otros_page');
-          }
-        },
-      ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
   }
@@ -129,7 +115,7 @@ class _AltaPerfilPWRSPageState extends State<AltaPerfilPWRSPage> {
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
-        regresarPagina.widget(this._context, 'REGRESAR', lstMenu: altaUserSngt.crearMenuSegunRole()),
+        regresarPagina.widget(this._context, 'alta_perfil_contac_page', lstMenu: altaUserSngt.crearMenuSegunRole()),
         const SizedBox(height: 10),
         Text(
           '[2/3] Perfil del Usuario',
@@ -166,6 +152,41 @@ class _AltaPerfilPWRSPageState extends State<AltaPerfilPWRSPage> {
     altaUserSngt.redesSociales.forEach((red){
       listInputs.add(_createListRS(red['titulo']));
     });
+    listInputs.add(
+      SizedBox(
+        height: 50,
+        width: MediaQuery.of(this._context).size.width * 0.8,
+        child: RaisedButton.icon(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)
+          ),
+          icon: Icon(Icons.save),
+          label: Text(
+            'Siguiente',
+            textScaleFactor: 1,
+            style: TextStyle(
+              fontSize: 18
+            ),
+          ),
+          onPressed: () async {
+            bool isValid = false;
+            if(altaUserSngt.paginaWeb == null && this._ctrlPW.text != '') {
+              this._errorPW = _validarPaginaWeb();
+              if(this._errorPW == null){
+                isValid = true;
+                isValid = _procesarFormulario();
+              }
+              setState(() { });
+            }else{
+              isValid = _procesarFormulario();
+            }
+            if(isValid){
+              Navigator.of(this._context).pushReplacementNamed('alta_perfil_otros_page');
+            }
+          },
+        ),
+      )
+    );
     listInputs.add(const SizedBox(height: 50));
 
     return Container(

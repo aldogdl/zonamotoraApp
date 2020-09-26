@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zonamotora/data_shared.dart';
+import 'package:zonamotora/repository/app_varios_repository.dart';
 import 'package:zonamotora/repository/autos_repository.dart';
 import 'package:zonamotora/repository/carshop_repository.dart';
 import 'package:zonamotora/repository/notifics_repository.dart';
@@ -28,7 +29,7 @@ class _InitConfigPageState extends State<InitConfigPage> {
   ProccRotoRepository emProccsRotos = ProccRotoRepository();
   NotificsRepository emNotific = NotificsRepository();
   CarShopRepository emShop = CarShopRepository();
-
+  AppVariosRepository emVarios = AppVariosRepository();
   
   String _haciendo = 'Iniciando Configuración';
   bool _recibirNotif;
@@ -100,7 +101,7 @@ class _InitConfigPageState extends State<InitConfigPage> {
 
     Map<String, dynamic> procesoRoto = await emProccsRotos.checkProcesosRotos();
     
-    Future.delayed(Duration(seconds: 2), () async {
+    Future.delayed(Duration(milliseconds: 1000), () async {
 
       this._haciendo = 'Configurando ZonaMotora App.';
       setState(() {});
@@ -109,6 +110,7 @@ class _InitConfigPageState extends State<InitConfigPage> {
       await _checkMarcasAndModelos();
       await _checkConfigPush();
       await _checkInCarShop();
+      await _checkCategos();
 
       this._haciendo = (this._dataShared.username == 'Anónimo') ? 'Bienvenid@' : 'Bienvenid@ ${this._dataShared.username.toUpperCase()}';
       setState(() {});
@@ -120,10 +122,7 @@ class _InitConfigPageState extends State<InitConfigPage> {
         // la seleccion de imagenes para una respuesta a alguna solicitud.
         if(procesoRoto.containsKey('ftosCot')) {
 
-          Navigator.of(this._context).pushNamedAndRemoveUntil(
-            procesoRoto['path'],
-            (Route rutas) => false,
-          );
+          Navigator.of(this._context).pushNamedAndRemoveUntil(procesoRoto['path'], (Route rutas) => false);
 
         }else{
 
@@ -134,9 +133,7 @@ class _InitConfigPageState extends State<InitConfigPage> {
             this._dataShared.setTokenAsesor({'token':procesoRoto['tokenAsesor']});
           }
 
-          Navigator.of(this._context).pushNamedAndRemoveUntil(
-            procesoRoto['path'],
-            (Route rutas) => false,
+          Navigator.of(this._context).pushNamedAndRemoveUntil(procesoRoto['path'], (Route rutas) => false,
             arguments: (procesoRoto.containsKey('indexAuto')) ? {'indexAuto':procesoRoto['indexAuto']} : null
           );
         }
@@ -270,5 +267,13 @@ class _InitConfigPageState extends State<InitConfigPage> {
 
     int cant = await emShop.getCantActualInCarShop();
     Provider.of<DataShared>(this._context, listen: false).setCantTotalInCarrito(cant);
+  }
+
+  ///
+  Future<void> _checkCategos() async {
+
+    this._haciendo = 'Categorías y Servicios';
+    setState(() {});
+    await emVarios.getAllCategosFromServer();
   }
 }

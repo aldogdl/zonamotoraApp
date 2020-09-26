@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DataShared with ChangeNotifier {
 
   /*
-   * Utilizada para saber si el usuario ya completo todo lo que se necesita para el registro
+   * Utilizada para saber si el usuario ya completo all lo que se necesita para el registro
    * y a su ves este valor evita que se reconfiguren cosas que ya fueron inicializadas en init_config_page
    * 
    * @see init_config_page::_checkConfigPush    -> Consumido
@@ -11,7 +11,7 @@ class DataShared with ChangeNotifier {
   */
   int _segReg = 0;
   get segReg => _segReg;
-  setsegReg(int segReg) {
+  setSegReg(int segReg) {
     this._segReg = segReg;
   }
 
@@ -248,6 +248,29 @@ class DataShared with ChangeNotifier {
     this._refreshWidget = refresh;
     notifyListeners();
   }
-
+  void setRefreshWidgetNotifFalse(int refresh){
+    this._refreshWidget = refresh;
+  }
   
+  /// -------- seccion de FAVORITOS --------
+  int _cantFavServs = 0;
+  int get cantFavServs => this._cantFavServs;
+  void setCantFavServs(int cant){
+    this._cantFavServs = cant;
+    notifyListeners();
+  }
+
+  int _cantFavRedacs = 0;
+  int get cantFavRefacs => this._cantFavRedacs;
+  void setCantFavRefacs(int cant){
+    this._cantFavRedacs = cant;
+    notifyListeners();
+  }
+
+  int _cantFavAutos = 0;
+  int get cantFavAutos => this._cantFavAutos;
+  void setCantFavAutos(int cant){
+    this._cantFavAutos = cant;
+    notifyListeners();
+  }
 }

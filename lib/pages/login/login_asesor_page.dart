@@ -33,7 +33,8 @@ class _LoginAsesorPageState extends State<LoginAsesorPage> {
   FocusNode _focusPass = FocusNode();
   bool _oculatarPass = true;
   String _asesorSelect;
-
+  bool _isInit = false;
+  String lastUri;
   List<Map<String, dynamic>> _asesores = new List();
 
   @override
@@ -45,9 +46,14 @@ class _LoginAsesorPageState extends State<LoginAsesorPage> {
   @override
   Widget build(BuildContext context) {
 
-    this._screen = MediaQuery.of(context).size;
-    this._context = context;
-    context = null;
+    if(!this._isInit){
+      this._isInit = true;
+      this._screen = MediaQuery.of(context).size;
+      this._context = context;
+      context = null;
+      lastUri = Provider.of<DataShared>(this._context, listen: false).lastPageVisit;
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('login_asesor_page');
+    }
 
     return Scaffold(
       key: this._scafKey,
@@ -55,7 +61,12 @@ class _LoginAsesorPageState extends State<LoginAsesorPage> {
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: WillPopScope(
-        onWillPop: () => Future.value(false),
+        onWillPop: (){
+          if(lastUri != null){
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
         child: _body(),
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
@@ -69,7 +80,7 @@ class _LoginAsesorPageState extends State<LoginAsesorPage> {
       child: Column(
         children: <Widget>[
           _cabecera(),
-          regresarPagina.widget(this._context, 'IR AL MENÚ DE OPCIONES', showBtnMenualta: false),
+          regresarPagina.widget(this._context, lastUri, showBtnMenualta: false),
           FutureBuilder(
             future: _getAsesores(),
             builder: (BuildContext context, AsyncSnapshot snapshot){

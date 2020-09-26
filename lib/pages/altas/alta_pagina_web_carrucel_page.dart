@@ -85,36 +85,6 @@ class _AltaPaginaWebCarrucelPageState extends State<AltaPaginaWebCarrucelPage> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        child: Icon(Icons.save, size: 25),
-        onPressed: () async {
-          if(this._keyFrm.currentState.validate()) {
-
-            altaUserSngt.setCreateDataSitioWebByCarruselByKey('mision', 'body', this._ctrlMision.text);
-            altaUserSngt.setCreateDataSitioWebByCarruselByKey('diff', 'body', this._ctrlDiff.text);
-            altaUserSngt.setCreateDataSitioWebByCarruselByKey('espec', 'body', this._ctrlEspec.text);
-            altaUserSngt.setCreateDataSitioWebByCarruselByKey('mision', 'titulo', this._ctrlTitMision.text);
-            altaUserSngt.setCreateDataSitioWebByCarruselByKey('diff', 'titulo', this._ctrlTitDiff.text);
-            altaUserSngt.setCreateDataSitioWebByCarruselByKey('espec', 'titulo', this._ctrlTitEspec.text);
-
-            Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_build_page');
-          }else{
-
-            SnackBar snackbar = SnackBar(
-              content: Container(
-                child: Text(
-                  'Hay un ERROR en el Fomulario',
-                  textScaleFactor: 1,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-            this._keySkf.currentState.showSnackBar(snackbar);
-          }
-        }
-      ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
   }
@@ -243,11 +213,55 @@ class _AltaPaginaWebCarrucelPageState extends State<AltaPaginaWebCarrucelPage> {
                         return null;
                       }
                     ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 50,
+                      width: MediaQuery.of(this._context).size.width * 0.8,
+                      child: RaisedButton.icon(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        icon: Icon(Icons.save),
+                        label: Text(
+                          'Siguiente',
+                          textScaleFactor: 1,
+                          style: TextStyle(
+                            fontSize: 18
+                          ),
+                        ),
+                        onPressed: () async {
+                          if(this._keyFrm.currentState.validate()) {
+
+                            altaUserSngt.setCreateDataSitioWebByCarruselByKey('mision', 'body', this._ctrlMision.text);
+                            altaUserSngt.setCreateDataSitioWebByCarruselByKey('diff', 'body', this._ctrlDiff.text);
+                            altaUserSngt.setCreateDataSitioWebByCarruselByKey('espec', 'body', this._ctrlEspec.text);
+                            altaUserSngt.setCreateDataSitioWebByCarruselByKey('mision', 'titulo', this._ctrlTitMision.text);
+                            altaUserSngt.setCreateDataSitioWebByCarruselByKey('diff', 'titulo', this._ctrlTitDiff.text);
+                            altaUserSngt.setCreateDataSitioWebByCarruselByKey('espec', 'titulo', this._ctrlTitEspec.text);
+
+                            Navigator.of(this._context).pushReplacementNamed('alta_pagina_web_build_page');
+                          }else{
+
+                            SnackBar snackbar = SnackBar(
+                              content: Container(
+                                child: Text(
+                                  'Hay un ERROR en el Fomulario',
+                                  textScaleFactor: 1,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            );
+                            this._keySkf.currentState.showSnackBar(snackbar);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               )
             ),
-            SizedBox(height: MediaQuery.of(this._context).size.height * 0.1)
+            SizedBox(height: MediaQuery.of(this._context).size.height * 0.03)
           ],
         ),
       ],

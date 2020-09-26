@@ -48,7 +48,6 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
   Map<String, dynamic> _dataPieza = new Map();
 
   int _cantidaPiezas = 1;
-  int _cantidaPiezaSolicitada = 1;
   bool _showVisorFoto = false;
   bool _otraCotiza = false;
   bool _showFrm = false;
@@ -57,17 +56,11 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
 
   Map<String, dynamic> _metadataOpsYesOrNot = {
     'no': {
-      'colorSI': Colors.grey[600],
-      'colorNo': Colors.black,
-      'bgSI': Colors.grey[300],
-      'bgNo': Colors.green,
+      'bg': Colors.orange,
       'icono': Icons.close
     },
     'si': {
-      'colorSI': Colors.black,
-      'colorNo': Colors.grey[600],
-      'bgSI': Colors.green,
-      'bgNo': Colors.grey[300],
+      'bg': Colors.red,
       'icono': Icons.check
     },
   };
@@ -100,7 +93,6 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
     pieza = pieza['pieza'];
 
     this._screen = MediaQuery.of(this._context).size;
-    this._cantidaPiezaSolicitada = pieza['cant'];
     imgCacheWidget = FichaAutoImgCacheWidget(foto: pieza['foto']);
     placeholderWidget = FichaAutoPlaceholderWidget(pieza: pieza);
     context = null;
@@ -337,49 +329,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
         child: Column(
           children: <Widget>[
             const SizedBox(height: 10),
-            Row(
-              children: <Widget>[
-                const SizedBox(width: 10),
-                Text(
-                  'Te Solicitan ',
-                  textScaleFactor: 1,
-                ),
-                Text(
-                  '  ${this._cantidaPiezaSolicitada}  ',
-                  textScaleFactor: 1,
-                  style: TextStyle(
-                      backgroundColor: Colors.red, color: Colors.white),
-                ),
-                Text(
-                  ' piezas del mismo tipo... ',
-                  textScaleFactor: 1,
-                ),
-              ],
-            ),
-            const SizedBox(height: 5),
-            Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(100),
-                  borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'Tu CUENTAS con:',
-                      textScaleFactor: 1,
-                      textAlign: TextAlign.start,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: _cantidades(),
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(height: 15),
+
             _inputCosto(),
             const SizedBox(height: 5),
             _inputComision(),
@@ -403,10 +353,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
                       textAlign: TextAlign.start,
                     ),
                   ),
-                  Expanded(
-                    flex: 4,
-                    child: _yesOrNot('devolucion'),
-                  )
+                  _yesOrNot()
                 ],
               ),
             ),
@@ -558,170 +505,34 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
       ),
     );
   }
-  
-  ///
-  Widget _cantidades() {
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            SizedBox(
-              height: 35,
-              width: 35,
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7)),
-                padding: EdgeInsets.all(0),
-                child: Icon(Icons.keyboard_arrow_down),
-                onPressed: () {
-                  this._cantidaPiezas--;
-                  if (this._cantidaPiezas < 1) {
-                    this._cantidaPiezas = 1;
-                  }
-                  setState(() {});
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-            Container(
-              height: 35,
-              width: 35,
-              margin: EdgeInsets.only(right: 3),
-              decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  border: Border.all(
-                    color: Colors.white,
-                  ),
-                  borderRadius: BorderRadius.circular(5)),
-              child: Center(
-                child: Text(
-                  '${this._cantidaPiezas}',
-                  textScaleFactor: 1,
-                  style: TextStyle(fontSize: 20, color: Colors.grey[50]),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            SizedBox(
-              height: 35,
-              width: 35,
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7)),
-                padding: EdgeInsets.all(0),
-                child: Icon(Icons.keyboard_arrow_up),
-                onPressed: () {
-                  this._cantidaPiezas++;
-                  setState(() {});
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
 
   ///
-  Widget _yesOrNot(String elemento) {
+  Widget _yesOrNot() {
 
-    IconData icono;
-    Color colorSI;
-    Color colorNo;
-    Color bgSI;
-    Color bgNo;
-
-    switch (elemento) {
-      case 'devolucion':
-        icono = this._metadataOpsYesOrNot[this._hasDevolucion]['icono'];
-        colorSI = this._metadataOpsYesOrNot[this._hasDevolucion]['colorSI'];
-        colorNo = this._metadataOpsYesOrNot[this._hasDevolucion]['colorNo'];
-        bgSI = this._metadataOpsYesOrNot[this._hasDevolucion]['bgSI'];
-        bgNo = this._metadataOpsYesOrNot[this._hasDevolucion]['bgNo'];
-        break;
-      default:
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            SizedBox(
-              height: 35,
-              width: 35,
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(7)
-                ),
-                padding: EdgeInsets.all(0),
-                color: bgNo,
-                child: Text(
-                  'NO',
-                  textScaleFactor: 1,
-                  style: TextStyle(fontWeight: FontWeight.bold, color: colorNo),
-                ),
-                onPressed: () {
-                  switch (elemento) {
-                    case 'devolucion':
-                      setState(() {
-                        this._hasDevolucion = 'no';
-                        this._txtDevolucion = 'NO Hay Devoluciones';
-                      });
-                      break;
-                    default:
-                  }
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-            Container(
-              height: 35,
-              width: 35,
-              margin: EdgeInsets.only(right: 3),
-              decoration: BoxDecoration(
-                color: Colors.grey[800],
-                border: Border.all(
-                  color: Colors.white,
-                ),
-                borderRadius: BorderRadius.circular(5)
-              ),
-              child: Center(child: Icon(icono, color: Colors.white, size: 20)),
-            ),
-            const SizedBox(width: 10),
-            SizedBox(
-              height: 35,
-              width: 35,
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(7)),
-                color: bgSI,
-                padding: EdgeInsets.all(0),
-                child: Text(
-                  'SI',
-                  textScaleFactor: 1,
-                  style: TextStyle(fontWeight: FontWeight.bold, color: colorSI),
-                ),
-                onPressed: () {
-                  switch (elemento) {
-                    case 'devolucion':
-                      setState(() {
-                        this._hasDevolucion = 'si';
-                        this._txtDevolucion = 'ACEPTO la Devolución';
-                      });
-                      break;
-                    default:
-                  }
-                },
-              ),
-            ),
-          ],
+    return InkWell(
+      child: Container(
+        height: 35,
+        width: 35,
+        margin: EdgeInsets.only(right: 3),
+        decoration: BoxDecoration(
+          color: this._metadataOpsYesOrNot[this._hasDevolucion]['bg'],
+          border: Border.all(
+            color: Colors.white,
+          ),
+          borderRadius: BorderRadius.circular(5)
         ),
-      ],
+        child: Center(child: Icon(this._metadataOpsYesOrNot[this._hasDevolucion]['icono'], color: Colors.white, size: 20)),
+      ),
+      onTap: () {
+        if(this._hasDevolucion == 'no'){
+          this._hasDevolucion = 'si';
+          this._txtDevolucion = 'ACEPTO la Devolución';
+        }else{
+          this._hasDevolucion = 'no';
+          this._txtDevolucion = 'No EXISTEN Devoluciones';
+        }
+        setState(() { });
+      },
     );
   }
 

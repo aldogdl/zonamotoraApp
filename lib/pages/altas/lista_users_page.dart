@@ -212,12 +212,14 @@ class _ListaUsersPageState extends State<ListaUsersPage> {
   Widget _machoteTitleListUser(int index) {
 
     DateTime fecha = DateTime.parse(this._usuarios[index]['u_createdAt']['date']);
+
     return ListTile(
       isThreeLine: true,
       onTap: (){
         altaUserSngt.setUserId(this._usuarios[index]['u_id']);
         altaUserSngt.setUsname(this._usuarios[index]['u_username']);
         altaUserSngt.setRoles(this._usuarios[index]['u_roles'][0]);
+        altaUserSngt.isBack = false;
         // tipos de alta.
         switch (this._usuarios[index]['u_roles'][0]) {
           case 'ROLE_AUTOS':
@@ -276,6 +278,6 @@ class _ListaUsersPageState extends State<ListaUsersPage> {
   ///
   Widget _regresoLink() {
 
-    return regresarPagina.widget(this._context, 'IR AL MENÚ DE OPCIONES', lstMenu: altaUserSngt.crearMenuSegunRole(), showBtnMenualta: false);
+    return regresarPagina.widget(this._context, 'alta_index_menu_page', lstMenu: altaUserSngt.crearMenuSegunRole(), showBtnMenualta: false);
   }
 }

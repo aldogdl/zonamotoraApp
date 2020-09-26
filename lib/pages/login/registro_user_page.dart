@@ -54,6 +54,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
   List<Map<String, dynamic>> _lstTiposComercios = new List();
   String _tipoSeleccionado;
   bool _iniConfig = false;
+  String lastUri;
 
   @override
   void dispose() {
@@ -72,16 +73,20 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
     this._context = context;
     context = null;
     this._params = ModalRoute.of(this._context).settings.arguments;
-
+    
     if(!this._iniConfig) {
       this._iniConfig = true;
       appBarrMy.setContext(this._context);
-      if(this._params['source'] == 'user'){
-        Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('reg_index_page');
+      if(this._params != null){
+        if(this._params['source'] == 'user'){
+          lastUri = 'reg_index_page';
+        }else{
+          lastUri = 'alta_index_menu_page';
+        }
       }else{
-        Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_index_menu_page');
+        lastUri = 'index_page';
       }
-
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('reg_user_page');
       configGMSSngt.setContext(this._context);
     }
 
@@ -90,7 +95,12 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body:  WillPopScope(
-        onWillPop: () => Future.value(false),
+        onWillPop: () {
+          if(lastUri != null){
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
         child: _body(),
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
@@ -98,9 +108,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
   }
 
   ///
-  Widget _body()
-  {
-    String tituloLinkBackPage = (this._params['source'] == 'user') ? 'REGRESAR' : 'IR AL MENÚ DE OPCIONES';
+  Widget _body() {
 
     return CustomScrollView(
       slivers: <Widget>[
@@ -108,7 +116,33 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
         SliverList(
           delegate: SliverChildListDelegate(
             [
-              regresarPagina.widget(this._context, tituloLinkBackPage, showBtnMenualta: false),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: regresarPagina.widget(this._context, lastUri, showBtnMenualta: false),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: FlatButton.icon(
+                      padding: EdgeInsets.all(0),
+                      icon: Icon(Icons.account_box),
+                      label: Text(
+                        'YA TENGO CUENTA',
+                        textScaleFactor: 1,
+                      ),
+                      onPressed: (){
+                        Navigator.of(this._context).pushNamedAndRemoveUntil(
+                          'login_page',
+                          (route) => false,
+                          arguments: this._params
+                        );
+                      },
+                    ),
+                  )
+                ],
+              ),
               FutureBuilder(
                 future: _getTiposComercios(),
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -154,8 +188,8 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
   /* */
   Future<void> _getTiposComercios() async {
 
-    if(this._params['source'] == 'user'){
-      this._lstTiposComercios = [{'role':'ROLE_PART', 'titulo' : 'USUARIO PARICULAR'}];
+    if(this._params == null || this._params['source'] == 'user'){
+      this._lstTiposComercios = [{'role':'ROLE_PART', 'titulo' : 'USUARIO PARTICULAR'}];
       this._tipoSeleccionado = this._lstTiposComercios[0]['role'];
       setState(() { });
     }
@@ -432,7 +466,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
       color: Colors.black87,
       icon: Icon(Icons.settings_input_antenna, color: Colors.orange, size: 15,),
       label: Text(
-        'CREAR MI CUENTA',
+        'CREAR CUENTA',
         textScaleFactor: 1,
         style: TextStyle(
           fontSize: 19,
@@ -549,7 +583,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
     sess.setBool(spConst.sp_notif, true);
 
     dataShared.setUsername(username);
-    dataShared.setsegReg(1);
+    dataShared.setSegReg(1);
     dataShared.setTokenAsesor(null);
 
     if(!dataShared.isConfigPush) {
@@ -691,7 +725,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
   /*
    * Si es el asesor quien esta dando de alta un nuevo usuario, y este decide
    * reiniciar el sistema, quiere decir, que esta registrando un usuario en 
-   * el celular de este, y solo para asegurarnos de que todo este bien...
+   * el celular de este, y solo para asegurarnos de que all este bien...
    * 
    * Es necesario checar las bases de datos y eliminar el contenido, ya que posiblemente
    * el asesor este cambiando el usuario del dispositivo y halla residuos de informacion

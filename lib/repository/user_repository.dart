@@ -314,4 +314,17 @@ class UserRepository {
     return await userHttp.hacerPruebaDeComunicacionPush(dataUser);
   }
 
+  ///
+  Future<Map<String, dynamic>> getDatosUserByFile(int idUser, String username, String tokenAsesor) async {
+
+    Map<String, dynamic> dataUser = new Map();
+    final reServer = await userHttp.getDatosUserByFile(idUser, username, tokenAsesor);
+    if(reServer.statusCode == 200){
+      dataUser = json.decode(reServer.body);
+    }else{
+      this.result = erroresServer.determinarError(reServer);
+    }
+    tokenAsesor = null;
+    return dataUser;
+  }
 }

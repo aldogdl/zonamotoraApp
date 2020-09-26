@@ -50,7 +50,7 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
   RenderBox _inputBskPosition;
   ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> _lstTmpColonias = new List();
-
+  String lastUri;
 
   @override
   void initState() {
@@ -82,7 +82,8 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
       if(altaUserSngt.lstColonias.length != 0){
         this._lstTmpColonias = altaUserSngt.lstColonias;
       }
-      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_perfil_pwrs_page');
+      lastUri = Provider.of<DataShared>(this._context, listen: false).lastPageVisit;
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_perfil_otros_page');
     }
 
     return Scaffold(
@@ -91,45 +92,16 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
       backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: WillPopScope(
-        onWillPop: () => Future.value(false),
+        onWillPop: () {
+          if(lastUri != null){
+            Navigator.of(this._context).pushReplacementNamed(lastUri);
+          }
+          return Future.value(false);
+        },
         child: SingleChildScrollView(
           controller: this._scrollController,
           child: _body()
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        child: Icon(Icons.save, size: 25),
-        onPressed: () async {
-          
-          bool isValid = false;
-          if(altaUserSngt.colonia != null){
-            if(altaUserSngt.colonia != 0){
-              isValid = true;
-            }
-          }
-          if(!isValid) {
-            await alertsVarios.entendido(
-              this._context,
-              titulo: 'LA COLONIA',
-              body: 'Es necesario que selecciones una colonia para CONTINUAR con el REGISTRO del usuario'
-            );
-          }
-          if(this._latLng == null){
-            isValid = false;
-            await alertsVarios.entendido(
-              this._context,
-              titulo: 'LA LOCALIZACIÓN',
-              body: 'Es necesario que especifiques una Localización para CONTINUAR con el REGISTRO del usuario'
-            );
-          }
-          
-          if(isValid) {
-            altaUserSngt.setLatLng(this._latLng);
-            Navigator.of(this._context).pushReplacementNamed('alta_save_resum_page');
-          }
-        },
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
@@ -144,7 +116,7 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
       mainAxisSize: MainAxisSize.max,
       children: <Widget>[
         ///
-        regresarPagina.widget(this._context, 'REGRESAR', lstMenu: altaUserSngt.crearMenuSegunRole()),
+        regresarPagina.widget(this._context, 'alta_perfil_pwrs_page', lstMenu: altaUserSngt.crearMenuSegunRole()),
         bgAltasStack.stackWidget(
           titulo: '[3/3] Perfil del Usuario', subtitulo: 'DATOS DE CONTACTO',
           altoMax: 0.11,
@@ -183,7 +155,53 @@ class _AltaPerfilOtrosPageState extends State<AltaPerfilOtrosPage> {
           },
         ),
         const SizedBox(height: 10),
-        _ayudaTecnica()
+        _ayudaTecnica(),
+        SizedBox(
+          height: 50,
+          width: MediaQuery.of(this._context).size.width * 0.8,
+          child: RaisedButton.icon(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)
+            ),
+            icon: Icon(Icons.save),
+            label: Text(
+              'Siguiente',
+              textScaleFactor: 1,
+              style: TextStyle(
+                fontSize: 18
+              ),
+            ),
+            onPressed: () async {
+              bool isValid = false;
+              if(altaUserSngt.colonia != null){
+                if(altaUserSngt.colonia != 0){
+                  isValid = true;
+                }
+              }
+              if(!isValid) {
+                await alertsVarios.entendido(
+                  this._context,
+                  titulo: 'LA COLONIA',
+                  body: 'Es necesario que selecciones una colonia para CONTINUAR con el REGISTRO del usuario'
+                );
+              }
+              if(this._latLng == null){
+                isValid = false;
+                await alertsVarios.entendido(
+                  this._context,
+                  titulo: 'LA LOCALIZACIÓN',
+                  body: 'Es necesario que especifiques una Localización para CONTINUAR con el REGISTRO del usuario'
+                );
+              }
+              
+              if(isValid) {
+                altaUserSngt.setLatLng(this._latLng);
+                Navigator.of(this._context).pushReplacementNamed('alta_save_resum_page');
+              }
+            },
+          ),
+        ),
+        const SizedBox(height: 10),
       ],
     );
   }

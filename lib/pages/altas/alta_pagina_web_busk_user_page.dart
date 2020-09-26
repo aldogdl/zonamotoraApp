@@ -73,7 +73,7 @@ class _AltaPaginaWebBuskUserPageState extends State<AltaPaginaWebBuskUserPage> {
       children: [
         Column(
           children: [
-            regresarPagina.widget(this._context, 'IR AL MENÚ DE OPCIONES', lstMenu: altaUserSngt.crearMenuSegunRole(), showBtnMenualta: false),
+            regresarPagina.widget(this._context, 'alta_index_menu_page', lstMenu: altaUserSngt.crearMenuSegunRole(), showBtnMenualta: false),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 5),
               padding: EdgeInsets.only(top: 0, bottom: 10, left: 20, right: 20),
@@ -128,6 +128,7 @@ class _AltaPaginaWebBuskUserPageState extends State<AltaPaginaWebBuskUserPage> {
       this._widgetResults = _buscando();
     });
     List<Map<String, dynamic>> lstUsers = await emUser.buscarUserBy(this._ctrlCriterio.text, this._tokenTmpAsesor);
+
     if(lstUsers.length > 0) {
       setState(() {
         this._widgetResults = _verLstsociosResultados(lstUsers);
