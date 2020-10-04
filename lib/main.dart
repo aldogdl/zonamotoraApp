@@ -22,7 +22,10 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown
     ]);
-    
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+       statusBarColor: Color(0xff002f51).withAlpha(100),
+       systemNavigationBarColor: Color(0xff002f51)
+    ));
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DataShared())

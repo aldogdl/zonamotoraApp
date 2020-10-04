@@ -118,12 +118,12 @@ class _AltaIndexMenuPageState extends State<AltaIndexMenuPage> {
               height: this._screen.height * 0.29,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
                   colors: [
                     Color.fromRGBO(124, 0, 0, 1),
-                    Color.fromRGBO(124, 0, 0, 0),
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter
+                    Color.fromRGBO(124, 0, 0, 0)
+                  ]
                 )
               ),
             ),

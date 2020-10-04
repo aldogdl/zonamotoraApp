@@ -8,27 +8,26 @@ class BannersTop extends StatefulWidget {
 
 class _BannersTopState extends State<BannersTop> {
 
-  List<String> banner = ['ejemplo_bt_zm_1.png', 'ejemplo_bt_zm_2.png'];
+  List<String> banner = ['ejemplo_bt_zm_1.jpg', 'ejemplo_bt_zm_2.jpg'];
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
-      height: MediaQuery.of(context).size.height * 0.25,
+      height: MediaQuery.of(context).size.height * 0.28,
       width: MediaQuery.of(context).size.width,
       child: Swiper(
         itemBuilder: (BuildContext context, int index) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image(
-              image: AssetImage(
-                'assets/images/banners/${banner[index]}',
-              ),
-            )
+          return Image(
+            image: AssetImage('assets/images/banners/${banner[index]}'),
+            fit: BoxFit.fitWidth
           );
         },
         itemCount: banner.length,
-        viewportFraction: 0.9,
-        scale: 0.9,
+        viewportFraction: 1,
+        scale: 1,
+        autoplay: true,
+        autoplayDelay: 6000,
       )
     );
   }

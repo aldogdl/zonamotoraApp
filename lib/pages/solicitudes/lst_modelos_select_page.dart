@@ -44,10 +44,10 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
 
     String titulo = (solicitudSgtn.onlyRead)
     ? '${solicitudSgtn.autos.length.toString()} Cotizaciones Solicitadas'
-    : '${solicitudSgtn.autos.length.toString()} MODELOS SELECCIONADOS';
+    : '[${solicitudSgtn.autos.length.toString()}] LISTA DE AUTOS';
 
     return Scaffold(
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: WillPopScope(
         onWillPop: () => Future.value(false),
@@ -78,8 +78,8 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
   }
 
   ///
-  void _createFichaDeAutos()
-  {
+  void _createFichaDeAutos() {
+
     this._widgetLstAutos = new List();
     this._widgetLstAutos.add(
       (solicitudSgtn.onlyRead) ?_btnCreateNewSolicitud() : _btnSave()
@@ -134,43 +134,41 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
   }
 
   ///
-  Widget _btnSave()
-  {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+  Widget _btnSave() {
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        RaisedButton.icon(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20)
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+          child: _machoteBtnAccion(
+            titulo: 'TERMINAR Y ENVIAR',
+            icono: Icons.check_circle,
+            icoColor: Colors.white,
+            color: Color(0xff002f51),
+            indicador: false,
+            accion: () => _enviarSolicitud()
           ),
-          onPressed: () {
-            buscarAutosSngt.setIdMarca(null);
-            buscarAutosSngt.setIdModelo(null);
-            buscarAutosSngt.setNombreMarca(null);
-            buscarAutosSngt.setNombreModelo(null);
-            solicitudSgtn.addOtroAuto = true;
-            Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false);
-          },
-          icon: Icon(Icons.directions_car, color: Colors.blue),
-          color: Colors.white,
-          textColor: Colors.black54,
-          label: Text(
-            'Agregar Auto',
-            textScaleFactor: 1,
-          )
         ),
-        RaisedButton.icon(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20)
+        Padding(
+          padding: EdgeInsets.only(
+            top: 0, left: 20, right: 20, bottom: 20
           ),
-          onPressed: () => _enviarSolicitud(),
-          icon: Icon(Icons.check_circle, color: Colors.blue),
-          color: Colors.black,
-          textColor: Colors.white,
-          label: Text(
-            'ENVIAR Solicitud',
-            textScaleFactor: 1,
-          )
+          child: _machoteBtnAccion(
+            titulo: 'AGREGAR OTRO AUTO',
+            icono: Icons.directions_car,
+            icoColor: Colors.white,
+            color: Colors.red,
+            indicador: false,
+            accion: () {
+              buscarAutosSngt.setIdMarca(null);
+              buscarAutosSngt.setIdModelo(null);
+              buscarAutosSngt.setNombreMarca(null);
+              buscarAutosSngt.setNombreModelo(null);
+              solicitudSgtn.addOtroAuto = true;
+              Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false);
+            }
+          ),
         ),
       ],
     );
@@ -199,6 +197,69 @@ class _LstModelosSelectPageState extends State<LstModelosSelectPage> {
           )
         ),
       ],
+    );
+  }
+
+  ///
+  Widget _machoteBtnAccion({
+    String titulo,
+    Color color,
+    IconData icono,
+    Color icoColor = Colors.white,
+    Function accion,
+    indicador = true
+  }) {
+
+    return InkWell(
+      child: Container(
+        padding: EdgeInsets.all(10),
+        width: MediaQuery.of(this._context).size.width,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(2),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 1,
+              offset: Offset(2, 2),
+              color: Colors.black.withAlpha(30)
+            )
+          ]
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            
+            const SizedBox(width: 10),
+            Text(
+              titulo,
+              textScaleFactor: 1,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            Icon(icono, color: icoColor),
+            (indicador)
+            ?
+            CircleAvatar(
+              radius: 15,
+              child: Text(
+                '1',
+                textScaleFactor: 1,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+            )
+            :
+            const SizedBox(width: 0)
+          ],
+        ),
+      ),
+      onTap: () async => accion(),
     );
   }
 

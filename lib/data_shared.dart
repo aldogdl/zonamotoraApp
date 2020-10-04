@@ -253,24 +253,15 @@ class DataShared with ChangeNotifier {
   }
   
   /// -------- seccion de FAVORITOS --------
-  int _cantFavServs = 0;
-  int get cantFavServs => this._cantFavServs;
-  void setCantFavServs(int cant){
-    this._cantFavServs = cant;
+  int _cantFavs = 0;
+  int get cantFavs => this._cantFavs;
+  void setCantFavs(int cant){
+    this._cantFavs = cant;
     notifyListeners();
   }
 
-  int _cantFavRedacs = 0;
-  int get cantFavRefacs => this._cantFavRedacs;
-  void setCantFavRefacs(int cant){
-    this._cantFavRedacs = cant;
-    notifyListeners();
-  }
-
-  int _cantFavAutos = 0;
-  int get cantFavAutos => this._cantFavAutos;
-  void setCantFavAutos(int cant){
-    this._cantFavAutos = cant;
-    notifyListeners();
-  }
+  /// -------- seccion de Info-ZM --------
+  Map<String, dynamic> _infoZM = new Map();
+  Map<String, dynamic> get infoZM => this._infoZM;
+  void setInfoZM(Map<String, dynamic> info) => this._infoZM = info;
 }

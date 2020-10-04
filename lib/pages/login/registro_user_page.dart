@@ -92,7 +92,7 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
 
     return Scaffold(
       key: this._scafKey,
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body:  WillPopScope(
         onWillPop: () {
@@ -461,16 +461,16 @@ class _RegistroUserPageState extends State<RegistroUserPage> {
     return RaisedButton.icon(
 
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10)
+        borderRadius: BorderRadius.circular(2)
       ),
-      color: Colors.black87,
-      icon: Icon(Icons.settings_input_antenna, color: Colors.orange, size: 15,),
+      color: Color(0xff002f51),
+      icon: Icon(Icons.settings_input_antenna, color: Colors.white, size: 15,),
       label: Text(
         'CREAR CUENTA',
         textScaleFactor: 1,
         style: TextStyle(
           fontSize: 19,
-          color: Colors.grey
+          color: Colors.white
         ),
       ),
       onPressed: () async {

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/publicar_repository.dart';
 import 'package:zonamotora/widgets/publicacion_widget.dart';
 
@@ -6,7 +9,9 @@ class SeccionesPageBase extends StatefulWidget {
 
   final int currentSeccion;
   final bool showResultados;
-  SeccionesPageBase({Key key, this.currentSeccion, this.showResultados}) : super(key: key);
+  final String setLastPage;
+  final bool hasHeadAdicional;
+  SeccionesPageBase({Key key, this.currentSeccion, this.showResultados, this.setLastPage, this.hasHeadAdicional}) : super(key: key);
 
   @override
   _SeccionesPageBaseState createState() => _SeccionesPageBaseState();
@@ -15,19 +20,23 @@ class SeccionesPageBase extends StatefulWidget {
 class _SeccionesPageBaseState extends State<SeccionesPageBase> {
 
   PublicarRepository emPublic = PublicarRepository();
+
   BuildContext _context;
   Size _screen;
   int _pagina = 1;
   int _pageFromServer = 0;
-  int _totPags= 0;
-  int _totResl= 0;
   List<Map<String, dynamic>> _categos = new List();
   List<Map<String, dynamic>> _unidades = new List();
-  Map<int, dynamic> secciones = {
-    1: 'refac_index_page',
-    2: 'autos_index_page',
-    3: 'servs_index_page'
-  };
+ 
+  bool _isInit = false;
+  bool _showMsgPublicarAqui = true;
+  bool _showBtnPublicar = true;
+  bool _fueAnalizadaLaPagina = false;
+
+  String lastUri;
+  String _username;
+  String _role;
+  List<String> secciones = ['Artículos', 'Autopartes', 'Vehículos', 'Servicios'];
 
   @override
   Widget build(BuildContext context) {
@@ -36,46 +45,162 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
     context = null;
     this._screen = MediaQuery.of(this._context).size;
 
+    if(!this._isInit){
+      this._isInit = true;
+      lastUri = Provider.of<DataShared>(this._context, listen: false).lastPageVisit;
+      Provider.of<DataShared>(this._context, listen: false).setLastPageVisit(widget.setLastPage);
+      this._username = Provider.of<DataShared>(this._context, listen: false).username;
+      this._role = Provider.of<DataShared>(this._context, listen: false).role;
+    }
+
+    if(this._username == 'Anónimo') {
+      this._showBtnPublicar = false;
+      this._showMsgPublicarAqui = false;
+    }else{
+
+      if(!this._fueAnalizadaLaPagina){
+
+        switch (this._role) {
+          case 'ROLE_PART':
+            this._showBtnPublicar = false;
+            break;
+          case 'ROLE_SOCIO':
+            this._showBtnPublicar = ( widget.currentSeccion != 1) ? false : true;
+            break;
+          case 'ROLE_AUTOS':
+            this._showBtnPublicar = ( widget.currentSeccion != 2) ? false : true;
+            break;
+          case 'ROLE_SERVS':
+            this._showBtnPublicar = ( widget.currentSeccion != 3) ? false : true;
+            break;  
+          default:
+            this._showBtnPublicar = false;
+        }
+
+        this._showMsgPublicarAqui = this._showBtnPublicar;
+      }
+    }
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       width: this._screen.width,
-      child: Column(
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: ListView(
+        addAutomaticKeepAlives: false,
+        shrinkWrap: true,
+        addRepaintBoundaries: false,
+        padding: EdgeInsets.all(0),
+        scrollDirection: Axis.vertical,
         children: [
           _buscador(),
+          (this._showMsgPublicarAqui)
+          ?
+          Padding(
+            padding: EdgeInsets.only(left: 20),
+            child: Row(
+              children: [
+                RotatedBox(
+                  quarterTurns: 1,
+                  child: Icon(Icons.subdirectory_arrow_left),
+                ),
+                Text(
+                  'Aquí podrás PUBLICAR tus ${secciones[widget.currentSeccion]}',
+                  textScaleFactor: 1,
+                )
+              ],
+            ),
+          )
+          :
+          const SizedBox(height: 0),
           (widget.showResultados)
           ?
           _resultados()
           :
-          SizedBox(height: 0),
-          
+          const SizedBox(height: 0),
+          const SizedBox(height: 10),
         ],
       )
     );
   }
 
   ///
+  Widget _btnPublicar() {
+
+    if(!this._showBtnPublicar) {
+      return const SizedBox(height: 0);
+    }
+
+    if(this._showMsgPublicarAqui) {
+      Future.delayed(Duration(milliseconds: 5000), (){
+        if(mounted){
+          setState(() {
+            this._fueAnalizadaLaPagina = true;
+            this._showMsgPublicarAqui = false;
+          });
+        }
+      });
+    }
+
+    return Padding(
+      padding: EdgeInsets.only(right: 10),
+      child: SizedBox(
+        width: 50,
+        height: 47,
+        child: RaisedButton(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(7),
+            side: BorderSide(
+              color: Colors.grey[400]
+            )
+          ),
+          padding: EdgeInsets.all(0),
+          color: Colors.white,
+          textColor: Colors.red,
+          onPressed: (){
+            Navigator.of(this._context).pushNamedAndRemoveUntil(
+              'publicar_page', (route) => false,
+              arguments: {'publicar': widget.currentSeccion}
+            );
+          },
+          child: Icon(Icons.control_point_duplicate),
+        ),
+      ),
+    );
+  }
+
+  ///
   Widget _buscador() {
 
-    List<IconData> iconos = [
-      Icons.extension, Icons.directions_car, Icons.build
-    ];
-    return Column(
+    double anchoBuscador = (this._showBtnPublicar) ? 0.75 : 0.935;
+    if(this._username == 'Anónimo') {
+      anchoBuscador = 0.935;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        _btnPublicar(),
         Container(
-          padding: EdgeInsets.only(left: 18),
+          margin: EdgeInsets.only(bottom: 3),
+          padding: EdgeInsets.symmetric(horizontal: 5),
+          width: this._screen.width * anchoBuscador,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20)
+            borderRadius: BorderRadius.circular(7),
+            border: Border.all(
+              color: Colors.grey
+            )
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Expanded(
-                flex: 3,
+                flex: 5,
                 child: TextFormField(
                   decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    
                     border: InputBorder.none,
-                    hintText: '¿Qué estas Buscando?'
+                    hintText: ' ¿Qué Buscas?',
                   ),
                 ),
               ),
@@ -83,59 +208,11 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
                 flex: 1,
                 child: IconButton(
                   padding: EdgeInsets.all(0),
-                  icon: Icon(Icons.search),
+                  icon: Icon(Icons.arrow_forward),
                   onPressed: (){},
                 ),
-              )
+              ),
             ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          width: this._screen.width,
-          height: 38,
-          child: FutureBuilder(
-            future: _getCategosFromLocal(),
-            builder: (_, AsyncSnapshot snapshot){
-              if(snapshot.connectionState == ConnectionState.done) {
-                if(this._categos.isNotEmpty){
-
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: this._categos.length,
-                    itemBuilder: (_, index){
-
-                      return Padding(
-                        padding: EdgeInsets.only(right: 10, bottom: 5),
-                        child: RaisedButton(
-                          color: (this._categos[index]['cat_id'] == widget.currentSeccion) ? Colors.grey[300] : Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)
-                          ),
-                          onPressed: () => Navigator.of(this._context).pushReplacementNamed(this.secciones[this._categos[index]['cat_id']]),
-                          child: Row(
-                            children: [
-                              Icon(iconos[index]),
-                              const SizedBox(width: 5),
-                              Text(
-                                '${this._categos[index]['cat_catego']}',
-                                textScaleFactor: 1,
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-
-                    },
-                  );
-                }
-              }
-
-              return Center(
-                child: Text('Cargando Filtro'),
-              );
-            },
           ),
         )
       ],
@@ -145,11 +222,13 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
   ///
   Widget _resultados() {
 
-    double alto = (widget.showResultados && widget.currentSeccion != 1) ? 0.623 : 0.55;
-
+    int alto = (this._username == 'Anónimo') ? 250 : 195;
+    if(widget.hasHeadAdicional) {
+      alto = alto + 50;
+    }
     return Container(
       width: this._screen.width,
-      height: this._screen.height * alto,
+      height: this._screen.height - alto,
       child: SingleChildScrollView(
         child: FutureBuilder(
           future: _getUnidades(),
@@ -176,7 +255,7 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
         runAlignment: WrapAlignment.start,
         alignment: WrapAlignment.spaceBetween,
         direction: Axis.horizontal,
-        runSpacing: 10,
+        runSpacing: 20,
         children: [
           _cajaBacia(),
           _cajaBacia(),
@@ -191,22 +270,20 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
   Widget _cajaBacia() {
 
     return Container(
-      width: this._screen.width * 0.45,
+      width: this._screen.width * 0.42,
       height: this._screen.height * 0.28,
       decoration: BoxDecoration(
-        color: Colors.grey,
         border: Border.all(
-          color: Colors.grey
+          color: Colors.blue[100]
         ),
         gradient: LinearGradient(
           colors: [
-            Colors.grey[300],
-            Colors.grey,
-            Colors.grey[300],
+            Colors.blue[100],
+            Colors.white,
+            Colors.blue[100],
           ],
           begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          tileMode: TileMode.repeated
+          end: Alignment.bottomRight
         )
       ),
     );
@@ -221,7 +298,7 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
         runAlignment: WrapAlignment.start,
         alignment: WrapAlignment.spaceBetween,
         direction: Axis.horizontal,
-        runSpacing: 10,
+        runSpacing: 20,
         children: _createListaUnidades()
       ),
     );
@@ -241,12 +318,6 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
 
   ///
   Future<bool> _getUnidades() async {
-
-    assert((){
-      print(this._totPags);
-      print(this._totResl);
-      return true;
-    }());
     
     await _getCategosFromLocal();
     
@@ -300,10 +371,10 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
     if(this._pageFromServer != this._pagina){
       Map<String, dynamic> resultados = await emPublic.getUnidades(widget.currentSeccion, this._pagina);
       this._unidades = (resultados['results'].length > 0) ? new List<Map<String, dynamic>>.from(resultados['results']) : new List();
-      this._totPags  = resultados['totPag'];
-      this._totResl  = resultados['totResl'];
       this._pageFromServer = resultados['page'];
     }
 
   }
+
+
 }

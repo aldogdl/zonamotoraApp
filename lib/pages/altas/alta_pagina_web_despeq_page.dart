@@ -357,7 +357,6 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
 
     if(data['pagWeb'] != null) {
       if(data['pagWeb'].isNotEmpty) {
-        print('entra');
         pagWeb = data['pagWeb'];
         pagWeb = pagWeb.toLowerCase();
         List<String> partes = pagWeb.split('.');

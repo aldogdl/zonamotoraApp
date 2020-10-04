@@ -35,6 +35,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   SwiperController _swipCtrl = SwiperController();
   ScrollController _ctrScroll= ScrollController();
   GlobalKey<ScaffoldState> _skfKey = GlobalKey<ScaffoldState>(); 
+
   GlobalKey<FormState> _frmKey = GlobalKey<FormState>(); 
   TextEditingController _ctrCant = TextEditingController();
   TextEditingController _ctrPieza = TextEditingController();
@@ -49,11 +50,19 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   bool _hasData  = false;
   bool _isRecovery  = false;
   bool _isInit = true;
+  bool _showHead = true;
+  bool _isShowHeadforce = false;
+
   String lastUri;
+  Map<String, dynamic> _infoZM;
   int _cantPiezaSaved = 0;
   int _idPiezaInScreen = -1;
   List<Asset> _images = List<Asset>();
   String _error;
+
+  double _altoHead;
+  double _altoBody;
+
   BuildContext _context;
   Color _errorFrmTxtDetalles = Colors.red[200];
   Color _errorFrmBgDetalles;
@@ -82,8 +91,28 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       this._isRecovery = true;
     }
     this._ctrCant.text = '1';
+
     WidgetsBinding.instance.addPostFrameCallback(_getDataActuales);
+    this._ctrScroll.addListener(() {
+
+      if(this._ctrScroll.offset >= 199) {
+
+        if(!this._isShowHeadforce){
+          setState(() {
+            this._showHead = false;
+          });
+        }
+      }else{
+        if(!this._isShowHeadforce){
+          setState(() {
+            this._showHead = true;
+          });
+        }
+      }
+    });
+
     super.initState();
+    
   }
 
   ///
@@ -131,13 +160,44 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       this._isInit = true;
       lastUri = Provider.of<DataShared>(this._context, listen: false).lastPageVisit;
       Provider.of<DataShared>(this._context, listen: false).setLastPageVisit('alta_piezas_page');
+      this._infoZM = Provider.of<DataShared>(context, listen: false).infoZM;
     }
+    this._altoHead = (MediaQuery.of(this._context).size.height <= 550) ? 0.26 : 0.22;
+    if(this._showHead){
+      this._altoBody = (MediaQuery.of(this._context).size.height <= 550) ? 0.47 : 0.57;
+    }else{
+      this._altoBody = (MediaQuery.of(this._context).size.height <= 550) ? 0.73 : 0.79;
+    }
+
     String titulo = solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['md_nombre'];
-    
+
     return Scaffold(
       key: this._skfKey,
-      appBar: appBarrMy.getAppBarr(titulo: 'Piezas ... para $titulo'),
-      backgroundColor: Colors.red[100],
+      appBar: AppBar(
+        titleSpacing: 0,
+        centerTitle: false,
+        elevation: 0,
+        title: Text(
+          'Piezas para $titulo',
+          textScaleFactor: 1,
+          style: TextStyle(
+            fontSize: 13
+          ),
+        ),
+        backgroundColor: Color(0xff002f51),
+        actions: [
+          IconButton(
+            icon: Icon((this._showHead) ? Icons.clear : Icons.file_download),
+            onPressed: (){
+              setState(() {
+                this._showHead = (!this._showHead) ? true : false;
+                this._isShowHeadforce = (this._showHead) ? true : false;
+              });
+            },
+          )
+        ],
+      ),
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: WillPopScope(
         onWillPop: (){
@@ -146,7 +206,27 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
           }
           return Future.value(false);
         },
-        child: _body(),
+        child: ListView(
+          children: [
+            (this._showHead)
+            ?
+            Container(
+              width: MediaQuery.of(this._context).size.width,
+              height: MediaQuery.of(this._context).size.height * this._altoHead,
+              decoration: BoxDecoration(
+                color: Color(0xff002f51)
+              ),
+              child: _cabeceraFix(),
+            )
+            :
+            const SizedBox(height: 0),
+            Container(
+              width: MediaQuery.of(this._context).size.width,
+              height: MediaQuery.of(this._context).size.height * this._altoBody,
+              child: _body(),
+            )
+          ],
+        ),
       ),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
     );
@@ -163,103 +243,92 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   }
 
   ///
+  Widget _cabeceraFix() {
+
+    return Column(
+      children: [
+        _btnCambiarAutoOnly(),
+        InkWell(
+          onTap: () {
+            _resetScreen();
+            solicitudSgtn.indexAutoIsEditing = -1;
+            Navigator.of(this._context).pushNamedAndRemoveUntil('lst_piezas_page', (Route rutas) => false);
+          },
+          child: _cantPiezasBtnAyuda(),
+        ),
+      ],
+    );
+  }
+
+  ///
   Widget _body() {
 
-    return Container(
-      width: MediaQuery.of(this._context).size.width,
-      height: MediaQuery.of(this._context).size.height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.red,
-            Colors.red[900],
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter
-        )
-      ),
-      child: SingleChildScrollView(
-        controller: this._ctrScroll,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            (this._cantPiezaSaved > 0)
-            ?
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Expanded(
-                    flex: 4,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: _btnCambiarAuto(),
-                    ),
+    return SingleChildScrollView(
+      controller: this._ctrScroll,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: _showBtnCancelar(),
+          ),
+          _form(),
+          const SizedBox(height: 15),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child:  Column(
+              children: <Widget>[
+                Text(
+                  '¿Qué deseas hacer?',
+                  textScaleFactor: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[800],
+                    fontWeight: FontWeight.w300,
+                    fontSize: 20
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: IconButton(
-                      icon: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.arrow_forward_ios, color: Colors.green[600]),
-                      ),
-                      onPressed: () {
-                        _resetScreen();
-                        solicitudSgtn.indexAutoIsEditing = -1;
-                        Navigator.of(this._context).pushNamedAndRemoveUntil('lst_piezas_page', (Route rutas) => false);
-                      },
-                    )
-                  )
-                ],
-              ),
-            )
-            :
-            _btnCambiarAutoOnly(),
-            InkWell(
-              onTap: () {
-                _resetScreen();
-                solicitudSgtn.indexAutoIsEditing = -1;
-                Navigator.of(this._context).pushNamedAndRemoveUntil('lst_piezas_page', (Route rutas) => false);
-              },
-              child: _cantPiezasBtnAyuda(),
+                ),
+                Divider(
+                  color: Colors.grey[400],
+                ),
+                (this._cantPiezaSaved > 0) ? _btnsAccionConPiezas() : _btnsAccionSinPiezas()
+              ],
             ),
-            const SizedBox(height: 15),
-            _form(),
-            const SizedBox(height: 15),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child:  Column(
-                children: <Widget>[
-                  Text(
-                    '¿Qué deseas hacer?',
-                    textScaleFactor: 1,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey[200],
-                      fontWeight: FontWeight.w300,
-                      fontSize: 20
-                    ),
-                  ),
-                  Divider(
-                    color: Colors.red[100],
-                  ),
-                  (this._cantPiezaSaved > 0) ? _btnsAccionConPiezas() : _btnsAccionSinPiezas()
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+        ],
       ),
     );
+  }
+  
+  ///
+  Widget _showBtnCancelar() {
+
+    return (this._cantPiezaSaved > 0)
+    ?
+    _machoteBtnAccion(
+      titulo: 'NO DESEO AGREGAR MÁS',
+      icono: Icons.arrow_forward,
+      icoColor: Colors.white,
+      color: Colors.red,
+      indicador: false,
+      accion: () {
+        _resetScreen();
+        solicitudSgtn.indexAutoIsEditing = -1;
+        Navigator.of(this._context).pushNamedAndRemoveUntil('lst_piezas_page', (Route rutas) => false);
+      }
+    )
+    :
+    const SizedBox(height: 0);
   }
 
   ///
   Widget _btnCambiarAutoOnly() {
 
     return Padding(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        top: 0, right: 20, bottom: 20, left: 20
+      ),
       child: SizedBox(
         width: MediaQuery.of(this._context).size.width,
         child: _btnCambiarAuto(),
@@ -270,17 +339,13 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   ///
   Widget _btnCambiarAuto() {
 
-    return RaisedButton.icon(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20)
-      ),
-      icon: Icon(Icons.directions_car, color: Colors.blue),
-      color: Colors.black54,
-      textColor: Colors.white,
-      label: Text(
-        'Cambiar Automóvil Aquí'
-      ),
-      onPressed: (){
+    return _machoteBtnAccion(
+      titulo: 'Cambiar el Automóvil Aquí',
+      color: Colors.red,
+      icono: Icons.directions_car,
+      icoColor: Colors.white,
+      indicador: false,
+      accion: (){
 
         if(solicitudSgtn.autos.length > 1) {
           Navigator.of(this._context).pushNamedAndRemoveUntil('lst_modelos_select_page', (Route rutas) => false);
@@ -294,7 +359,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
           buscarAutosSngt.setNombreModelo(solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['md_nombre']);
           Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (Route rutas) => false);
         }
-      },
+      }
     );
   }
   
@@ -307,7 +372,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           CircleAvatar(
-            backgroundColor: Colors.amber,
+            backgroundColor: Colors.orange,
             maxRadius: 15,
             child: Text(
               '${ this._cantPiezaSaved }',
@@ -332,7 +397,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
               ),
               const SizedBox(height: 3),
               Text(
-                ' GUARDADA${ this._cantPiezaSaved > 1 ? "S" : (this._cantPiezaSaved == 0) ? "S" : "" }',
+                ' AÑADIDA${ this._cantPiezaSaved > 1 ? "S" : (this._cantPiezaSaved == 0) ? "S" : "" }',
                 textScaleFactor: 1,
                 style: TextStyle(
                   color: Colors.red[100],
@@ -390,13 +455,18 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       ],
     );
 
+    TextStyle styloLabels = TextStyle(
+      color: Colors.black45,
+      fontSize: 15
+    );
+
     return Form(
       key: this._frmKey,
       child: Container(
         width: MediaQuery.of(this._context).size.width,
         padding: EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white.withAlpha(50)
+          color: Colors.white
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,81 +479,39 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
                 textScaleFactor: 1,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  fontSize: 23,
-                  color: Colors.red[100]
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.black
                 ),
               ),
             ),
             Divider(color: Colors.red[200]),
             const SizedBox(height: 30),
+
             Text(
               '* ¿De qué LADO es la pieza?:',
               textScaleFactor: 1,
               textAlign: TextAlign.start,
-              style: TextStyle(
-                color: Colors.grey[100],
-                fontSize: 17
-              ),
+              style: styloLabels,
             ),
             const SizedBox(height: 7),
+
             _selectLados(),
-            const SizedBox(height: 15),
+            const SizedBox(height: 35),
+
             Text(
               '* ¿Tiene alguna Posición adicional?',
               textScaleFactor: 1,
               textAlign: TextAlign.start,
-              style: TextStyle(
-                color: Colors.grey[100],
-                fontSize: 17
-              ),
+              style: styloLabels,
             ),
             const SizedBox(height: 7),
             _selectPosicion(),
             const SizedBox(height: 35),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    '* Cant.',
-                    textScaleFactor: 1,
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Expanded(
-                  flex: 4,
-                  child: Text(
-                    '* El Nombre de la pieza',
-                    textScaleFactor: 1,
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16
-                    ),
-                  ),
-                )
-              ],
-            ),
-            const SizedBox(height: 5),
+
             _machoteRoundedInput(child: child),
-            const SizedBox(height: 15),
-            Text(
-              '  Más Detalles   (Campo NO obligatorio)',
-              textScaleFactor: 1,
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15
-              ),
-            ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 35),
+
             _inputDetalles(),
             const SizedBox(height: 15),
             Container(
@@ -491,7 +519,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
               width: MediaQuery.of(this._context).size.width,
               height: MediaQuery.of(this._context).size.height * 0.24,
               decoration: BoxDecoration(
-                color: Colors.red[50],
+                color: Colors.blue[50],
                 borderRadius: BorderRadius.circular(10)
               ),
               child: (this._hasFotos)
@@ -518,6 +546,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   Widget _selectLados() {
 
     double ancho = (MediaQuery.of(this._context).size.width <= 550) ? 0.71 : 0.75;
+
     List<Map<String, dynamic>> lados = [
       {'valor' :'DELANTER@', 'icon' : 'auto_ico_del'},
       {'valor' :'TRASER@', 'icon'   : 'auto_ico_tras'},
@@ -527,7 +556,9 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     List<DropdownMenuItem> ladosWidget = new List();
     lados.forEach((lado){
+
       ladosWidget.add(
+
         DropdownMenuItem(
           child: Container(
             width: MediaQuery.of(this._context).size.width * ancho,
@@ -543,13 +574,15 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  lado['valor']
+                  '${lado['valor']}',
+                  textScaleFactor: 1,
                 )
               ],
             ),
           ),
           value: lado['valor'],
         )
+
       );
     });
 
@@ -558,7 +591,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       decoration: InputDecoration(
         enabledBorder: InputBorder.none,
         contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-        fillColor: Colors.red[50],
+        fillColor: Colors.white,
         filled: true,
       ),
       onChanged: (valor){
@@ -571,7 +604,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     return _machoteRoundedInput(child: child);
   }
-
+  
   ///
   Widget _selectPosicion() {
 
@@ -628,7 +661,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       decoration: InputDecoration(
         enabledBorder: InputBorder.none,
         contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-        fillColor: Colors.red[50],
+        fillColor: Colors.white,
         filled: true,
       ),
       onChanged: (valor){
@@ -663,18 +696,18 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
         if(txt.length == 0) {
           this._errorFrmTxtCant = Colors.black;
           this._errorFrmBgCant  = Colors.orange;
-          val = 'Pieza';
+          val = 'Cant';
         }
         return val;
       },
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.red[100],
+        fillColor: Colors.grey[100],
         border: InputBorder.none,
         hintStyle: TextStyle(
           fontSize: 14
         ),
-        errorText: 'Pieza',
+        errorText: 'Cant.',
         errorStyle: TextStyle(
           color: this._errorFrmTxtCant,
           backgroundColor: this._errorFrmBgCant
@@ -719,9 +752,9 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       },
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.red[50],
+        fillColor: Colors.white,
         border: InputBorder.none,
-        hintText: 'Escribe aquí',
+        hintText: '* El Nombre de la pieza',
         hintStyle: TextStyle(
           fontSize: 14
         ),
@@ -757,7 +790,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
           if(txt.length < 4) {
             this._errorFrmTxtDetalles = Colors.black;
             this._errorFrmBgDetalles = Colors.orange;
-            return ' Se mas específico en los detalles ';
+            return ' Se más específico en los detalles ';
           }
         }
         return val;
@@ -765,8 +798,8 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       decoration: InputDecoration(
         border: InputBorder.none,
         filled: true,
-        fillColor: Colors.red[50],
-        hintText: 'Escribe aquí',
+        fillColor: Colors.white,
+        hintText: 'Más Detalles   (Campo NO obligatorio)',
         hintStyle: TextStyle(
           fontSize: 14
         ),
@@ -821,28 +854,17 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
           flex: 1,
           child: const SizedBox(height: 5),
         ),
-        Container(
-          margin: EdgeInsets.symmetric(horizontal: 20),
-          padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: Colors.lightBlue,
-            borderRadius: BorderRadius.circular(10)
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: _machoteBtnAccion(
+            titulo: 'Seleccionar Fotografías',
+            icono: Icons.add_a_photo,
+            icoColor: Colors.white,
+            color: Color(0xff002f51),
+            indicador: false,
+            accion: () => _loadAssets()
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(Icons.add_a_photo, color: Colors.white, size: 30),
-              const SizedBox(width: 10),
-              Text(
-                'Seleccionar Fotografías',
-                textScaleFactor: 1,
-                style: TextStyle(
-                  color: Colors.blueAccent[600],
-                ),
-              )
-            ],
-          ),
-        )
+        ),
       ],
     );
   }
@@ -890,7 +912,11 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
                       this._images.removeAt(index);
                       if(this._images.length == 0){
                         this._hasFotos = false;
-                        this._hasData = false;
+                        if(this._ctrPieza.text.length > 3){
+                          this._hasData = true;
+                        }else{
+                          this._hasData = false;
+                        }
                       }
                       setState(() {});
                     },
@@ -936,8 +962,11 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
     return Container(
       padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(10)
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.grey[400]
+        )
       ),
       child: child,
     );
@@ -948,10 +977,11 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     return Column(
       children: <Widget>[
+        const SizedBox(height: 10),
         (this._hasData) ? _btnTerminar() : const SizedBox(width: 0),
-        const SizedBox(height: 20),
+        const SizedBox(height: 30),
         (this._hasData) ? _btnAddOtra() : _msgPedirAsistencia(),
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
       ],
     );
 
@@ -962,10 +992,13 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
     return Column(
       children: <Widget>[
-        _btnTerminar(),
         const SizedBox(height: 10),
+        _btnTerminar(),
+        const SizedBox(height: 30),
         _btnAddOtra(),
-        const SizedBox(height: 20),
+        const SizedBox(height: 30),
+        _showBtnCancelar(),
+        const SizedBox(height: 10),
       ],
     );
   }
@@ -973,67 +1006,94 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   ///
   Widget _btnAddOtra() {
 
-    return SizedBox(
-      width: MediaQuery.of(this._context).size.width,
-      child: RaisedButton.icon(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20)
-        ),
-        icon: Icon(Icons.add_circle, color: Colors.white),
-        color: Colors.grey[600],
-        textColor: Colors.white,
-        label: Text(
-          'Guardar y AGREGAR OTRA Pieza',
-          textScaleFactor: 1,
-          style: TextStyle(
-            letterSpacing: 1.1,
-            shadows: [
-              BoxShadow(
-                blurRadius: 1,
-                offset: Offset(1,1),
-                color: Colors.black
-              )
-            ]
-          )
-        ),
-        onPressed: () async {
-          await _salvarPieza(1);
-        },
-      ),
+    return _machoteBtnAccion(
+      titulo: 'AGREGAR OTRA PIEZA',
+      icono: Icons.add_circle,
+      icoColor: Colors.white,
+      color: Colors.grey,
+      indicador: false,
+      accion: () async {
+        await _salvarPieza(1);
+      }
     );
+
   }
   
   ///
   Widget _btnTerminar() {
 
-    return SizedBox(
-      width: MediaQuery.of(this._context).size.width,
-      height: 45,
-      child: RaisedButton.icon(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20)
+    return _machoteBtnAccion(
+      titulo: 'Guardar y TERMINAR',
+      icono: Icons.check_circle,
+      icoColor: Colors.white,
+      color: Color(0xff002f51),
+      indicador: false,
+      accion: () async {
+        await _salvarPieza(2);
+      }
+    );
+  }
+
+  ///
+  Widget _machoteBtnAccion({
+    String titulo,
+    Color color,
+    IconData icono,
+    Color icoColor = Colors.white,
+    Function accion,
+    indicador = true
+  }) {
+
+    return InkWell(
+      child: Container(
+        padding: EdgeInsets.all(10),
+        width: MediaQuery.of(this._context).size.width,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(2),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 1,
+              offset: Offset(2, 2),
+              color: Colors.black.withAlpha(30)
+            )
+          ]
         ),
-        icon: Icon(Icons.check_circle, color: Colors.blue),
-        color: Colors.black,
-        textColor: Colors.white,
-        label: Text(
-          'Guardar y TERMINAR Cotización',
-          textScaleFactor: 1,
-          style: TextStyle(
-            letterSpacing: 1.1,
-            shadows: [
-              BoxShadow(
-                blurRadius: 1,
-                offset: Offset(1,1),
-                color: Colors.black
-              )
-            ]
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            
+            const SizedBox(width: 10),
+            Text(
+              titulo,
+              textScaleFactor: 1,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            Icon(icono, color: icoColor),
+            (indicador)
+            ?
+            CircleAvatar(
+              radius: 15,
+              child: Text(
+                '1',
+                textScaleFactor: 1,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+            )
+            :
+            const SizedBox(width: 0)
+          ],
         ),
-        onPressed: () async {
-          await _salvarPieza(2);
-        },
       ),
+      onTap: () async => accion(),
     );
   }
 
@@ -1043,11 +1103,11 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
     return SizedBox(
       width: MediaQuery.of(this._context).size.width * 0.9,
       child: Text(
-        'No dudes en pedir Asistencia, estamos para servirte',
+        'No dudes en pedir Asistencia, nuestros asesores estan para servirte',
         textScaleFactor: 1,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: Colors.white
+          color: Colors.black
         ),
       ),
     );
@@ -1055,8 +1115,8 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
 
   ///
   Future<void> _launchWhatsApp() async {
-
-    String phoneNumber = '523316195697';
+    
+    String phoneNumber = '52${this._infoZM['socios']}';
     String message = 'Necesito...';
     var whatsappUrl = "https://wa.me/$phoneNumber?text=$message";
     if (await canLaunch(whatsappUrl)) {
@@ -1069,12 +1129,11 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
   ///
   Future<void> _launchTelefono() async {
 
-    String phoneNumber = 'tel:3316195698';
-    
+    String phoneNumber = 'tel${this._infoZM['socios']}';
     if (await canLaunch(phoneNumber)) {
       await launch(phoneNumber);
     } else {
-      throw 'Could not launch $phoneNumber';
+      throw 'No se pudo abrir $phoneNumber';
     }
   }
 
@@ -1124,7 +1183,14 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
     if(this._images.length > 0) {
       this._hasFotos = true;
       this._hasData = true;
+    }else{
+      if(this._ctrPieza.text.length > 3){
+        this._hasData = true;
+      }else{
+        this._hasData = false;
+      }
     }
+    
     if (this._error == null) _error = 'Sin Errores';
     setState(() {});
   }
@@ -1409,6 +1475,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          insetPadding: EdgeInsets.all(20),
           title: Text(
             'RECOMENDACIÓN',
             textScaleFactor: 1,
@@ -1440,6 +1507,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
                   fontSize: 15
                 ),
               ),
+               const SizedBox(height: 20),
               Text(
                 '¿Qué deseas hacer?',
                 textScaleFactor: 1,
@@ -1453,33 +1521,31 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
             ],
           ),
           actions: <Widget>[
-            SizedBox(
-              width: MediaQuery.of(this._context).size.width,
-              child: RaisedButton.icon(
-                color: Colors.blue,
-                icon: Icon(Icons.add_a_photo),
-                label: Text(
-                  'Agregar Fotografías',
-                  textScaleFactor: 1,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white
-                  ),
-                ),
-                onPressed: () => Navigator.of(this._context).pop(false),
-              ),
+            _machoteBtnAccion(
+              titulo: 'Agregar Fotografías',
+              color: Color(0xff002f51),
+              icono: Icons.add_a_photo,
+              icoColor: Colors.white,
+              indicador: false,
+              accion: () async {
+                Navigator.of(this._context).pop(false);
+                await _loadAssets();
+                
+              }
             ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: MediaQuery.of(this._context).size.width,
-              child: RaisedButton.icon(
-                icon: Icon(Icons.shopping_cart),
-                label: Text(
-                  'Continuar sin Fotografías',
-                  textScaleFactor: 1,
-                ),
-                onPressed: () => Navigator.of(this._context).pop(true),
-              ),
+            const SizedBox(height: 30),
+            _machoteBtnAccion(
+              titulo: 'Continuar sin Fotografías',
+              color: Colors.grey,
+              icono: Icons.shopping_cart,
+              icoColor: Colors.white,
+              indicador: false,
+              accion: () async {
+                Navigator.of(this._context).pop(true);
+                setState(() {
+                  this._hasData = true;
+                });
+              }
             ),
           ],
         );
@@ -1549,7 +1615,7 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
           actions: [
             RaisedButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)
+                borderRadius: BorderRadius.circular(2)
               ),
               color: Colors.red,
               textColor: Colors.white,
@@ -1564,12 +1630,12 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
             ),
             RaisedButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)
+                borderRadius: BorderRadius.circular(2)
               ),
-              color: Colors.blue,
+              color: Color(0xff002f51),
               textColor: Colors.white,
               child: Text(
-                ' CONTINUAR ',
+                (MediaQuery.of(this._context).size.height <= 550) ? ' CONTINUAR ' : 'CONTINUAR CON',
                 textScaleFactor: 1,
               ),
               onPressed: (){
@@ -1581,4 +1647,6 @@ class _AltaPiezasPageState extends State<AltaPiezasPage> {
       }
     );
   }
+
+
 }

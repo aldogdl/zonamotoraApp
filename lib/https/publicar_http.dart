@@ -24,13 +24,22 @@ class PublicarHttp {
       this._uriBase = (globals.env == 'dev') ? await _getIpDev() : globals.uriBase;
       assert((){
         print(this._uriBase);
-        print('Gastando datos -> AsesoresHttp::$metodo');
+        print('Gastando datos -> PublicarHttp::$metodo');
         return true;
       }());
     }
   /// End Bloque
 
-   ///
+  ///
+  Future<http.Response> getDataIndexApp() async {
+
+    await _printAndRefreshIp('getDataIndexApp');
+    Uri uri = Uri.parse('${this._uriBase}/$_apiPublicFree/build-index-app/');
+    final req = http.MultipartRequest('GET', uri);
+    return await http.Response.fromStream(await req.send());
+  }
+
+  ///
   Future<http.Response> getLastPublicacion(Map<String, dynamic> credentialsUser) async {
 
     await _printAndRefreshIp('getLastPublicacion');
@@ -108,10 +117,10 @@ class PublicarHttp {
     return await http.Response.fromStream(await req.send());
   }
 
-    ///
+  ///
   Future<http.Response> getPublicacionById(int typeUnidad, int idPublic) async {
 
-    await _printAndRefreshIp('getUnidades');
+    await _printAndRefreshIp('getPublicacionById');
     Uri uri = Uri.parse('${this._uriBase}/$_apiPublicFree/$typeUnidad/$idPublic/get-publicacio-by-id/');
 
     final req = http.MultipartRequest('GET', uri);

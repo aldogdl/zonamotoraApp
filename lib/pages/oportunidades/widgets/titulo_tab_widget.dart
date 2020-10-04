@@ -11,7 +11,7 @@ class TituloTabWidget extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width,
       padding: EdgeInsets.all(7),
-      color: Colors.orange,
+      color: Colors.grey[300],
       child: Text(
         titulo,
         textScaleFactor: 1,

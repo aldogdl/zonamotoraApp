@@ -323,7 +323,14 @@ class _AltaSistemaPalClasPageState extends State<AltaSistemaPalClasPage> {
 
     String palClas = this._ctrlPalClas.text.trim();
     if(palClas.isNotEmpty) {
-      this._ctrlPalClas = new TextEditingController.fromValue(new TextEditingValue(text: palClas, selection: new TextSelection.collapsed(offset: palClas.length)));
+      this._ctrlPalClas = new TextEditingController.fromValue(
+        new TextEditingValue(
+          text: palClas,
+          selection: new TextSelection.collapsed(
+            offset: palClas.length
+          )
+        )
+      );
     }
     
     return Form(

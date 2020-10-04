@@ -15,7 +15,6 @@ import 'package:zonamotora/widgets/frm_mk_md_anio_widget.dart';
 import 'package:zonamotora/widgets/load_sheetbutom_widget.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
-import 'package:zonamotora/widgets/publicacion_widget.dart';
 import 'package:zonamotora/widgets/tomar_imagenes_widget.dart';
 
 class PublicarPage extends StatefulWidget {
@@ -48,7 +47,7 @@ class PublicarPageState extends State<PublicarPage> {
   String _queProcesando = 'Procesando Imágenes';
   List<String> _fotosSalvadas = new List();
   List<Map<String, dynamic>> _sistemas = new List();
-  Map<String, dynamic> _lastPublicacion = new Map();
+  Map<String, dynamic> _params = new Map();
 
   Size _screen;
   bool _isInit = true;
@@ -114,11 +113,12 @@ class PublicarPageState extends State<PublicarPage> {
       this._screen = MediaQuery.of(this._context).size;
     }
     context = null;
+    this._params = ModalRoute.of(this._context).settings.arguments;
 
     return Scaffold(
       key: this._skfKey,
       appBar: appBarrMy.getAppBarr(titulo: this._titlePage),
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: WillPopScope(
         onWillPop: () => Future.value(false),
@@ -151,34 +151,113 @@ class PublicarPageState extends State<PublicarPage> {
           future: _getCategos(),
           builder: (BuildContext context, AsyncSnapshot snapshot){
             if(snapshot.hasData) {
-              return _containerInput(
-                child: _dropDownCategos(snapshot.data)
-              );
+              return _printFrm(snapshot.data);
             }
             return _containerInput(
               child: Text(
-                'Canrgando Categorias...'
+                'Cargando Categorías...'
               )
-            ); 
+            );
           },
         ),
+      ],
+    );
+  }
+
+  ///
+  Widget _printFrm(List<Map<String, dynamic>> categos) {
+
+    TextStyle estilo = TextStyle(
+      fontSize: 19,
+      color: Colors.blueGrey,
+      fontWeight: FontWeight.bold
+    );
+
+    Map<String, dynamic> dataCatego = new Map();
+
+    switch (this._params['publicar']) {
+      case 1:
+        // 'Autopartes'
+        dataCatego = categos.firstWhere(
+          (element) => element['cat_catego'] == 'Autopartes',
+          orElse: () => new Map(),
+        );
+        break;
+      case 2:
+        // 'Vehículos'
+        dataCatego = categos.firstWhere(
+          (element) => element['cat_catego'] == 'Vehículos',
+          orElse: () => new Map(),
+        );
+        break;
+      case 3:
+        // 'Servicios'
+        dataCatego = categos.firstWhere(
+          (element) => element['cat_catego'] == 'Servicios',
+          orElse: () => new Map(),
+        );
+        break;
+      default:
+    }
+
+    if(dataCatego.isEmpty){
+      return SizedBox(height: 0);
+    }
+
+    this._txtCategoriaSeleccionada = dataCatego['cat_catego'].toUpperCase();
+    this._txtDespeqCategoSeleccionada = dataCatego['cat_despeq'];
+    this._catSelecId = dataCatego['cat_id'];
+    this._titlePage = 'Publica tus ${this._txtCategoriaSeleccionada}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 20),
+          child: Text(
+            'Categoría',
+            textScaleFactor: 1,
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.blueGrey
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 20),
+          child: Text(
+            '${this._txtCategoriaSeleccionada}',
+            textScaleFactor: 1,
+            textAlign: TextAlign.left,
+            style: estilo,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            '${this._txtDespeqCategoSeleccionada}',
+            textScaleFactor: 1,
+            style: TextStyle(
+              color: Colors.black
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 20),
           width: this._screen.width,
           height: this._screen.height * 0.20,
-          color: Colors.white.withAlpha(100),
+          color: Colors.grey.withAlpha(100),
           child: _seccionDeFotos()
         ),
-        (this._txtCategoriaSeleccionada != 'SELECCIONA UNA...')
-        ?
         Form(
           key: this._frmKey,
           child: _frm(),
-        )
-        : _widgetLastPublicacion(),
-        const SizedBox(height: 10),
+        ),
         Padding(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.symmetric(vertical:10, horizontal: 20),
           child: Text(
             'Los artículos de ZonaMotora son públicos, por lo que cualquier persona ' +
             'dentro y fuera de ZonaMotora puede verlos.',
@@ -190,6 +269,18 @@ class PublicarPageState extends State<PublicarPage> {
           ),
         )
       ],
+    );
+  }
+
+  ///
+  Widget _frm() {
+
+    return Container(
+      width: this._screen.width,
+      color: Colors.white.withAlpha(100),
+      child: (this._txtCategoriaSeleccionada.toLowerCase() == 'vehículos')
+      ? _frmForAutos()
+      : _frmForServsAndRefaccs(),
     );
   }
 
@@ -287,55 +378,6 @@ class PublicarPageState extends State<PublicarPage> {
   }
 
   ///
-  Widget _widgetLastPublicacion() {
-
-    return FutureBuilder(
-      future: _getLastPublicacion(),
-      builder: (_, AsyncSnapshot snapshot) {
-        if(this._lastPublicacion.isNotEmpty && snapshot.hasData){
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 20),
-                    Icon(Icons.public, size: 16, color: Colors.grey),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Última Publicación:',
-                      textScaleFactor: 1,
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold
-                      )
-                    )
-                  ],
-                ),
-              ),
-              Center(
-                child: PublicacionWidget(
-                  contextSend: this._context,
-                  dataPublic: this._lastPublicacion,
-                  tamWid: 0.85,
-                ),
-              )
-            ],
-          );
-        }
-        return Center(
-          child: PublicacionWidget(
-            contextSend: this._context,
-            dataPublic: new Map(),
-            tamWid: 0.85,
-          ),
-        );
-      },
-    );
-  }
-
-  ///
   Widget _widgetParaTomarLaFoto() {
 
     if(tomarImagenesSngt.imagesAsset.length == this._maxFotos){
@@ -378,37 +420,16 @@ class PublicarPageState extends State<PublicarPage> {
   }
   
   ///
-  Widget _frm() {
-
-    return Container(
-      width: this._screen.width,
-      color: Colors.white.withAlpha(100),
-      child: (this._txtCategoriaSeleccionada.toLowerCase() == 'vehículos')
-      ? _frmForAutos()
-      : _frmForServsAndRefaccs(),
-    );
-  }
-
-  ///
   Widget _frmForAutos() {
 
     this._isShowPalClas = false;
 
     return Column(
       children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            '${this._txtDespeqCategoSeleccionada}',
-            textScaleFactor: 1,
-            style: TextStyle(
-              color: Colors.black
-            ),
-          ),
-        ),
         _widgetInputQueVendes('¿Que Auto?', _verDialogParaAutos),
         _widgetInputDescript(null),
         _widgetInputPrecio(),
+        const SizedBox(height: 20),
         _btnPublicar(accion: _saveData)
       ],
     );
@@ -421,17 +442,18 @@ class PublicarPageState extends State<PublicarPage> {
     return Column(
       children: [
         _widgetInputQueVendes('¿Qué Vendes?', null),
-        _widgetDropdownSistemas(),
-        Container(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             '${this._txtDespeqSistemaSeleccionado}',
             textScaleFactor: 1,
             style: TextStyle(
-              color: Colors.black
+              color: Colors.grey[600],
+              fontSize: 14
             ),
           ),
         ),
+        _widgetDropdownSistemas(),
         _widgetInputDescript(this._focusPalClas),
         _widgetInputPrecio(),
         _widgetInputPalClas(),
@@ -445,6 +467,7 @@ class PublicarPageState extends State<PublicarPage> {
             ),
           ),
         ),
+        const SizedBox(height: 20),
         _btnPublicar(accion: _saveData)
       ],
     );
@@ -459,102 +482,12 @@ class PublicarPageState extends State<PublicarPage> {
           margin: EdgeInsets.symmetric(horizontal: this._screen.width * 0.06, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(
               color: Colors.grey
             )
           ),
           child: child
-    );
-  }
-
-  ///
-  Widget _dropDownCategos(List<Map<String, dynamic>> categos) {
-
-    TextStyle estilo = TextStyle(
-      fontSize: 19,
-      color: Colors.orange,
-      fontWeight: FontWeight.bold
-    );
-    
-    List<DropdownMenuItem> widgetCategos = new List<DropdownMenuItem>();
-
-    categos.forEach((catServ){
-
-      IconData iconoRepre;
-
-      switch (catServ['cat_catego']) {
-        case 'Autopartes':
-          iconoRepre = Icons.extension;
-          break;
-        case 'Vehículos':
-          iconoRepre = Icons.directions_car;
-          break;
-        case 'Servicios':
-          iconoRepre = Icons.build;
-          break;
-        default:
-          iconoRepre = Icons.card_membership;
-      }
-      
-      widgetCategos.add(
-        DropdownMenuItem(
-          child: Row(
-            children: [
-              Icon(iconoRepre, color: Colors.grey),
-              const SizedBox(width: 10),
-              Text(
-                '${catServ['cat_catego'].toUpperCase()}',
-                textScaleFactor: 1,
-                style: estilo,
-              )
-            ],
-          ),
-          value: catServ['cat_id'],
-        )
-      );
-    });
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          'Categoría',
-          textScaleFactor: 1,
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.blueGrey
-          ),
-        ),
-        DropdownButton(
-          isDense: true,
-          isExpanded: true,
-          icon: Icon(Icons.arrow_drop_down),
-          iconEnabledColor: Colors.orange,
-          iconSize: 30,
-          underline: const SizedBox(width: 0),
-          onChanged: (final valorSeleccionado){
-            int index = categos.indexWhere((cat) => cat['cat_id'] == valorSeleccionado);
-            this._txtCategoriaSeleccionada = categos[index]['cat_catego'].toUpperCase();
-            this._txtDespeqCategoSeleccionada = categos[index]['cat_despeq'];
-            this._catSelecId = categos[index]['cat_id'];
-            this._titlePage = 'Publica tus ${this._txtCategoriaSeleccionada}';
-
-            _resetControllers();
-            setState(() {});
-          },
-          hint: Text(
-            this._txtCategoriaSeleccionada,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.blue
-            ),
-          ),
-          items: widgetCategos,
-        )
-      ],
     );
   }
 
@@ -770,16 +703,17 @@ class PublicarPageState extends State<PublicarPage> {
     Function accion
   }) {
 
-    return  Padding(
-      padding: EdgeInsets.symmetric(vertical: 10),
+    return  SizedBox(
+      width: this._screen.width * 0.85,
+      height: 40,
       child: RaisedButton.icon(
         onPressed: () async => await accion(),
-        color: Colors.black,
-        textColor: Colors.blue[300],
+        color: Color(0xff002f51),
+        textColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10)
+          borderRadius: BorderRadius.circular(2)
         ),
-        icon: Icon(Icons.save, color: Colors.blue[100]),
+        icon: Icon(Icons.save, color: Colors.white),
         label: Text(
           '$titulo'
         ),
@@ -828,6 +762,7 @@ class PublicarPageState extends State<PublicarPage> {
               FrmMkMdAnioWidget(
                 context: contextDialog,
               ),
+              const SizedBox(height: 20),
               _btnPublicar(
                 titulo: 'LISTO',
                 accion: () async {
@@ -1091,15 +1026,6 @@ class PublicarPageState extends State<PublicarPage> {
 
     this._sistemas = await emVarios.getSistemas();
     return (this._sistemas.isEmpty) ? false : true;
-  }
-
-  ///
-  Future<bool> _getLastPublicacion() async {
-
-    if(this._lastPublicacion.isNotEmpty){ return true; }
-
-    this._lastPublicacion = await emPublicar.getLastPublicacion();
-    return (this._lastPublicacion.isEmpty) ? false : true;
   }
 
   ///

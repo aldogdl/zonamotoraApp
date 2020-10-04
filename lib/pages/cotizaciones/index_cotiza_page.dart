@@ -13,7 +13,6 @@ import 'package:zonamotora/singletons/config_gms_sngt.dart';
 import 'package:zonamotora/singletons/solicitud_sngt.dart';
 import 'package:zonamotora/widgets/alerts_varios.dart';
 import 'package:zonamotora/widgets/app_barr_my.dart';
-import 'package:zonamotora/widgets/ico_notif_widget.dart';
 import 'package:zonamotora/widgets/menu_inferior.dart';
 import 'package:zonamotora/widgets/menu_main.dart';
 
@@ -59,14 +58,13 @@ class _IndexCotizaPageState extends State<IndexCotizaPage> {
   ///
   Widget _body() {
 
-
     return DefaultTabController(
       length: this._tabsBar.length,
       initialIndex: Provider.of<DataShared>(this._context, listen: false).cotizacPageView,
       child: Scaffold(
         appBar: AppBar(
           elevation: 3,
-          backgroundColor: Color(0xff7C0000),
+          backgroundColor: Color(0xff002f51),
           title: Text(
             'SOLICITUDES...',
             textScaleFactor: 1,
@@ -74,17 +72,6 @@ class _IndexCotizaPageState extends State<IndexCotizaPage> {
               fontSize: 16
             ),
           ),
-          actions: <Widget>[
-            Consumer<DataShared>(
-              builder: (BuildContext _context, dataShared, _){
-                if(dataShared.showNotif){
-                  return IcoNotifWidget();
-                }else{
-                  return SizedBox(height: 30);
-                }
-              },
-            )
-          ],
           bottom: TabBar(tabs: this._tabsBar),
         ),
         backgroundColor: Colors.red[100],

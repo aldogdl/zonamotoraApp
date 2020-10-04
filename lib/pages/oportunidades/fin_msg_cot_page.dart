@@ -37,8 +37,8 @@ class _FinMsgCotPageState extends State<FinMsgCotPage> {
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 3,
-        backgroundColor: Color(0xff7C0000),
+        elevation: 0,
+        backgroundColor: Color(0xff002f51),
         title: Text(
           'Gracias por tu tiempo',
           textScaleFactor: 1,
@@ -47,7 +47,7 @@ class _FinMsgCotPageState extends State<FinMsgCotPage> {
           ),
         ),
       ),
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: WillPopScope(
         onWillPop: () => Future.value(false),
@@ -132,10 +132,28 @@ class _FinMsgCotPageState extends State<FinMsgCotPage> {
             fontWeight: FontWeight.bold
           ),
         ),
+        const SizedBox(height: 45),
+        Container(
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.orange
+          ),
+          child: const Text(
+            'A DONDE QUIERES IR...',
+            textScaleFactor: 1,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+              color: Colors.white
+            ),
+          ),
+        ),
         const SizedBox(height: 25),
-        _titleCustom(1, 'Lista de Pedidos', 'Revisar las oportunidades de venta de hoy', Icons.clear_all),
+        _titleCustom(1, 'A la Lista de Pedidos', 'Revisar las oportunidades de venta de hoy', Icons.clear_all),
         const SizedBox(height: 20),
-        _titleCustom(2, 'Otra Cotización', 'Enviar otra cotización para este mismo Pedido.', Icons.add_a_photo),
+        _titleCustom(2, 'Hacer otra Cotización', 'Enviar otra cotización para este mismo Pedido.', Icons.add_a_photo),
         const SizedBox(height: 25),
         MotivosWidget()
       ],
@@ -146,6 +164,7 @@ class _FinMsgCotPageState extends State<FinMsgCotPage> {
   Widget _titleCustom(indice, String titulo, String stitulo, IconData icono) {
 
     return Container(
+      width: MediaQuery.of(this._context).size.width * 0.88,
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
@@ -158,7 +177,6 @@ class _FinMsgCotPageState extends State<FinMsgCotPage> {
         ],
         color: Colors.white,
       ),
-      width: MediaQuery.of(this._context).size.width,
       child: ListTile(
         leading: Icon(icono, size: 30, color: Colors.blue),
         title: Text(

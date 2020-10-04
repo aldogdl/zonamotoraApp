@@ -44,8 +44,8 @@ class _OportunidadesPageState extends State<OportunidadesPage> {
       initialIndex: Provider.of<DataShared>(this._context).opsVtasPageView,
       child: Scaffold(
         appBar: AppBar(
-          elevation: 3,
-          backgroundColor: Color(0xff7C0000),
+          elevation: 0,
+          backgroundColor: Color(0xff002f51),
           title: Text(
             'Oportunidades de Venta',
             textScaleFactor: 1,
@@ -55,7 +55,7 @@ class _OportunidadesPageState extends State<OportunidadesPage> {
           ),
           bottom: TabBar(tabs: this._tabsBar),
         ),
-        backgroundColor: Colors.red[100],
+        backgroundColor: Colors.white,
         drawer: MenuMain(),
         body: WillPopScope(
           onWillPop: () => Future.value(false),

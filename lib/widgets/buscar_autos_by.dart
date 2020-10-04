@@ -41,25 +41,20 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
     context = null;
 
     return Scaffold(
-      backgroundColor: Colors.black.withAlpha(50),
+      backgroundColor: Color(0xff002f51),
       extendBody: true,
       body: Container(
         width: MediaQuery.of(this._context).size.width,
         height: MediaQuery.of(this._context).size.height,
-        margin: EdgeInsets.all(5),
-        padding: EdgeInsets.all(10),
+        margin: EdgeInsets.all(10),
+        padding: EdgeInsets.only(
+          top: 10, left: 20, right: 8, bottom: 10
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(5)
+          borderRadius: BorderRadius.circular(2)
         ),
-        child: Container(
-          padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.red[100],
-            border: Border.all(color: Colors.grey, width: 2),
-          ),
-          child: _body(),
-        ),
+        child: _body(),
       ),
     );
   }
@@ -67,34 +62,22 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
   ///
   Widget _body() {
 
-    double alto = (MediaQuery.of(this._context).size.height >= 550) ? 0.6 : 0.7; 
+    double alto = (MediaQuery.of(this._context).size.height >= 550) ? 0.6 : 0.7;
+
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
-          Text(
-            widget.titulo,
-            textScaleFactor: 1,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w300,
-              fontSize: 28,
-              color: Colors.deepOrange
-            ),
-          ),
-          Text(
-            widget.subTitulo,
-            textScaleFactor: 1,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 17
-            ),
-          ),
+          _cabecera(),
           Container(
             margin: EdgeInsets.only(top: 20),
-            padding: EdgeInsets.all(5),
+            padding: EdgeInsets.symmetric(vertical: 5),
+            height: 55,
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
               color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: Colors.grey[400]
+              )
             ),
             child: _inputBuskAuto(context),
           ),
@@ -118,64 +101,76 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
   }
 
   ///
-  Widget _inputBuskAuto(BuildContext context)
-  {
+  Widget _cabecera() {
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.titulo,
+                textScaleFactor: 1,
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontWeight: FontWeight.w300,
+                  fontSize: 28,
+                  color: Colors.deepOrange
+                ),
+              ),
+              Text(
+                widget.subTitulo,
+                textScaleFactor: 1,
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: Colors.grey
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: InkWell(
+              onTap: (){
+                Navigator.of(context).pop(false);
+              },
+              child: Icon(Icons.close, size: 40, color: Colors.blue),
+            ),
+          ),
+        )
+      ]
+    );
+  }
+  
+  ///
+  Widget _inputBuskAuto(BuildContext context) {
+
+    String titulo = (widget.autosBy == 'marca') ? 'Teclea la marca AQUÍ...' : 'Teclea el modelo AQUÍ...';
+
     return TextField(
       maxLines: 1,
       autofocus: true,
-      textAlignVertical: TextAlignVertical.center,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
         contentPadding: EdgeInsets.only(left: 10, top: 0),
-        suffixIcon: InkWell(
-          onTap: (){
-            Navigator.of(context).pop(false);
-          },
-          child: Container(
-            height: 40,
-            padding: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: Colors.red,
-              border: Border.all(
-                color: Colors.red[600],
-                width: 1
-              ),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 3,
-                  offset: Offset(1, 0)
-                )
-              ]
-            ),
-            child: Column(
-              children: <Widget>[
-                Icon(Icons.close, size: 24, color: Colors.white),
-                const SizedBox(height: 1),
-                Text(
-                  'Cerrar',
-                  textScaleFactor: 1,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold
-                  ),
-                )
-              ],
-            )
-          ),
-        ),
         border: InputBorder.none,
-        hintText: 'Buscar AQUÍ...'
+        hintText: '$titulo'
       ),
       onChanged: (String txt) => _hacerBusquedaDeAutos(txt),
     );
   }
 
   ///
-  Future<Widget> _getAutos() async
-  {
+  Future<Widget> _getAutos() async {
 
     if(this._autosAll.length == 0) {
       this._autosAll = (widget.autosBy == 'modelos') ? await autos.getModelos(buscarAutosSngt.idMarca) : await autos.getMarcas();
@@ -186,7 +181,7 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
       itemCount: this._autosFilter.length,
       itemBuilder: (_, int index) {
         return ListTile(
-          leading: Icon(Icons.directions_car, color: Colors.black),
+          leading: Icon(Icons.directions_car, color: Colors.grey),
           dense: true,
           title: Text(
             '${ this._autosFilter[index][this._nombreKey] }',
@@ -216,8 +211,7 @@ class _BuscarAutosByState extends State<BuscarAutosBy> {
   }
 
   ///
-  void _hacerBusquedaDeAutos(String txt)
-  {
+  void _hacerBusquedaDeAutos(String txt) {
 
     this._autosFilter = new List();
     this._autosAll.forEach((autos){

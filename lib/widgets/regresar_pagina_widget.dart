@@ -17,9 +17,6 @@ Widget widget(
   return Container(
     width: MediaQuery.of(context).size.width,
     height: MediaQuery.of(context).size.height * 0.1,
-    decoration: BoxDecoration(
-      color: Colors.red[100],
-    ),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget> [
@@ -29,7 +26,7 @@ Widget widget(
             textScaleFactor: 1,
             style: TextStyle(
               color: colorTxt,
-              fontSize: 17
+              fontSize: 17,
             ),
           ),
           icon: Icon(Icons.arrow_back, size: 30, color: colorIcon),

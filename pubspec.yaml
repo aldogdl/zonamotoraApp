@@ -44,6 +44,9 @@ dependencies:
   cached_network_image:
   flutter_ringtone_player:
   flutter_local_notifications:
+  flutter_phone_direct_caller:
+    git:
+      url: https://github.com/yanisalfian/flutter-phone-direct-caller.git
 
 dev_dependencies:
   flutter_test:

@@ -29,6 +29,17 @@ class PublicarRepository {
   }
 
   ///
+  Future<Map<String, dynamic>> getDataIndexApp() async {
+
+    Map<String, dynamic> indexApp = new Map();
+    final reServer = await publicHttp.getDataIndexApp();
+    if(reServer.statusCode == 200) {
+      indexApp = new Map<String, dynamic>.from(json.decode(reServer.body));
+    }
+    return indexApp;
+  }
+
+  ///
   Future<bool> subirFotoByPublicacion(List<Map<String, dynamic>> fotos) async {
 
     Map<String, dynamic> dataUser = await emUSer.getCredentials();
@@ -94,6 +105,7 @@ class PublicarRepository {
 
     Map<String, dynamic> publicacion = new Map();
     final reServer = await publicHttp.getPublicacionById(typeUnidad, idPublic);
+
     if(reServer.statusCode == 200) {
      publicacion = new Map<String, dynamic>.from(json.decode(reServer.body));
     }else{

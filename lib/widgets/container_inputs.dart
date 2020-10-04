@@ -96,7 +96,10 @@ class ContainerInput {
               padding: EdgeInsets.all(4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: (inputIndex < 5) ? Colors.white : Colors.black
+                color: (inputIndex < 5) ? Colors.white : Colors.black,
+                border: Border.all(
+                  color: Colors.grey[400]
+                )
               ),
               child: listInputs[inputIndex],
             )

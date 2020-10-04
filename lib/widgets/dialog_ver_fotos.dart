@@ -13,7 +13,9 @@ class DialogVerFotosWidget extends StatelessWidget {
   final List<dynamic> fotos;
   final String typeFoto;
   final String subForder;
-  DialogVerFotosWidget({this.fotos, this.typeFoto, this.subForder});
+  final BuildContext contextSend;
+
+  DialogVerFotosWidget({this.contextSend, this.fotos, this.typeFoto, this.subForder});
 
   final Map<String, dynamic> _prefixFoto = {
     'solicitudes': '${globals.uriImgSolicitudes}',

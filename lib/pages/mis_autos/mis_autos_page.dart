@@ -227,23 +227,27 @@ class _MisAutosPageState extends State<MisAutosPage> {
         return AlertDialog(
           scrollable: true,
           contentPadding: EdgeInsets.all(0),
+          insetPadding: EdgeInsets.all(5),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               FrmMkMdAnioWidget(),
-              RaisedButton.icon(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                icon: Icon(Icons.add, color: Colors.white),
-                color: Colors.black,
-                textColor: Colors.blue[400],
-                onPressed: (){
-                  _createNewAuto();
-                },
-                label: Text(
-                  'Agregar Auto',
-                  textScaleFactor: 1,
+              SizedBox(
+                width: MediaQuery.of(this._context).size.width * 0.7,
+                child: RaisedButton.icon(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(2)
+                  ),
+                  icon: Icon(Icons.add, color: Colors.white),
+                  color: Color(0xff002f51),
+                  textColor: Colors.white,
+                  onPressed: (){
+                    _createNewAuto();
+                  },
+                  label: Text(
+                    'Agregar Auto',
+                    textScaleFactor: 1,
+                  ),
                 ),
               ),
               SizedBox(height: 10)
@@ -253,9 +257,10 @@ class _MisAutosPageState extends State<MisAutosPage> {
       }
     );
   }
+  
   ///
-  Widget _addNewAuto()
-  {
+  Widget _addNewAuto() {
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
       height: 75,
@@ -322,8 +327,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   ///
-  Future<bool> _getAutos() async
-  {
+  Future<bool> _getAutos() async {
+
     if(this._autos.isEmpty) {
       this._autos = await emMisAtos.getMisAutos();
     }
@@ -336,8 +341,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   ///
-  Future<void> _eliminarAuto(int idAuto) async
-  {
+  Future<void> _eliminarAuto(int idAuto) async {
+
     String body = 'Se eliminará permanentemente éste vehículo registrado,\n\n¿Estas segur@ de CONTINUAR?';
     bool acc = await alertsVarios.aceptarCancelar(this._context, titulo: 'ELIMINANDO', body: body);
     if(acc) {
@@ -370,8 +375,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   ///
-  List<Widget> _hacerListaDeAutos()
-  {
+  List<Widget> _hacerListaDeAutos() {
+
     List<Widget> lstAutosLocal = new List();
     if(this._autos.isEmpty) {
       this._lstAutos = Center(
@@ -404,8 +409,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   ///
-  List<Widget> _calcularEstrellas()
-  {
+  List<Widget> _calcularEstrellas() {
+
     List<Widget> lst = new List();
     this._autosActuales = this._autos.length;
     int numStarBorder = this._autosPermitidos - this._autos.length;
@@ -423,8 +428,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
   
   ///
-  Future<void> _queVerInicialmente() async
-  {
+  Future<void> _queVerInicialmente() async {
+
     this._sess = await SharedPreferences.getInstance();
     this._isVistaHelp = this._sess.getBool(spConst.sp_isViewAutos);
     if(this._isVistaHelp == null){
@@ -436,8 +441,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
 
   /* Paginas de HELPS */
 
-  Widget _introInfo()
-  {
+  Widget _introInfo() {
+
     return templatePageHelps.getTemplate(
       context: this._context,
       icono: Icons.directions_bus,
@@ -453,8 +458,7 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   ///
-  Widget _filtroInfo()
-  {
+  Widget _filtroInfo() {
     return templatePageHelps.getTemplate(
       context: this._context,
       icono: Icons.search,
@@ -470,8 +474,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   ///
-  Widget _flexibleInfo()
-  {
+  Widget _flexibleInfo() {
+
     return templatePageHelps.getTemplate(
       context: this._context,
       icono: Icons.edit,
@@ -488,8 +492,8 @@ class _MisAutosPageState extends State<MisAutosPage> {
   }
 
   ///
-  void _accionEntendidoHelpPages()
-  {
+  void _accionEntendidoHelpPages() {
+    
     this._sess.setBool(spConst.sp_isViewAutos, true);
     this._isVistaHelp = true;
     setState(() {});

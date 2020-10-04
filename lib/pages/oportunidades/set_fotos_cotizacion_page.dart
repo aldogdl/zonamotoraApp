@@ -69,7 +69,7 @@ class _SetfotosToCotizacionPageState extends State<SetfotosToCotizacionPage> {
     return Scaffold(
       key: this._keySkf,
       appBar: appBarrMy.getAppBarr(titulo: 'Pedido ID: ${sgtnCot.dataPiezaEnProceso['pedido']}'),
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: SingleChildScrollView(
         child: Column(
@@ -87,55 +87,47 @@ class _SetfotosToCotizacionPageState extends State<SetfotosToCotizacionPage> {
               width: MediaQuery.of(this._context).size.width,
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.black
+                color: Colors.red
               ),
               child: Text(
                 'UNA IMAGEN VENDE MÁS QUE MIL PALABRAS',
                 textScaleFactor: 1,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.yellow,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold
                 ),
               ),
             ),
             const SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.all(7),
-              margin: EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(80),
-                borderRadius: BorderRadius.circular(10)
-              ),
-              child: Column(
-                children: <Widget>[
-                  RaisedButton.icon(
-                    icon: Icon(this._icoBtnMotivos, color: Colors.white),
-                    onPressed: () => _verMotivos(),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    color: this._colorBtnMotivos,
-                    label: Text(
-                      'VER MOTIVOS DEL POR QUÉ...',
-                      textScaleFactor: 1,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white
-                      ),
-                    ),
+            Column(
+              children: <Widget>[
+                RaisedButton.icon(
+                  icon: Icon(this._icoBtnMotivos, color: Colors.white),
+                  onPressed: () => _verMotivos(),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  Text(
-                    '${this._msgFotosTime}',
+                  color: this._colorBtnMotivos,
+                  label: Text(
+                    'VER MOTIVOS DEL POR QUÉ...',
                     textScaleFactor: 1,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.black
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white
                     ),
-                  )
-                ],
-              ),
+                  ),
+                ),
+                Text(
+                  '${this._msgFotosTime}',
+                  textScaleFactor: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black
+                  ),
+                )
+              ],
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 15),
@@ -155,16 +147,17 @@ class _SetfotosToCotizacionPageState extends State<SetfotosToCotizacionPage> {
                 color: Colors.green[900]
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             RaisedButton.icon(
-              icon: Icon(Icons.save, color: Colors.blue),
+              icon: Icon(Icons.save, color: Colors.white),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)
+                borderRadius: BorderRadius.circular(2)
               ),
               onPressed: (){
                 _saveFotosDeLaCotizacion();
               },
-              color: Colors.black,
+              color: Color(0xff002f51),
+              textColor: Colors.white,
               label: Text(
                 'TERMINAR LA COTIZACIÓN',
                 textScaleFactor: 1,
@@ -173,7 +166,7 @@ class _SetfotosToCotizacionPageState extends State<SetfotosToCotizacionPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
           ],
         ),
       ),

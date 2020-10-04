@@ -105,7 +105,7 @@ class _AltaPerfilContacPageState extends State<AltaPerfilContacPage> {
                 Colors.red
               ],
               begin: Alignment.topCenter,
-              end: Alignment.bottomCenter
+              end: Alignment.bottomCenter,
             )
           ),
           child: Column(

@@ -56,11 +56,11 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
 
   Map<String, dynamic> _metadataOpsYesOrNot = {
     'no': {
-      'bg': Colors.orange,
+      'bg': Colors.grey,
       'icono': Icons.close
     },
     'si': {
-      'bg': Colors.red,
+      'bg': Color(0xff002f51),
       'icono': Icons.check
     },
   };
@@ -100,14 +100,14 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
     return Scaffold(
       key: this._keySka,
       appBar: appBarrMy.getAppBarr(titulo: 'Pedido ID: ${pieza['pedido']}'),
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             _btnsAccionTop(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             FutureBuilder(
               future: _getDataPiezaFromServer(),
               builder: (_, AsyncSnapshot snapshot){
@@ -153,10 +153,10 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
           }
         ),
         RaisedButton.icon(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          color: Colors.black,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+          color: Colors.red,
           textColor: Colors.white,
-          icon: Icon(Icons.close, color: Colors.blue),
+          icon: Icon(Icons.close, color: Colors.white),
           label: Text('NO TENGO LA PIEZA'),
           onPressed: () async {
 
@@ -189,7 +189,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
     return Container(
       width: this._screen.width * 0.9,
       decoration: BoxDecoration(boxShadow: [
-        BoxShadow(blurRadius: 3, offset: Offset(1, 1), color: Colors.red),
+        BoxShadow(blurRadius: 3, offset: Offset(1, 1), color: Colors.grey),
       ], borderRadius: BorderRadius.only(topLeft: Radius.circular(20))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -240,7 +240,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
               '${this._dataPieza['mk_nombre']}',
               textScaleFactor: 1,
               style: TextStyle(
-                color: Colors.yellow,
+                color: Colors.grey[200],
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
                 shadows: [
@@ -283,7 +283,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
               height: 35,
               width: this._screen.width * 0.9,
               padding: EdgeInsets.only(left: 10, right: 7),
-              color: Colors.red.withAlpha(200),
+              color: Colors.blue.withAlpha(200),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -328,12 +328,12 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
         padding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
         child: Column(
           children: <Widget>[
-            const SizedBox(height: 10),
 
+            const SizedBox(height: 20),
             _inputCosto(),
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
             _inputComision(),
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
             _inputCaracteristicas(),
             const SizedBox(height: 20),
             _inputGarantia(),
@@ -357,12 +357,15 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
                 ],
               ),
             ),
+            const SizedBox(height: 20),
             Center(
               child: RaisedButton.icon(
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                color: Colors.blue,
-                icon: Icon(Icons.send),
+                  borderRadius: BorderRadius.circular(2)
+                ),
+                color: Color(0xff002f51),
+                icon: Icon(Icons.send, color: Colors.white,),
                 label: Text(
                   'ENVIAR COTIZACIÓN',
                   textScaleFactor: 1,
@@ -405,7 +408,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
         labelText: 'Precio al Público SIN I.V.A.:',
         prefixIcon: Icon(Icons.attach_money),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: Colors.grey[100],
         hintText: (this._otraCotiza) ? 'Ref. ${ sngtCot.dataPiezaEnProceso['costo'] }' : null,
         hintStyle: TextStyle(
           color: Colors.grey
@@ -445,7 +448,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
         fillColor: Colors.grey[50],
         hintText: (this._otraCotiza) ? 'Ref. ${ sngtCot.dataPiezaEnProceso['comision'] }' : null,
         hintStyle: TextStyle(
-          color: Colors.grey
+          color: Colors.grey[600]
         )
       ),
     );
@@ -463,7 +466,7 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
         labelText: 'Características adicionales',
         prefixIcon: Icon(Icons.message),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: Colors.grey[100],
         hintText: (this._otraCotiza) ? 'Ref. ${ sngtCot.dataPiezaEnProceso['caracts'] }' : null,
         hintStyle: TextStyle(
           color: Colors.grey
@@ -511,8 +514,8 @@ class _CrearCotizacionPageState extends State<CrearCotizacionPage> {
 
     return InkWell(
       child: Container(
-        height: 35,
-        width: 35,
+        height: 30,
+        width: 30,
         margin: EdgeInsets.only(right: 3),
         decoration: BoxDecoration(
           color: this._metadataOpsYesOrNot[this._hasDevolucion]['bg'],

@@ -52,21 +52,11 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
     }
 
     return Container(
-      padding: EdgeInsets.all(10),
-      width: this._screen.width * 0.92,
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white
+        color: Colors.white,
       ),
-      child: Container(
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.red[100],
-          border: Border.all(
-            color: Colors.grey[400]
-          )
-        ),
-        child: _frm(),
-      )
+      child: _frm(),
     );
   }
 
@@ -76,6 +66,7 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
+        const SizedBox(height: 20),
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
@@ -139,7 +130,7 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'Versión o Características del Modelo:',
+            '   VERSIÓN:',
             textScaleFactor: 1,
             textAlign: TextAlign.start,
             style: TextStyle(
@@ -153,7 +144,7 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            '   Detalles que diferencien el vehículo',
+            '   Características del Modelo.',
             textScaleFactor: 1,
             textAlign: TextAlign.start,
             style: TextStyle(
@@ -170,18 +161,14 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
   Widget _inputMarca() {
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.only(left: 20),
       height: 60,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
+        border: Border.all(
+          color: Colors.grey[400]
+        )
       ),
       child: InkWell(
         onTap: () async { 
@@ -190,7 +177,7 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
             builder: (BuildContext context) {
               return BuscarAutosBy(
                 titulo: 'Busca la Marca:',
-                subTitulo: 'Selecciona la marca del Auto',
+                subTitulo: 'y Selecciona la adecuada.',
                 autosBy: 'marca',
               );
             }
@@ -217,7 +204,7 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
             ),
             Padding(
               padding: EdgeInsets.all(5),
-              child: Icon(Icons.search, color: Colors.grey),
+              child: Icon(Icons.search, color: Colors.blue),
             ),
             const SizedBox(width: 5)
           ],
@@ -230,22 +217,18 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
   Widget _inputModelo() {
 
     return Container(
-      width: this._screen.width * 0.48,
+      width: this._screen.width * 0.59,
       height: 60,
-      padding: EdgeInsets.only(left: 10),
+      padding: EdgeInsets.only(left: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(10),
           bottomLeft: Radius.circular(10)
         ),
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
+        border: Border.all(
+          color: Colors.grey[400]
+        )
       ),
       child: InkWell(
         onTap: () async {
@@ -255,7 +238,7 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
               builder: (BuildContext context) {
                 return BuscarAutosBy(
                   titulo: 'Busca Modelo:',
-                  subTitulo: 'Selecciona el Modelo del Auto',
+                  subTitulo: 'y Selecciona el adecuado.',
                   autosBy: 'modelos',
                 );
               }
@@ -298,7 +281,7 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
   Widget _inputAnio() {
 
     return Container(
-      width: this._screen.width * 0.30,
+      width: this._screen.width * 0.33,
       height: 60,
       padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
@@ -307,13 +290,9 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
           bottomRight: Radius.circular(10)
         ),
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
+        border: Border.all(
+          color: Colors.grey[400]
+        )
       ),
       child: TextField(
         controller: frmSng.ctrAnio,
@@ -347,18 +326,14 @@ class _FrmMkMdAnioWidgetState extends State<FrmMkMdAnioWidget> {
   Widget _inputVersion() {
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.only(left: 20),
       height: 60,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 3,
-            offset: Offset(1,1),
-            color: Colors.grey
-          )
-        ]
+        border: Border.all(
+          color: Colors.grey[400]
+        )
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,

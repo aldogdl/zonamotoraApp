@@ -67,6 +67,14 @@ class DBApp {
         );
 
         await db.execute(
+          'CREATE TABLE categos ('
+          ' cat_id INTEGER,'
+          ' cat_catego TEXT,'
+          ' cat_despeq TEXT'
+          ');'
+        );
+
+        await db.execute(
           'CREATE TABLE misAutos ('
           ' idReg INTEGER,'
           ' mdid INTEGER,'
@@ -101,14 +109,6 @@ class DBApp {
         );
 
         await db.execute(
-          'CREATE TABLE categos ('
-          ' cat_id INTEGER,'
-          ' cat_catego TEXT,'
-          ' cat_despeq TEXT'
-          ');'
-        );
-
-        await db.execute(
           'CREATE TABLE cotizaciones ('
           ' filename TEXT,'
           ' createdAt TEXT'
@@ -118,6 +118,20 @@ class DBApp {
         await db.execute(
           'CREATE TABLE carshop ('
           ' idInv INTEGER,'
+          ' createdAt TEXT'
+          ');'
+        );
+
+        await db.execute(
+          'CREATE TABLE favs ('
+          ' pbl_id INTEGER,'
+          ' u_id INTEGER, '
+          ' cat_id INTEGER,'
+          ' sa_id INTEGER,'
+          ' pbl_queVendes TEXT,'
+          ' pbl_descripcion TEXT,'
+          ' pbl_precio TEXT,'
+          ' pbl_fotos TEXT,'
           ' createdAt TEXT'
           ');'
         );

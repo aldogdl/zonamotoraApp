@@ -105,7 +105,24 @@ class _SolicitudesWidgetState extends State<SolicitudesWidget> {
                 );
               }else{
                 String txt2 = 'Realiza una solicitud de Refacciones hoy mismo, te sorprenderán los costos y el servicio.';
-                return SinPiezasWidget(txt1: 'Sin Solicitudes Pendientes', txt2: txt2);
+                return Column(
+                  children: [
+                    SinPiezasWidget(txt1: 'Sin Solicitudes Pendientes', txt2: txt2),
+                    SizedBox(
+                      width: MediaQuery.of(this._context).size.width * 0.9,
+                      height: 40,
+                      child: RaisedButton(
+                        onPressed: () => Navigator.of(this._context).pushNamedAndRemoveUntil('add_autos_page', (route) => false),
+                        color: Color(0xff002f51),
+                        textColor: Colors.white,
+                        child: Text(
+                          'HACER UNA SOLICITUD DE PIEZAS',
+                          textScaleFactor: 1,
+                        ),
+                      ),
+                    )
+                  ],
+                );
               }
             }
 

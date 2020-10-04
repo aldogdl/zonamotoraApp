@@ -39,7 +39,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
 
     return Scaffold(
       appBar: appBarrMy.getAppBarr(titulo: 'Crea tu CUENTA!'),
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: WillPopScope(
         onWillPop: (){
@@ -73,7 +73,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
           height: this._screen.height * 0.15,
           padding: EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
-            color: Color(0xff7C0000)
+            color: Color(0xff002f51)
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -201,9 +201,13 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
         boxShadow: [
           BoxShadow(
             blurRadius: 2,
-            offset: Offset(1,2)
+            offset: Offset(1,2),
+            color: Colors.black.withAlpha(100)
           )
-        ]
+        ],
+        border: Border.all(
+          color: Colors.grey[400]
+        )
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -229,7 +233,7 @@ class _RegistroIndexPageState extends State<RegistroIndexPage> {
                     fontWeight: FontWeight.bold
                   ),
                 ),
-                Icon(icono, color: Colors.green),
+                Icon(icono, color: Colors.red),
                 ],
               ),
               Divider(),

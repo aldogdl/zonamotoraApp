@@ -6,12 +6,15 @@ import 'package:zonamotora/data_shared.dart';
 import 'package:zonamotora/repository/app_varios_repository.dart';
 import 'package:zonamotora/repository/autos_repository.dart';
 import 'package:zonamotora/repository/carshop_repository.dart';
+import 'package:zonamotora/repository/favoritos_repository.dart';
 import 'package:zonamotora/repository/notifics_repository.dart';
 import 'package:zonamotora/repository/procc_roto_repository.dart';
+import 'package:zonamotora/repository/publicar_repository.dart';
 import 'package:zonamotora/repository/user_repository.dart';
 import 'package:zonamotora/singletons/config_gms_sngt.dart';
 import 'package:zonamotora/globals.dart' as globals;
 import 'package:zonamotora/shared_preference_const.dart' as spConst;
+import 'package:zonamotora/singletons/index_app_sngt.dart';
 
 
 
@@ -30,7 +33,10 @@ class _InitConfigPageState extends State<InitConfigPage> {
   NotificsRepository emNotific = NotificsRepository();
   CarShopRepository emShop = CarShopRepository();
   AppVariosRepository emVarios = AppVariosRepository();
-  
+  PublicarRepository emPublicar = PublicarRepository();
+  IndexAppSng indexAppSng = IndexAppSng();
+  FavoritosRepository emFavs = FavoritosRepository();
+
   String _haciendo = 'Iniciando Configuración';
   bool _recibirNotif;
   SharedPreferences _sess;
@@ -54,34 +60,38 @@ class _InitConfigPageState extends State<InitConfigPage> {
     }
 
     return Scaffold(
-      backgroundColor: Color(0xff000000),
-      body: Stack(
-        children: <Widget>[
-          Container(
-            width: MediaQuery.of(this._context).size.width,
-            height: MediaQuery.of(this._context).size.height,
-              child: FadeInImage(
-              placeholder: AssetImage('assets/images/no_pixel.png'),
-              image: AssetImage('assets/icon_splash/zona-motora-splash.gif'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          Positioned(
-            top: 40,
-            child: Container(
+      backgroundColor: Color(0xff002F51),
+      body: SafeArea(
+        top: true,
+        bottom: true,
+        child: Stack(
+          children: <Widget>[
+            Container(
               width: MediaQuery.of(this._context).size.width,
-              height: 30,
-              child: Center(
-                child: Text(
-                  '${this._haciendo}',
-                  style: TextStyle(
-                    color: Colors.white
+              height: MediaQuery.of(this._context).size.height,
+                child: FadeInImage(
+                placeholder: AssetImage('assets/images/no_pixel.png'),
+                image: AssetImage('assets/icon_splash/zona-motora-splash.gif'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              top: 40,
+              child: Container(
+                width: MediaQuery.of(this._context).size.width,
+                height: 30,
+                child: Center(
+                  child: Text(
+                    '${this._haciendo}',
+                    style: TextStyle(
+                      color: Colors.white
+                    ),
                   ),
                 ),
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       )
     );
   }
@@ -108,10 +118,13 @@ class _InitConfigPageState extends State<InitConfigPage> {
 
       await _checkDataUser();
       await _checkMarcasAndModelos();
+      await _getDataForIndexApp();
       await _checkConfigPush();
       await _checkInCarShop();
       await _checkCategos();
-
+      await _checkFavoritos();
+      await _checkInfoZM();
+      
       this._haciendo = (this._dataShared.username == 'Anónimo') ? 'Bienvenid@' : 'Bienvenid@ ${this._dataShared.username.toUpperCase()}';
       setState(() {});
 
@@ -262,6 +275,17 @@ class _InitConfigPageState extends State<InitConfigPage> {
     }
   }
 
+    ///
+  Future<void> _getDataForIndexApp() async {
+
+    this._haciendo = 'Organizando Datos';
+    setState(() {});
+    Map<String, dynamic> dataIndeApp = await emPublicar.getDataIndexApp();
+    if(dataIndeApp.isNotEmpty) {
+      indexAppSng.setIndexApp(dataIndeApp);
+    }
+  }
+  
   ///
   Future<void> _checkInCarShop() async {
 
@@ -275,5 +299,24 @@ class _InitConfigPageState extends State<InitConfigPage> {
     this._haciendo = 'Categorías y Servicios';
     setState(() {});
     await emVarios.getAllCategosFromServer();
+  }
+
+  ///
+  Future<void> _checkFavoritos() async {
+
+    this._haciendo = 'Checando tus Favoritos';
+    setState(() {});
+    Provider.of<DataShared>(this._context, listen: false).setCantFavs(
+      await emFavs.getCantFav()
+    );
+  }
+
+  ///
+  Future<void> _checkInfoZM() async {
+
+    this._haciendo = 'ZonaMotora Datos de Contacto';
+    setState(() {});
+    Map<String, dynamic> info = await emVarios.getInfoZM();
+    Provider.of<DataShared>(this._context, listen: false).setInfoZM(info);
   }
 }

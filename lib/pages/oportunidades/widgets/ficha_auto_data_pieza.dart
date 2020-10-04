@@ -20,7 +20,8 @@ class FichaAutoDataPiezaWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           CircleAvatar(
-            child: Icon(Icons.extension),
+            backgroundColor: Colors.blue,
+            child: Icon(Icons.extension, color: Colors.white),
           ),
           const SizedBox(width: 10),
           Column(
@@ -47,7 +48,7 @@ class FichaAutoDataPiezaWidget extends StatelessWidget {
                   textScaleFactor: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      color: Colors.green[600],
+                      color: Colors.orange[600],
                       fontWeight: FontWeight.normal,
                       fontSize: 14),
                 ),

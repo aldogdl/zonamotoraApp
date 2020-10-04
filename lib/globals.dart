@@ -1,12 +1,12 @@
 library zonamotora.globals;
 
-const String env = 'dev';
+const String env = 'prod';
 
 const int devClvTmp = 1;
 const String version = '1.0.0';
 
 const String protocolo         = (env == 'dev') ? 'http://' : 'https://';
-const String ip                = (env == 'dev') ? '192.168.0.25' : 'dbzm.info';
+const String ip                = (env == 'dev') ? '192.168.0.40' : 'dbzm.info';
 const String dominio           = '$protocolo$ip';
 const String uripublicZmdb     = (env == 'dev') ? '$dominio/dbzm/public_html/' : '$dominio/';
 const String uriBase           = (env == 'dev') ? '$uripublicZmdb'+'index.php' : '$dominio';

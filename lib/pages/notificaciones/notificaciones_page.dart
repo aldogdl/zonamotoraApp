@@ -90,7 +90,6 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
           decoration: BoxDecoration(
             color: Color(0xff7C0000)
           ),
-          child: SizedBox(height: 30),
         ),
 
          // Banners
@@ -144,7 +143,6 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
   Widget _lstNotificaciones() {
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Container(
           width: MediaQuery.of(this._context).size.width,
@@ -161,9 +159,8 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
           ),
         ),
         Container(
-          padding: EdgeInsets.only(bottom: 10),
-          height: MediaQuery.of(this._context).size.height * 0.45,
-          width: MediaQuery.of(this._context).size.width,
+          width: this._screen.width,
+          height: this._screen.height * 0.42,
           child: _lstNotifics(),
         )
       ],
@@ -174,6 +171,8 @@ class _NotificacionesPageState extends State<NotificacionesPage> {
   Widget _lstNotifics() {
 
     return ListView.builder(
+      scrollDirection: Axis.vertical,
+      shrinkWrap: true,
       itemCount: this._notifics.length,
       itemBuilder: (BuildContext _context, int index) {
         

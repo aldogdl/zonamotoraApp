@@ -6,52 +6,65 @@ import 'package:zonamotora/widgets/frm_change_ip.dart';
 
 
 class MenuMain extends StatelessWidget {
-  const MenuMain({Key key}) : super(key: key);
-  
+
+  MenuMain({Key key}) : super(key: key);
+
+  final btns = {
+    'index': {
+      'titulo': 'Página Principal',
+      'ico' : Icons.home,
+      'path': 'index_page'
+    },
+    'config': {
+      'titulo' : 'Ver Configuraciones',
+      'ico' : Icons.settings,
+      'path'  : 'config_page'
+    },
+    'autos': {
+      'titulo': 'Mis Autos Registrados',
+      'ico'   : Icons.directions_car,
+      'path'  : 'mis_autos_page'
+    },
+    'vincular': {
+      'titulo': 'Vincular Dispositivo',
+      'ico'   : Icons.phone_android,
+      'path'  : 'inxed_page'
+    },
+    'registro': {
+      'titulo': 'Registro de Usuario',
+      'ico'   : Icons.security,
+      'path'  : 'reg_index_page'
+    },
+    'constraint': {
+      'titulo': 'Restricciones Push',
+      'ico'   : Icons.notification_important,
+      'path'  : 'constraint_page_push'
+    },
+    'zonaMotora': {
+      'titulo': 'Zona Motora',
+      'ico'   : Icons.business,
+      'path'  : 'info_zm_page'
+    },
+    'opVentas': {
+      'titulo': 'Oportunidades',
+      'ico'   : Icons.monetization_on,
+      'path'  : 'oportunidades_page'
+    },
+    'solicitud': {
+      'titulo': 'Mis Solicitudes',
+      'ico'   : Icons.extension,
+      'path'  : 'index_cotizacion_page'
+    }
+  };
+
   @override
   Widget build(BuildContext context) {
 
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height * 0.25;
-
-    final btns = {
-      'index': {
-        'titulo': 'Página Principal',
-        'ico' : Icons.home,
-        'path': 'index_page'
-      },
-      'config': {
-        'titulo' : 'Ver Configuraciones',
-        'ico' : Icons.settings,
-        'path'  : 'config_page'
-      },
-      'autos': {
-        'titulo': 'Mis Autos Registrados',
-        'ico'   : Icons.directions_car,
-        'path'  : 'mis_autos_page'
-      },
-      'vincular': {
-        'titulo': 'Vincular Dispositivo',
-        'ico'   : Icons.phone_android,
-        'path'  : 'inxed_page'
-      },
-      'registro': {
-        'titulo': 'Registro de Usuario',
-        'ico'   : Icons.security,
-        'path'  : 'reg_index_page'
-      },
-      'constraint': {
-        'titulo': 'Restricciones Push',
-        'ico'   : Icons.notification_important,
-        'path'  : 'constraint_page_push'
-      },
-      'zonaMotora': {
-        'titulo': 'Zona Motora',
-        'ico'   : Icons.business,
-        'path'  : 'reg_index_page'
-      }
-    };
-
+    String role = Provider.of<DataShared>(context, listen: false).role;
+    String username = Provider.of<DataShared>(context, listen: false).username;
+    
     return SafeArea(
       child: Container(
         color: Colors.white,
@@ -63,7 +76,20 @@ class MenuMain extends StatelessWidget {
               width: w, height: h,
               child: _cabecera(w, h),
             ),
-            _titulo(w),
+            Consumer<DataShared>(
+              builder: (_, dataShared, __){
+                String tipoApp;
+                if(dataShared.username == null){
+                  tipoApp = 'Aplicaión Genérica';
+                }else{
+                  tipoApp = 'Aplicaión Genérica';
+                }
+                if(dataShared.username != 'Anónimo') {
+                  tipoApp = 'App. Autorizada para ${dataShared.username}';
+                }
+                return _titulo(w, '$tipoApp');
+              },
+            ),
             (globals.env == 'dev')
             ?
             FrmChangeIpWidget()
@@ -72,16 +98,59 @@ class MenuMain extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
+
                   _btnCreate(context, btns['index']),
-                  Divider(height: 1, color: Colors.red[200]),
-                  _btnCreate(context, btns['autos']),
-                  Divider(height: 1, color: Colors.red[200]),
-                  _btnCreate(context, btns['vincular']),
-                  Divider(height: 1, color: Colors.red[200]),
+
+                  (role == 'ROLE_SOCIO')
+                  ?
+                  Column(
+                    children: [
+                      _getDivider(),
+                      _btnCreate(context, btns['opVentas'])
+                    ],
+                  )
+                  :
+                  const SizedBox(height: 0),
+
+                  (role != 'ROLE_SOCIO' && username != 'Anónimo')
+                  ?
+                  Column(
+                    children: [
+                      _getDivider(),
+                      _btnCreate(context, btns['solicitud'])
+                    ],
+                  )
+                  :
+                  const SizedBox(height: 0),
+                  (username != 'Anónimo')
+                  ?
+                  Column(
+                    children: [
+                      _getDivider(),
+                      _btnCreate(context, btns['autos'])
+                    ],
+                  )
+                  :
+                  const SizedBox(height: 0),
+                  _getDivider(),
+                  _btnCreate(context, btns['zonaMotora']),
+                  
+                  _titulo(w, 'Configuraciones'),
+                  (role != 'ROLE_SOCIO' && username != 'Anónimo')
+                  ?
+                  Column(
+                    children: [
+                      _getDivider(),
+                      _btnCreate(context, btns['vincular'])
+                    ],
+                  )
+                  :
+                  const SizedBox(height: 0),
+                  _getDivider(),
                   _btnCreate(context, btns['registro']),
-                  Divider(height: 1, color: Colors.red[200]),
+                  _getDivider(),
                   _btnCreate(context, btns['config']),
-                  Divider(height: 1, color: Colors.red[200]),
+                  _getDivider(),
                   Consumer<DataShared>(
                     builder: (_, dataShared, __) {
                       if(dataShared.role == 'ROLE_SOCIO'){
@@ -90,8 +159,6 @@ class MenuMain extends StatelessWidget {
                       return const SizedBox();
                     }
                   ),
-                  Divider(height: 1, color: Colors.red[200]),
-                  _btnCreate(context, btns['zonaMotora']),
                 ],
               ),
             )
@@ -101,7 +168,12 @@ class MenuMain extends StatelessWidget {
     );
   }
 
-  /* */
+  ///
+  Widget _getDivider() {
+    return Divider(height: 1, color: Colors.red[200]);
+  }
+
+  ///
   Widget _cabecera(double w, double h) {
 
     return Stack(
@@ -113,23 +185,25 @@ class MenuMain extends StatelessWidget {
           child: Container(
             width: w,
             height: h,
+            padding: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xff7C0000),
-                  Colors.red
+                  Colors.blue,
+                  Color(0xffffffff),
+                  Color(0xffffffff),
                 ],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight
               )
             ),
           )
         ),
         Positioned(
-          top: 0,
+          top: 20,
           child: SizedBox(
-            width: w,
-            height: h,
+            width: w * 0.8,
+            height: h * 0.8,
             child: Image(
               fit: BoxFit.contain,
               image: AssetImage('assets/images/zona_motora.png'),
@@ -143,7 +217,7 @@ class MenuMain extends StatelessWidget {
             '${globals.version}',
             textScaleFactor: 1,
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.red,
               fontWeight: FontWeight.bold,
               fontSize: 14
             ),
@@ -154,33 +228,20 @@ class MenuMain extends StatelessWidget {
   }
 
   /* */
-  Widget _titulo(double w) {
+  Widget _titulo(double w, String titulo) {
 
     return Container(
       height: 30,
       width: w,
-      color: Colors.grey[400],
+      color: Colors.grey[300],
       child: Center(
-        child: Consumer<DataShared>(
-          builder: (_, dataShared, __){
-            String tipoApp;
-            if(dataShared.username == null){
-              tipoApp = 'Genérica';
-            }else{
-              tipoApp = 'Genérica';
-            }
-            if(dataShared.username != 'Anónimo') {
-              tipoApp = 'Autorizada';
-            }
-            return Text(
-              'Aplicaión $tipoApp',
-              textScaleFactor: 1,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold
-              ),
-            );
-          },
+        child: Text(
+          '$titulo',
+          textScaleFactor: 1,
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold
+          ),
         ),
       ),
     );

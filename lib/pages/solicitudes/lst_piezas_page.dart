@@ -38,8 +38,9 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
     String titulo = solicitudSgtn.autos[solicitudSgtn.autoEnJuego['indexAuto']]['md_nombre'];
     return Scaffold(
       key: this._skfKey,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Color(0xff7C0000),
+        backgroundColor: Color(0xff002f51),
         title: Text(
           'Piezas para $titulo',
           textScaleFactor: 1,
@@ -47,9 +48,8 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
             fontSize: 16
           ),
         ),
-        elevation: 5,
+        elevation: 0,
       ),
-      backgroundColor: Colors.red[100],
       drawer: MenuMain(),
       body: _body(),
       bottomNavigationBar: menuInferior.getMenuInferior(this._context, 0, homeActive: false)
@@ -64,14 +64,7 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
     return Container(
       width: this._screen.width,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.red,
-            Colors.black,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter
-        )
+        color: Colors.white
       ),
       child: Column(
         children: <Widget>[
@@ -109,15 +102,15 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
 
     return RaisedButton.icon(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20)
+        borderRadius: BorderRadius.circular(2)
       ),
       onPressed: (){
         solicitudSgtn.setAutoEnJuegoIndexPieza(null);
         solicitudSgtn.setAutoEnJuegoIdPieza(null);
         Navigator.of(this._context).pushReplacementNamed('alta_piezas_page');
       },
-      icon: Icon(Icons.add_circle, color: Colors.blue),
-      color: Colors.black87,
+      icon: Icon(Icons.add_circle, color: Colors.white),
+      color: Colors.red,
       textColor: Colors.white,
       label: Text(
         'Agregar más',
@@ -131,7 +124,7 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
 
     return RaisedButton.icon(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20)
+        borderRadius: BorderRadius.circular(2)
       ),
       onPressed: (){
         solicitudSgtn.setAutoEnJuegoIndexPieza(null);
@@ -139,11 +132,14 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
         solicitudSgtn.setAutoEnJuegoIndexAuto(null);
         Navigator.of(this._context).pushReplacementNamed('lst_modelos_select_page');
       },
-      color: Colors.white,
-      icon: Icon(Icons.check_circle, color: Colors.red),
+      color: Color(0xff002f51),
+      icon: Icon(Icons.check_circle, color: Colors.white),
       label: Text(
         titulo,
         textScaleFactor: 1,
+        style: TextStyle(
+          color: Colors.white
+        ),
       ),
     );
   }
@@ -245,21 +241,12 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
 
     return Container(
       padding: EdgeInsets.only(top: 10, right: 10, bottom: 0, left: 10),
-      margin: EdgeInsets.only(bottom: 15),
+      margin: EdgeInsets.all(15),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withAlpha(0),
-            Colors.white.withAlpha(50)
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.black,
-            width: 2
-          )
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.grey
         )
       ),
       width: this._screen.width,
@@ -271,7 +258,8 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
               ?
               CircleAvatar(
                 radius: 29,
-                child: Icon(Icons.monochrome_photos, size: 35, color: Colors.red[200]),
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.monochrome_photos, size: 35, color: Colors.grey[100]),
               )
               :
               Stack(
@@ -304,7 +292,7 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
                       '${ pieza['cant'] } ${ pieza['nombre'].toString().toUpperCase() }',
                       textScaleFactor: 1,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 17
                       ),
                     ),
@@ -316,7 +304,7 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
                         textScaleFactor: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: Colors.grey[200],
+                          color: Colors.grey[600],
                           fontSize: 13
                         ),
                       ),
@@ -327,15 +315,15 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
             ],
           ),
           const SizedBox(height: 10),
-          Divider(color: Colors.black, height: 1),
-          Divider(color: Colors.red[200], height: 1),
+          Divider(color: Colors.grey, height: 1),
+          Divider(color: Colors.white, height: 1),
           (solicitudSgtn.onlyRead) ? _accionesOnlyRead(pieza) :_accionesNormales(pieza)
         ],
       ),
     );
   }
 
-
+  ///
   Widget printImgLocal(pieza) {
 
     return InkWell(
@@ -350,8 +338,12 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
       onTap: (){
         showDialog(
           context: this._context,
-          builder: (BuildContext context) {
-            return DialogVerFotosWidget(fotos: pieza['fotos'], typeFoto: 'solicitudes');
+          builder: (_) {
+            return DialogVerFotosWidget(
+              contextSend: this._context,
+              fotos: pieza['fotos'],
+              typeFoto: 'solicitudes'
+            );
           }
         );
       },
@@ -376,8 +368,12 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
 
         showDialog(
           context: this._context,
-          builder: (BuildContext context) {
-            return DialogVerFotosWidget(fotos: fotosObject, typeFoto: 'solicitudes');
+          builder: (_) {
+             return DialogVerFotosWidget(
+              contextSend: this._context,
+              fotos: fotosObject,
+              typeFoto: 'solicitudes'
+            );
           }
         );
       },
@@ -403,9 +399,9 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         FlatButton.icon(
-          textColor: Colors.grey[300],
+          textColor: Colors.red,
           padding: EdgeInsets.all(0),
-          icon: Icon(Icons.delete, color: Colors.amber[100]),
+          icon: Icon(Icons.delete, color: Colors.red),
           label: Text(
             'Borrar',
             textScaleFactor: 1,
@@ -413,9 +409,9 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
           onPressed: () => _eliminarPieza(pieza['id']),
         ),
         FlatButton.icon(
-          textColor: Colors.grey[300],
+          textColor: Colors.blue,
           padding: EdgeInsets.all(0),
-          icon: Icon(Icons.edit, color: Colors.lightBlue),
+          icon: Icon(Icons.edit, color: Colors.blue),
           label: Text(
             'Cambiar',
             textScaleFactor: 1,
@@ -431,9 +427,9 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
   Widget _btnVerDataPieza(Map<String, dynamic> pieza) {
 
     return FlatButton.icon(
-      textColor: Colors.grey[300],
+      textColor: Color(0xff002f51),
       padding: EdgeInsets.all(0),
-      icon: Icon(Icons.remove_red_eye, color: Colors.lightBlue),
+      icon: Icon(Icons.remove_red_eye, color: Color(0xff002f51)),
       label: Text(
         'VER',
         textScaleFactor: 1,
@@ -651,7 +647,12 @@ class _LstPiezasPageState extends State<LstPiezasPage> {
           showDialog(
             context: this._context,
             builder: (BuildContext context) {
-              return DialogVerFotosWidget(fotos: fotos, typeFoto: 'solicitudes');
+
+              return DialogVerFotosWidget(
+                contextSend: this._context,
+                fotos: fotos,
+                typeFoto: 'solicitudes'
+              );
             }
           );
         },

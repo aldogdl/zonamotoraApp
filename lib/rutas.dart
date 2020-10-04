@@ -14,13 +14,12 @@ import 'package:zonamotora/pages/altas/alta_save_resum_page.dart';
 import 'package:zonamotora/pages/altas/alta_sistema_page.dart';
 import 'package:zonamotora/pages/altas/alta_sistema_palclas_page.dart';
 import 'package:zonamotora/pages/altas/lista_users_page.dart';
+import 'package:zonamotora/pages/favoritos/favoritos_index_page.dart';
+import 'package:zonamotora/pages/info_zm/info_zm.dart';
 import 'package:zonamotora/pages/notificaciones/notificaciones_page.dart';
-import 'package:zonamotora/pages/pubs_autos/autos_index_page.dart';
-import 'package:zonamotora/pages/pubs_autos/favs_autos_index_page.dart';
-import 'package:zonamotora/pages/pubs_refacs/favs_refacs_index_page.dart';
-import 'package:zonamotora/pages/pubs_refacs/refacs_index_page.dart';
-import 'package:zonamotora/pages/pubs_servicios/favs_servicios_index_page.dart';
-import 'package:zonamotora/pages/pubs_servicios/servicios_index_page.dart';
+import 'package:zonamotora/pages/publicaciones/autos_index_page.dart';
+import 'package:zonamotora/pages/publicaciones/refacs_index_page.dart';
+import 'package:zonamotora/pages/publicaciones/servicios_index_page.dart';
 import 'package:zonamotora/pages/comprar/comprar_index_page.dart';
 import 'package:zonamotora/pages/config/config_page.dart';
 import 'package:zonamotora/pages/config/prba_push.dart';
@@ -57,13 +56,12 @@ class Rutas {
       'init_config_page'       : (context) => InitConfigPage(),
       'index_page'             : (context) => IndexPage(),
       'config_page'            : (context) => ConfigPage(),
+      'info_zm_page'           : (context) => InfoZmPage(),
       'prba_push'              : (context) => PrbaPush(),
       'autos_index_page'       : (context) => AutosIndexPage(),
       'refac_index_page'       : (context) => PubsRefacsIndexPage(),
       'servs_index_page'       : (context) => PubsServiciosIndexPage(),
-      'favs_autos_index_page'  : (context) => FavsAutosIndexPage(),
-      'favs_refac_index_page'  : (context) => FavsPubsRefacsIndexPage(),
-      'favs_servs_index_page'  : (context) => FavsPubsServiciosIndexPage(),
+      'favoritos_index_page'  : (context) => FavoritosIndexPage(),
       'notificaciones_page'    : (context) => NotificacionesPage(),
       'recovery_cuenta_page'   : (context) => RecoveryCuentaPage(),
       'login_asesor_page'      : (context) => LoginAsesorPage(),

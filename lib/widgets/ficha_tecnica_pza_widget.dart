@@ -234,8 +234,12 @@ class _FichaTecnicaPzaWidgetState extends State<FichaTecnicaPzaWidget> {
         onTap: (){
           showDialog(
             context: this._context,
-            builder: (BuildContext context) {
-              return DialogVerFotosWidget(fotos: this._dataRespuesta['fotos'], typeFoto: 'inventario');
+            builder: (_) {
+              return DialogVerFotosWidget(
+                contextSend: this._context,
+                fotos: this._dataRespuesta['fotos'],
+                typeFoto: 'inventario'
+              );
             }
           );
         },
@@ -291,8 +295,12 @@ class _FichaTecnicaPzaWidgetState extends State<FichaTecnicaPzaWidget> {
                 onTap: (){
                   showDialog(
                     context: this._context,
-                    builder: (BuildContext context) {
-                      return DialogVerFotosWidget(fotos: this._dataRespuesta['fotos'], typeFoto: 'inventario');
+                    builder: (_) {
+                      return DialogVerFotosWidget(
+                        contextSend: this._context,
+                        fotos: this._dataRespuesta['fotos'],
+                        typeFoto: 'inventario'
+                      );
                     }
                   );
                 },

@@ -61,7 +61,9 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.lightBlue,
+            Color(0xff002f51),
+            Color(0xff002f51),
+            Colors.white,
             Colors.white
           ],
           begin: Alignment.topCenter
@@ -70,6 +72,22 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
       width: MediaQuery.of(this._context).size.width,
       child: Column(
         children: <Widget>[
+          Container(
+            margin: EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white.withAlpha(90),
+            ),
+            child: Text(
+              'CALCULADORA DE COMISIONES',
+              textScaleFactor: 1,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+          ),
           Padding(
             padding: EdgeInsets.only(top: 10, right: 10, bottom: 0, left: 10),
             child: const Text(
@@ -77,11 +95,13 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
               textScaleFactor: 1,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold
+                fontSize: 19,
+                height: 1.5,
+                color: Colors.white
               ),
             ),
           ),
+          const SizedBox(height: 20),
           (!this._verMsg)
           ? _btnVermsg()
           : Container(
@@ -93,19 +113,8 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
             ),
             child: _msgIntro(),
           ),
-          Container(
-            margin: EdgeInsets.all(10),
-            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Colors.white.withAlpha(90),
-            ),
-            child: Text(
-              'CALCULADORA DE COMISIONES'
-            ),
-          ),
+          
           _inputCosto(),
-          const SizedBox(height: 10),
           Text(
             'Recibirás un monto de...',
             textScaleFactor: 1,
@@ -120,11 +129,37 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text('Mínimo:'),
-                Text(' \$ ${(this._max > 0) ? f.format(this._max) : 0.0}'),
+                Text(
+                  'Mínimo:',
+                  textScaleFactor: 1,
+                  style: TextStyle(
+                    color: Colors.grey
+                  ),
+                ),
+                Text(
+                  ' \$ ${(this._max > 0) ? f.format(this._max) : 0.0}',
+                  textScaleFactor: 1,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18
+                  ),
+                ),
                 const SizedBox(width: 20),
-                Text('Máximo:'),
-                Text(' \$ ${(this._min > 0) ? f.format(this._min) : 0.0}'),
+                Text(
+                  'Máximo:',
+                  textScaleFactor: 1,
+                  style: TextStyle(
+                    color: Colors.grey
+                  ),
+                ),
+                Text(
+                  ' \$ ${(this._min > 0) ? f.format(this._min) : 0.0}',
+                  textScaleFactor: 1,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18
+                  ),
+                ),
               ],
             )
             :
@@ -139,7 +174,7 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
             )
           ),
           const SizedBox(height: 10),
-           _btnEntendidoContinuar(),
+          _btnEntendidoContinuar(),
           const Divider(),
           const SizedBox(height: 10),
           Text(
@@ -172,12 +207,13 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
         boxShadow: [
           BoxShadow(
             blurRadius: 5,
-            color: Colors.purpleAccent,
+            color: Colors.black45,
             offset: Offset(1,2)
           )
         ]
       ),
       width: MediaQuery.of(this._context).size.width * 0.8,
+      margin: EdgeInsets.symmetric(vertical: 20),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
         children: <Widget>[
@@ -216,15 +252,21 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
   ///
   Widget _btnVermsg() {
 
-    return FlatButton.icon(
-      onPressed: (){
-        setState(() {
-          this._verMsg = true;
-        });
-      },
-      icon: Icon(Icons.info),
-      label: Text(
-        'Ver información complementaria'
+    return SizedBox(
+      height: 40,
+      child: RaisedButton.icon(
+        color: Colors.red,
+        textColor: Colors.white,
+        onPressed: (){
+          setState(() {
+            this._verMsg = true;
+          });
+        },
+        icon: Icon(Icons.info),
+        label: Text(
+          'Ver información complementaria',
+          textScaleFactor: 1,
+        ),
       ),
     );
   }
@@ -233,6 +275,7 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
   Widget _msgIntro() {
 
     return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(50)
       ),
@@ -254,31 +297,51 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
           ),
           const SizedBox(height: 5),
           const Text(
-            'Para ello es necesario PAGAR UNA PEQUEÑA COMISIÓN por los servicios que ofrecen las distintas '+
-            'empresas destinadas a realizar con seguridad una transacción por medios electrónicos.',
+            'Las Distintas empresas encargadas de la transacción y transmisión de la '+
+            'información confidencial de tus clientes, cobran UNA PEQUEÑA COMISIÓN por '+
+            'sus servicios de seguridad, propagación del efectivo y la comunicación '+
+            'con las entidades bancarias por medios electrónicos.',
             textScaleFactor: 1,
             style: TextStyle(
-              fontSize: 16
+              fontSize: 17,
+              height: 1.4
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 10),
           Text(
-            'Te presentamos el cálculo de costos que se paga a las compañias de seguridad interbancaria.',
+            'A continuación te presentamos el cálculo de costos que se paga '+
+            'a las compañias de seguridad interbancaria.',
             textScaleFactor: 1,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               color: Colors.blue[800]
             ),
           ),
           const SizedBox(height: 10),
           Text(
-            'Las comisiones están sujetas a cambios de acuerdo a las políticas de cada institución.',
+            'Las comisiones están sujetas a cambios de acuerdo a las políticas '+
+            'de cada institución, te recomendamos revices en cada cotización si '+
+            'no han existido cambios al respecto.',
             textScaleFactor: 1,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               color: Colors.grey[600]
             ),
           ),
+          const SizedBox(height: 10),
+          FlatButton.icon(
+            color: Colors.red,
+            textColor: Colors.white,
+            onPressed: (){
+              setState(() {
+                this._verMsg = false;
+              });
+            },
+            icon: Icon(Icons.close),
+            label: Text(
+              'Cerrar información'
+            )
+          )
         ],
       ),
     );
@@ -362,12 +425,12 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
       children: <Widget>[
         RaisedButton(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(2),
           ),
           color: Colors.red,
           textColor: Colors.white,
           child: Text(
-            'CERRAR'
+            'CANCELAR'
           ),
           onPressed: (){
             Navigator.of(this._context).pop(false);
@@ -375,9 +438,9 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
         ),
         RaisedButton(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(2),
           ),
-          color: Colors.black,
+          color: Color(0xff002f51),
           textColor: Colors.white,
           child: Text(
             'OK - CONTINUAR'
@@ -511,6 +574,7 @@ class _DataPasarelasWidgetState extends State<DataPasarelasWidget> {
 
     if(this._lstPasarelas.length > 0){
       this._lstPasarelas.add( _btnEntendidoContinuar() );
+      this._lstPasarelas.add( const SizedBox(height: 20) );
     }
 
     this._isInit = true;

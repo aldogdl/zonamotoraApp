@@ -16,7 +16,6 @@ Future<bool> makeHilo(List<Map<String, dynamic>> toDo) async {
           String token = tarea['params'][0];
           await compute(updateTokenDevice, token);
           break;
-        default:
       }
   });
 

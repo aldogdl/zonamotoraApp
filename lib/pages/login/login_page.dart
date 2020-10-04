@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       key: this._sckfkKey,
       appBar: appBarrMy.getAppBarr(titulo: 'Autenticación'),
-      backgroundColor: Colors.red[100],
+      backgroundColor: Colors.white,
       drawer: MenuMain(),
       body: WillPopScope(
         onWillPop: (){
@@ -105,16 +105,16 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(width: 20),
               RaisedButton.icon(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)
+                  borderRadius: BorderRadius.circular(2)
                 ),
-                color: Colors.black87,
-                icon: Icon(Icons.settings_input_antenna, color: Colors.orange, size: 15),
+                color: Color(0xff002f51),
+                icon: Icon(Icons.settings_input_antenna, color: Colors.white, size: 15),
                 label: Text(
                   'LOGIN',
                   textScaleFactor: 1,
                   style: TextStyle(
                     fontSize: 19,
-                    color: Colors.grey
+                    color: Colors.white
                   ),
                 ),
                 onPressed: () async {
@@ -149,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
           width: this._screen.width,
           height: this._screen.height * 0.30,
           decoration: BoxDecoration(
-            color: Color(0xff7C0000)
+            color: Color(0xff002f51)
           ),
           child: SizedBox(height: 30),
         ),

@@ -14,6 +14,20 @@ class AppVariosRepository {
   Map<String, dynamic> result = {'abort':false, 'msg':'ok', 'body':''};
 
   ///
+  Future<Map<String, dynamic>> getInfoZM() async {
+
+    Map<String, dynamic> getInfoZM = new Map();
+    final reServer = await appVariosHttp.getInfoZM();
+    if(reServer.statusCode == 200) {
+      getInfoZM = new Map<String, dynamic>.from(json.decode(reServer.body));
+    }else{
+      this.result = erroresServer.determinarError(reServer);
+      return {'error':true};
+    }
+    return getInfoZM;
+  }
+
+  ///
   Future<List<Map<String, dynamic>>> getColonias(int idCiudad) async {
 
     List<Map<String, dynamic>> colonias = new List();
@@ -76,6 +90,7 @@ class AppVariosRepository {
     if(reServer.statusCode == 200) {
 
       List<Map<String, dynamic>> categos = List<Map<String, dynamic>>.from(json.decode(reServer.body));
+
       final db = await DBApp.db.abrir;
       if(db.isOpen){
         List hasCategos = await db.query('categos');

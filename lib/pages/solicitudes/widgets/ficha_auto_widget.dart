@@ -49,19 +49,15 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 4,
-              offset: Offset(1,2),
-              color: Colors.red
-            )
-          ]
+          border: Border.all(
+            color: Colors.grey[400]
+          )
         ),
         child: Container(
           padding: EdgeInsets.all(7),
           decoration: BoxDecoration(
             color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,16 +312,16 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
       cantPiezas = solicitudSgtn.autos[this._indexAuto]['piezas'].length;
     }
 
-    return FlatButton(
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 9),
+    return RaisedButton(
+      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10)
+        borderRadius: BorderRadius.circular(2),
       ),
-      color: (cantPiezas > 0) ? Colors.green : Colors.blue,
+      color: (cantPiezas > 0) ? Colors.orange : Colors.red,
       child: Text(
         (cantPiezas > 0)
         ? (solicitudSgtn.onlyRead) ? 'Piezas Cotizadas' : 'Ver sus Piezas'
-        : 'Agregar Pieza',
+        : 'Agregar Piezas',
         textScaleFactor: 1,
         style: TextStyle(
           fontWeight: FontWeight.bold,
@@ -341,6 +337,7 @@ class _FichaDelAutoWidgetState extends State<FichaDelAutoWidget> {
             return;
           }
         }
+
         Navigator.of(this._context).pushNamed('alta_piezas_page');
       }
     );

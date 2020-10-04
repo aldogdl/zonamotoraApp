@@ -26,6 +26,17 @@ class AppVariosHttp {
   String _uriApi = 'zm/generales';
 
   ///
+  Future<http.Response> getInfoZM() async {
+
+    await this._printAndRefreshIp('getInfoZM');
+
+    Uri uri = Uri.parse('${this._uriBase}/${this._uriApi}/get-info-zm/');
+
+    final req = http.MultipartRequest('GET', uri);
+    return await http.Response.fromStream(await req.send());
+  }
+
+  ///
   Future<http.Response> getColonias(int idCiudad) async {
 
     await this._printAndRefreshIp('getColonias');
