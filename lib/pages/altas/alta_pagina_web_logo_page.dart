@@ -30,6 +30,9 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
   AlertsVarios alertsVarios = AlertsVarios();
   TomarImagenesSngt tomarImagenesSngt = TomarImagenesSngt();
 
+  GlobalKey<FormState> _keyFrm = GlobalKey<FormState>();
+  TextEditingController _qrWhats = TextEditingController();
+
   BuildContext _context;
   bool _isInit   = false;
   String _tokenTmpAsesor;
@@ -46,6 +49,7 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
   @override
   void dispose() {
     imageCache.clear();
+    this._qrWhats.dispose();
     super.dispose();
   }
 
@@ -100,10 +104,39 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
       children: [
         regresarPagina.widget(this._context, 'alta_pagina_web_carrucel_page', lstMenu: new List(), showBtnMenualta: false),
         Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Form(
+            key: this._keyFrm,
+            child: TextFormField(
+              controller: this._qrWhats,
+              validator: (String val){
+                if(val.length > 5){
+                  if(!val.startsWith('http')){
+                    return 'El código es incorrecto';
+                  }
+                  if(!val.contains('wa.')){
+                    return 'El código es incorrecto';
+                  }
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                hintText: 'QR-Whatsapp del Usuario',
+                border: InputBorder.none
+              ),
+            ),
+          ),
+        ),
+        Container(
           width: MediaQuery.of(this._context).size.width,
           padding: EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: Colors.white
+            color: Colors.white.withAlpha(150)
           ),
           child: Text(
             'Logotipo para el Sitio Web',
@@ -136,7 +169,6 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
             ),
             onPressed: () async {
               altaUserSngt.setCreateDataSitioWebByKeySingle('logo', await tomarImagenesSngt.getImageForSend());
-              alertsVarios.cargando(this._context);
               await _sendDataAndLogo();
             },
           ),
@@ -257,13 +289,29 @@ class _AltaPaginaWebLogoPageState extends State<AltaPaginaWebLogoPage> {
   ///
   Future<void> _sendDataAndLogo() async {
 
+    if(!this._keyFrm.currentState.validate()){
+      return;
+    }
+    bool seguir = true;
+    if(this._qrWhats.text.isEmpty){
+      String body = 'Parte de la Tarjeta Digital necesita el Código QR de Whatsapp.\n\n¿Segur@ de querer continuar sin el código QR';
+      seguir = await alertsVarios.aceptarCancelar(this._context, titulo: '', body: body);
+      if(seguir) {
+        this._qrWhats.text = '0';
+      }else{
+        return false;
+      }
+    }
+
     Map<String, dynamic> data = {
       'idpag'   : altaUserSngt.createDataSitioWeb['idp'],
       'logoSts' : altaUserSngt.createDataSitioWeb['logoSts'],
       'slug'    : altaUserSngt.createDataSitioWeb['slug'],
-      'changeImg':tomarImagenesSngt.changeImage
+      'changeImg':tomarImagenesSngt.changeImage,
+      'qrWhats'  : this._qrWhats.text
     };
 
+    alertsVarios.cargando(this._context);
     bool result = await emUser.sendDataAndLogo(data, altaUserSngt.createDataSitioWeb['logo'],  this._tokenTmpAsesor);
     if(!result) {
       Navigator.of(this._context).pop();

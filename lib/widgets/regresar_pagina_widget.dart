@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zonamotora/widgets/compartir_pagweb_widget.dart';
 import 'package:zonamotora/widgets/menu_dialog_alta_widget.dart';
 
 MenuDialogAltaWidget mnuDialog = MenuDialogAltaWidget();
@@ -10,6 +11,7 @@ Widget widget(
     Color colorTxt = Colors.redAccent,
     Color colorIcon = Colors.purple,
     bool showBtnMenualta = true,
+    bool showBtnSharedPagWebs = false,
     List<Map<String, dynamic>> lstMenu
   }
   ) {
@@ -42,6 +44,11 @@ Widget widget(
             await mnuDialog.showDialogMenu(context, lstMenu);
           },
         )
+        :
+        SizedBox(width: 0),
+        (showBtnSharedPagWebs)
+        ?
+        CompartiPagWebWidget(contextFromCall: context)
         :
         SizedBox(width: 0)
       ],

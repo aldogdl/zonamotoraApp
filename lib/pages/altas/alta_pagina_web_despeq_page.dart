@@ -105,7 +105,13 @@ class _AltaPaginaWebDesPeqPageState extends State<AltaPaginaWebDesPeqPage> {
       children: [
         Column(
           children: [
-            regresarPagina.widget(this._context, 'alta_pagina_web_bsk_page', lstMenu: altaUserSngt.crearMenuSegunRole(), showBtnMenualta: false),
+            regresarPagina.widget(
+              this._context,
+              'alta_pagina_web_bsk_page',
+              lstMenu: altaUserSngt.crearMenuSegunRole(),
+              showBtnMenualta: false,
+              showBtnSharedPagWebs: true
+            ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 5),
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),

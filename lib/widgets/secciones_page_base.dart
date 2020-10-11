@@ -141,9 +141,9 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
     }
 
     return Padding(
-      padding: EdgeInsets.only(right: 10),
+      padding: EdgeInsets.only(right: 5),
       child: SizedBox(
-        width: 50,
+        width: 70,
         height: 47,
         child: RaisedButton(
           shape: RoundedRectangleBorder(
@@ -153,15 +153,18 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
             )
           ),
           padding: EdgeInsets.all(0),
-          color: Colors.white,
-          textColor: Colors.red,
+          color: Colors.red,
+          textColor: Colors.white,
           onPressed: (){
             Navigator.of(this._context).pushNamedAndRemoveUntil(
               'publicar_page', (route) => false,
               arguments: {'publicar': widget.currentSeccion}
             );
           },
-          child: Icon(Icons.control_point_duplicate),
+          child: Text(
+            'VENDER',
+            textScaleFactor: 1,
+          ),
         ),
       ),
     );
@@ -179,40 +182,42 @@ class _SeccionesPageBaseState extends State<SeccionesPageBase> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _btnPublicar(),
-        Container(
-          margin: EdgeInsets.only(bottom: 3),
-          padding: EdgeInsets.symmetric(horizontal: 5),
-          width: this._screen.width * anchoBuscador,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(7),
-            border: Border.all(
-              color: Colors.grey
-            )
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 5,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    
-                    border: InputBorder.none,
-                    hintText: ' ¿Qué Buscas?',
+        Expanded(
+          child: Container(
+            margin: EdgeInsets.only(bottom: 3),
+            padding: EdgeInsets.symmetric(horizontal: 3),
+            width: this._screen.width * anchoBuscador,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(7),
+              border: Border.all(
+                color: Colors.grey
+              )
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 4,
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      
+                      border: InputBorder.none,
+                      hintText: ' ¿Qué Buscas?',
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 1,
-                child: IconButton(
-                  padding: EdgeInsets.all(0),
-                  icon: Icon(Icons.arrow_forward),
-                  onPressed: (){},
+                Expanded(
+                  flex: 1,
+                  child: IconButton(
+                    padding: EdgeInsets.all(0),
+                    icon: Icon(Icons.arrow_forward),
+                    onPressed: (){},
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         )
       ],

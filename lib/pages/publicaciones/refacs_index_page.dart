@@ -31,7 +31,7 @@ class _PubsRefacsIndexPageState extends State<PubsRefacsIndexPage> {
       DataShared dataShared = Provider.of<DataShared>(this._context, listen: false);
       this._username = (dataShared.username == null) ? 'Anónimo' : dataShared.username;
       this._role = dataShared.role;
-      _getInstancia();
+      _getSessionSharedPreferences();
     }
 
     return PlantillaBase(
@@ -62,7 +62,7 @@ class _PubsRefacsIndexPageState extends State<PubsRefacsIndexPage> {
     }
 
     return FutureBuilder(
-      future: _getInstancia(),
+      future: _getSessionSharedPreferences(),
       builder: (_, AsyncSnapshot snapshot) {
 
         if(snapshot.connectionState == ConnectionState.done){
@@ -100,7 +100,6 @@ class _PubsRefacsIndexPageState extends State<PubsRefacsIndexPage> {
         );
       },
     );
-    
   }
   
   ///
@@ -324,7 +323,7 @@ class _PubsRefacsIndexPageState extends State<PubsRefacsIndexPage> {
   }
 
   ///
-  Future<void> _getInstancia() async {
+  Future<void> _getSessionSharedPreferences() async {
 
     this._sess = await SharedPreferences.getInstance();
     if(!this._sess.containsKey('showContainerRefacs')){

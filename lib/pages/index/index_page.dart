@@ -60,20 +60,24 @@ class _IndexPageState extends State<IndexPage> {
           const SizedBox(height: 0),
           BannersTop(),
           _lastPageWeb(),
-          const SizedBox(height: 25),
           _getDivisor(titulo: 'Últimos Vehículos'),
           _createListPublicacionesHorizontal(context, indexAppSng.indexApp['autos']),
+          const SizedBox(height: 35),
+          _getDivisor(titulo: 'Servicios para tu Auto'),
           const SizedBox(height: 15),
+          _createListPublicacionesHorizontal(context, indexAppSng.indexApp['servs']),
+          const SizedBox(height: 35),
+          _getDivisor(titulo: 'Accesorios Piezas y más...'),
+          const SizedBox(height: 15),
+          _createListPublicacionesHorizontal(context, indexAppSng.indexApp['refacs']),
+                    const SizedBox(height: 35),
           _getDivisor(titulo: 'Piezas Recomendadas.'),
+           const SizedBox(height: 15),
           _bigRecomendacion(context),
           _createListPiezasHorizontal(context, indexAppSng.indexApp['recom']),
+          const SizedBox(height: 35),
           BannersTop(),
-          const SizedBox(height: 15),
-          _getDivisor(titulo: 'Servicios para tu Auto'),
-          _createListPublicacionesHorizontal(context, indexAppSng.indexApp['servs']),
-          const SizedBox(height: 15),
-          _getDivisor(titulo: 'Accesorios Piezas y más...'),
-          _createListPublicacionesHorizontal(context, indexAppSng.indexApp['refacs']),
+          const SizedBox(height: 35),
         ],
       ),
     );
@@ -103,29 +107,40 @@ class _IndexPageState extends State<IndexPage> {
   ///
   Widget _getDivisor({String titulo}) {
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        
-        Padding(
-          padding: EdgeInsets.all(10),
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.red.withAlpha(100),
+            Colors.white,
+          ],
+          end: Alignment.topLeft,
+          begin: Alignment.bottomRight
+        ),
+        border: Border(
+          bottom: BorderSide(
+            width: 2,
+            color: Colors.blueGrey
+          )
+        )
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          right: 10,
+        ),
           child: Text(
-            '$titulo',
-            textScaleFactor: 1,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              color: Colors.black54
-            ),
+          '$titulo',
+          textScaleFactor: 1,
+          textAlign: TextAlign.end,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: Color(0xff002f51)
           ),
         ),
-        Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
-        const SizedBox(height: 10)
-      ],
+      ),
     );
   }
 
